@@ -16,7 +16,7 @@ const materials = {
 };
 
 // Assembly 1: Marine Piping Loop with Filter Vessel (Large & Highly Visible)
-function MarinePipingAssembly({ rotate, explodeFactor }: { rotate: boolean; explodeFactor: number }) {
+function MarinePipingAssembly({ rotate }: { rotate: boolean }) {
   const ref = useRef<THREE.Group>(null);
   const { viewport } = useThree();
   useFrame((state) => {
@@ -30,8 +30,6 @@ function MarinePipingAssembly({ rotate, explodeFactor }: { rotate: boolean; expl
       }
     }
   });
-
-  const offset = explodeFactor * 0.8;
 
   // Approximate dimensions when not exploded
   const size = { x: 1.6, y: 2.2, z: 0.7 };
@@ -48,13 +46,13 @@ function MarinePipingAssembly({ rotate, explodeFactor }: { rotate: boolean; expl
   return (
     <group ref={ref}>
       <group scale={scaleFactor} position={[0, -center.y * scaleFactor, 0]}>
-        {/* Central filter vessel (cylinder + domes) - moves slightly back/down */}
-        <group position={[0, -offset * 0.2, 0]}>
+        {/* Central filter vessel (cylinder + domes) */}
+        <group position={[0, 0, 0]}>
           <mesh position={[0, 0, 0]} material={materials.darkIron}>
             <cylinderGeometry args={[0.45, 0.45, 1.6, 32]} />
           </mesh>
-          {/* Top Dome - explodes upward */}
-          <mesh position={[0, 0.8 + offset * 0.6, 0]} material={materials.crimson}>
+          {/* Top Dome */}
+          <mesh position={[0, 0.8, 0]} material={materials.crimson}>
             <sphereGeometry args={[0.45, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
           </mesh>
           <mesh position={[0, -0.8, 0]} material={materials.darkIron}>
@@ -62,8 +60,8 @@ function MarinePipingAssembly({ rotate, explodeFactor }: { rotate: boolean; expl
           </mesh>
         </group>
         
-        {/* Vessel support structure legs - moves downward */}
-        <group position={[0, -offset * 0.5, 0]}>
+        {/* Vessel support structure legs */}
+        <group position={[0, 0, 0]}>
           {[-0.35, 0.35].map((x, i) => (
             [-0.35, 0.35].map((z, j) => (
               <mesh key={`${i}-${j}`} position={[x, -1.1, z]} material={materials.steel}>
@@ -73,9 +71,9 @@ function MarinePipingAssembly({ rotate, explodeFactor }: { rotate: boolean; expl
           ))}
         </group>
 
-        {/* Piping networks branching out - left/right explosion */}
-        {/* Left piping moves left */}
-        <group position={[-0.4 - offset, -0.3, 0]} rotation={[0, 0, -Math.PI / 2]}>
+        {/* Piping networks branching out */}
+        {/* Left piping */}
+        <group position={[-0.4, -0.3, 0]} rotation={[0, 0, -Math.PI / 2]}>
           <mesh material={materials.copper}>
             <cylinderGeometry args={[0.12, 0.12, 0.8, 16]} />
           </mesh>
@@ -84,8 +82,8 @@ function MarinePipingAssembly({ rotate, explodeFactor }: { rotate: boolean; expl
           </mesh>
         </group>
 
-        {/* Right piping moves right */}
-        <group position={[0.4 + offset, 0.3, 0]} rotation={[0, 0, Math.PI / 2]}>
+        {/* Right piping */}
+        <group position={[0.4, 0.3, 0]} rotation={[0, 0, Math.PI / 2]}>
           <mesh material={materials.steel}>
             <cylinderGeometry args={[0.12, 0.12, 0.8, 16]} />
           </mesh>
@@ -94,8 +92,8 @@ function MarinePipingAssembly({ rotate, explodeFactor }: { rotate: boolean; expl
           </mesh>
         </group>
 
-        {/* Piping Loop elbow - moves forward and right */}
-        <group position={[0.7 + offset * 1.2, -0.1, offset * 0.5]} rotation={[0, 0, 0]}>
+        {/* Piping Loop elbow */}
+        <group position={[0.7, -0.1, 0]} rotation={[0, 0, 0]}>
           <mesh material={materials.steel}>
             <torusGeometry args={[0.3, 0.1, 16, 32, Math.PI / 2]} />
           </mesh>
@@ -106,7 +104,7 @@ function MarinePipingAssembly({ rotate, explodeFactor }: { rotate: boolean; expl
 }
 
 // Assembly 2: Industrial Systems - Storage Tank Skid/Unit
-function IndustrialAssembly({ rotate, explodeFactor }: { rotate: boolean; explodeFactor: number }) {
+function IndustrialAssembly({ rotate }: { rotate: boolean }) {
   const ref = useRef<THREE.Group>(null);
   const { viewport } = useThree();
   useFrame((state) => {
@@ -120,8 +118,6 @@ function IndustrialAssembly({ rotate, explodeFactor }: { rotate: boolean; explod
       }
     }
   });
-
-  const offset = explodeFactor * 0.8;
 
   // Approximate dimensions when not exploded
   const size = { x: 2.2, y: 2.3, z: 1.4 };
@@ -138,34 +134,34 @@ function IndustrialAssembly({ rotate, explodeFactor }: { rotate: boolean; explod
   return (
     <group ref={ref}>
       <group scale={scaleFactor} position={[0, -center.y * scaleFactor, 0]}>
-        {/* Platform Base - moves downward */}
-        <mesh position={[0, -1.0 - offset * 0.4, 0]} material={materials.darkIron}>
+        {/* Platform Base */}
+        <mesh position={[0, -1.0, 0]} material={materials.darkIron}>
           <boxGeometry args={[2.2, 0.08, 1.4]} />
         </mesh>
 
-        {/* Main Storage Tank - moves left */}
-        <group position={[-0.5 - offset * 0.8, 0, 0]}>
+        {/* Main Storage Tank */}
+        <group position={[-0.5, 0, 0]}>
           <mesh material={materials.steel}>
             <cylinderGeometry args={[0.5, 0.5, 1.5, 32]} />
           </mesh>
-          {/* Tank Cap - explodes upward relative to tank */}
-          <mesh position={[0, 0.75 + offset * 0.5, 0]} material={materials.crimson}>
+          {/* Tank Cap */}
+          <mesh position={[0, 0.75, 0]} material={materials.crimson}>
             <sphereGeometry args={[0.5, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
           </mesh>
         </group>
 
-        {/* Auxiliary process column - moves right */}
-        <group position={[0.5 + offset * 0.8, -0.1, 0.2]}>
+        {/* Auxiliary process column */}
+        <group position={[0.5, -0.1, 0.2]}>
           <mesh material={materials.copper}>
             <cylinderGeometry args={[0.2, 0.2, 1.3, 24]} />
           </mesh>
-          <mesh position={[0, 0.65 + offset * 0.5, 0]} material={materials.steel}>
+          <mesh position={[0, 0.65, 0]} material={materials.steel}>
             <cylinderGeometry args={[0.25, 0.25, 0.08, 24]} />
           </mesh>
         </group>
 
-        {/* Interconnecting Process Pipe - explodes upward/forward */}
-        <group position={[0, 0.4 + offset * 0.9, 0.1 + offset * 0.3]} rotation={[0, 0, Math.PI / 2]}>
+        {/* Interconnecting Process Pipe */}
+        <group position={[0, 0.4, 0.1]} rotation={[0, 0, Math.PI / 2]}>
           <mesh material={materials.steel}>
             <cylinderGeometry args={[0.06, 0.06, 1.0, 16]} />
           </mesh>
@@ -176,7 +172,7 @@ function IndustrialAssembly({ rotate, explodeFactor }: { rotate: boolean; explod
 }
 
 // Assembly 3: Marine Structure GLB Model Loader
-function StructuralAssembly({ rotate, explodeFactor }: { rotate: boolean; explodeFactor: number }) {
+function StructuralAssembly({ rotate }: { rotate: boolean }) {
   const ref = useRef<THREE.Group>(null);
   const { viewport } = useThree();
   
@@ -199,17 +195,10 @@ function StructuralAssembly({ rotate, explodeFactor }: { rotate: boolean; explod
     return scene.clone();
   }, [scene]);
 
-  const meshesRef = useRef<THREE.Mesh[]>([]);
-  const originalPositions = useRef<THREE.Vector3[]>([]);
-  const explodeDirections = useRef<THREE.Vector3[]>([]);
-
-  // Find all meshes and set up their explode paths
+  // Find all meshes and apply premium materials
   useEffect(() => {
-    const meshes: THREE.Mesh[] = [];
     clonedScene.traverse((child: any) => {
       if (child.isMesh) {
-        meshes.push(child);
-        // Optimize material visibility for premium crimson/steel structure design
         if (child.material) {
           const name = (child.name || '').toLowerCase();
           if (name.includes('gusset') || name.includes('joint') || name.includes('plate') || name.includes('red') || name.includes('pin')) {
@@ -220,26 +209,7 @@ function StructuralAssembly({ rotate, explodeFactor }: { rotate: boolean; explod
         }
       }
     });
-    meshesRef.current = meshes;
-    originalPositions.current = meshes.map(m => m.position.clone());
-
-    // Calculate directions from the centered model center
-    explodeDirections.current = meshes.map((mesh) => {
-      // Find the local mesh center relative to the original scene center
-      const meshBox = new THREE.Box3().setFromObject(mesh);
-      const meshCenter = new THREE.Vector3();
-      meshBox.getCenter(meshCenter);
-      
-      const dir = meshCenter.clone().sub(center).normalize();
-      
-      // If the direction vector is zero, assign a default random explosion path
-      if (dir.length() < 0.05) {
-        dir.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
-      }
-      
-      return dir;
-    });
-  }, [clonedScene, center]);
+  }, [clonedScene]);
 
   useFrame((state) => {
     // Rotation of the whole assembly
@@ -251,18 +221,6 @@ function StructuralAssembly({ rotate, explodeFactor }: { rotate: boolean; explod
         ref.current.rotation.y = 0.45;
         ref.current.rotation.x = 0.25;
       }
-    }
-
-    // Apply explode displacement to children meshes
-    if (meshesRef.current.length > 0) {
-      meshesRef.current.forEach((mesh, index) => {
-        const origPos = originalPositions.current[index];
-        const dir = explodeDirections.current[index];
-        if (origPos && dir) {
-          const displacement = explodeFactor * 1.5; // Scale displacement appropriately
-          mesh.position.copy(origPos).addScaledVector(dir, displacement);
-        }
-      });
     }
   });
 
@@ -285,7 +243,7 @@ function StructuralAssembly({ rotate, explodeFactor }: { rotate: boolean; explod
 }
 
 // Assembly 4: Exploded Marine Deck Component (Circular Hatch)
-function MechanicalAssembly({ rotate, explodeFactor }: { rotate: boolean; explodeFactor: number }) {
+function MechanicalAssembly({ rotate }: { rotate: boolean }) {
   const ref = useRef<THREE.Group>(null);
   const { viewport } = useThree();
   
@@ -308,17 +266,10 @@ function MechanicalAssembly({ rotate, explodeFactor }: { rotate: boolean; explod
     return scene.clone();
   }, [scene]);
   
-  const meshesRef = useRef<THREE.Mesh[]>([]);
-  const originalPositions = useRef<THREE.Vector3[]>([]);
-  const explodeDirections = useRef<THREE.Vector3[]>([]);
-
-  // Find all meshes and set up their explode paths
+  // Find all meshes and apply premium materials
   useEffect(() => {
-    const meshes: THREE.Mesh[] = [];
     clonedScene.traverse((child: any) => {
       if (child.isMesh) {
-        meshes.push(child);
-        // Optimize material visibility for premium crimson/steel design
         if (child.material) {
           const name = (child.name || '').toLowerCase();
           // Apply contrasting premium materials to parts
@@ -330,31 +281,7 @@ function MechanicalAssembly({ rotate, explodeFactor }: { rotate: boolean; explod
         }
       }
     });
-    meshesRef.current = meshes;
-    originalPositions.current = meshes.map(m => m.position.clone());
-
-    explodeDirections.current = meshes.map((mesh) => {
-      const meshBox = new THREE.Box3().setFromObject(mesh);
-      const meshCenter = new THREE.Vector3();
-      meshBox.getCenter(meshCenter);
-      
-      // Explode direction: cover & wheel move UP, base stays down/moves down
-      const dir = new THREE.Vector3().subVectors(meshCenter, center);
-      
-      // Since it is a circular deck hatch:
-      if (meshCenter.y > center.y) {
-        dir.y = Math.max(dir.y, 1.2); // force strong upward push for cover/handle
-        dir.x *= 0.15; // keep it tight to vertical axis
-        dir.z *= 0.15;
-      } else {
-        dir.y = Math.min(dir.y, -0.6); // force base/frame down
-        dir.x *= 0.4;
-        dir.z *= 0.4;
-      }
-      
-      return dir.normalize();
-    });
-  }, [clonedScene, center]);
+  }, [clonedScene]);
 
   useFrame((state) => {
     // Rotation of the whole assembly
@@ -367,18 +294,6 @@ function MechanicalAssembly({ rotate, explodeFactor }: { rotate: boolean; explod
         ref.current.rotation.y = -0.45; // slightly turned to the side
         ref.current.rotation.x = 0.55; // tilted forward so we can see the top cover/wheel clearly
       }
-    }
-
-    // Apply explode displacement to children
-    if (meshesRef.current.length > 0) {
-      meshesRef.current.forEach((mesh, index) => {
-        const origPos = originalPositions.current[index];
-        const dir = explodeDirections.current[index];
-        if (origPos && dir) {
-          const displacement = explodeFactor * 1.6; // Scale displacement appropriately
-          mesh.position.copy(origPos).addScaledVector(dir, displacement);
-        }
-      });
     }
   });
 
@@ -402,7 +317,6 @@ function MechanicalAssembly({ rotate, explodeFactor }: { rotate: boolean; explod
 
 export default function ThreeShowcase() {
   const [activeCategory, setActiveCategory] = useState<'marine' | 'industrial' | 'structural' | 'mechanical'>('marine');
-  const [explodeFactor, setExplodeFactor] = useState<number>(0);
   const [autoRotate, setAutoRotate] = useState<boolean>(false);
 
   const categories = [
@@ -426,7 +340,7 @@ export default function ThreeShowcase() {
           <span className="text-[11px] font-mono tracking-[0.25em] text-accent uppercase font-semibold block mb-2">Interactive 3D Showcase</span>
           <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4 tracking-tight">Technical Model Viewer</h2>
           <p className="text-sm md:text-base text-gray-400 max-w-xl mx-auto">
-            Interact with our CAD rendering engine. Rotate, zoom, and explode complex models to inspect system layouts.
+            Interact with our CAD rendering engine. Rotate, zoom, and inspect complex models to analyze system layouts.
           </p>
         </div>
 
@@ -437,7 +351,6 @@ export default function ThreeShowcase() {
               key={cat.id}
               onClick={() => {
                 setActiveCategory(cat.id);
-                setExplodeFactor(0); // Reset explode view when swapping model
               }}
               className={`px-4 py-2 text-xs md:text-sm font-semibold border rounded transition-all duration-300 uppercase tracking-widest cursor-pointer ${
                 activeCategory === cat.id
@@ -470,26 +383,6 @@ export default function ThreeShowcase() {
                   >
                     {autoRotate ? '⏸ PAUSE ROTATION' : '▶ AUTO ROTATE'}
                   </button>
-                </div>
-
-                {/* Explode Slider - Now applicable to ALL Categories */}
-                <div>
-                  <div className="flex justify-between text-[10px] font-mono text-gray-400 uppercase tracking-wider mb-2">
-                    <span>Exploded View</span>
-                    <span className="text-accent">{Math.round(explodeFactor * 100)}%</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value={explodeFactor}
-                    onChange={(e) => setExplodeFactor(parseFloat(e.target.value))}
-                    className="w-full accent-accent h-1 bg-black rounded-lg cursor-pointer appearance-none"
-                  />
-                  <span className="block text-[9px] text-gray-500 font-mono mt-1 leading-normal">
-                    Slide to split the assembly and view inner mechanics
-                  </span>
                 </div>
 
                 {/* Model Info Specs */}
@@ -525,11 +418,11 @@ export default function ThreeShowcase() {
               <directionalLight position={[4, 0, -4]} intensity={1.5} color="#ffffff" />
               <directionalLight position={[-4, 0, 4]} intensity={1.0} color="#DC143C" />
               
-              {activeCategory === 'marine' && <MarinePipingAssembly rotate={autoRotate} explodeFactor={explodeFactor} />}
-              {activeCategory === 'industrial' && <IndustrialAssembly rotate={autoRotate} explodeFactor={explodeFactor} />}
-              {activeCategory === 'structural' && <StructuralAssembly rotate={autoRotate} explodeFactor={explodeFactor} />}
+              {activeCategory === 'marine' && <MarinePipingAssembly rotate={autoRotate} />}
+              {activeCategory === 'industrial' && <IndustrialAssembly rotate={autoRotate} />}
+              {activeCategory === 'structural' && <StructuralAssembly rotate={autoRotate} />}
               {activeCategory === 'mechanical' && (
-                <MechanicalAssembly rotate={autoRotate} explodeFactor={explodeFactor} />
+                <MechanicalAssembly rotate={autoRotate} />
               )}
 
               <OrbitControls enableZoom={true} enablePan={true} maxDistance={6} minDistance={1.8} />

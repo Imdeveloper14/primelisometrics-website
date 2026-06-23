@@ -46,6 +46,14 @@ export default function Home() {
             <div className="relative flex items-center justify-center w-[300px] h-[300px] sm:w-[420px] sm:h-[420px] md:w-[460px] md:h-[460px] mx-auto">
               {/* Rotating SVG CAD blueprint circles */}
               <svg className="cad-blueprint absolute inset-0 w-full h-full z-0" viewBox="0 0 200 200">
+                <defs>
+                  <radialGradient id="center-mask" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#000000" stop-opacity="1" />
+                    <stop offset="70%" stop-color="#000000" stop-opacity="0.95" />
+                    <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+                  </radialGradient>
+                </defs>
+
                 {/* Axis Grid Lines */}
                 <line x1="10" y1="100" x2="190" y2="100" className="blueprint-line opacity-50" style={{ stroke: '#DC143C', strokeWidth: '2px' }} />
                 <line x1="100" y1="10" x2="100" y2="190" className="blueprint-line opacity-50" style={{ stroke: '#DC143C', strokeWidth: '2px' }} />
@@ -66,6 +74,9 @@ export default function Home() {
                 <path d="M 175,22 L 175,28" className="blueprint-line dim-line" style={{ stroke: '#DC143C', strokeWidth: '2px' }} />
                 <path d="M 100,22 L 100,28" className="blueprint-line dim-line" style={{ stroke: '#DC143C', strokeWidth: '2px' }} />
                 <text x="125" y="18" className="blueprint-text" style={{ fill: '#DC143C', fontWeight: 'bold' }}>R 75.0</text>
+
+                {/* Central Mask to hide lines intersecting the logo */}
+                <circle cx="100" cy="100" r="48" fill="url(#center-mask)" />
               </svg>
 
               {/* Logo Icon Only - Center placed on top of blueprint with intense bloom glow */}
