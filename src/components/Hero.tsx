@@ -65,9 +65,9 @@ export default function Hero({ onOpenConsult }: HeroProps) {
             variants={itemVariants}
             className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white mb-6 leading-tight flex flex-col"
           >
-            <span>Engineering</span>
-            <span>Ideas into</span>
-            <span className="text-gradient-red">Reality.</span>
+            <span>Freelance CAD Design Services</span>
+            <span>for Marine, Civil &</span>
+            <span className="text-gradient-red">Industrial Projects</span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -75,7 +75,7 @@ export default function Hero({ onOpenConsult }: HeroProps) {
             variants={itemVariants}
             className="text-base sm:text-lg md:text-xl font-medium text-gray-200 mb-4 max-w-xl"
           >
-            Freelance CAD Design Services for Marine, Civil & Industrial Projects
+            Engineering Ideas into Reality.
           </motion.p>
 
           {/* Description */}
