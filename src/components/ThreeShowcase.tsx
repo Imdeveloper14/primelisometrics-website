@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Grid, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 
@@ -18,6 +18,7 @@ const materials = {
 // Assembly 1: Marine Piping Loop with Filter Vessel (Large & Highly Visible)
 function MarinePipingAssembly({ rotate, explodeFactor }: { rotate: boolean; explodeFactor: number }) {
   const ref = useRef<THREE.Group>(null);
+  const { viewport } = useThree();
   useFrame((state) => {
     if (ref.current) {
       if (rotate) {
@@ -32,59 +33,73 @@ function MarinePipingAssembly({ rotate, explodeFactor }: { rotate: boolean; expl
 
   const offset = explodeFactor * 0.8;
 
+  // Approximate dimensions when not exploded
+  const size = { x: 1.6, y: 2.2, z: 0.7 };
+  const center = { x: 0, y: -0.3, z: 0 };
+
+  const scaleFactor = React.useMemo(() => {
+    const maxHoriz = Math.max(size.x, size.z);
+    const sizeY = size.y;
+    const scaleX = (viewport.width * 0.85) / maxHoriz;
+    const scaleY = (viewport.height * 0.85) / sizeY;
+    return Math.min(scaleX, scaleY);
+  }, [viewport.width, viewport.height]);
+
   return (
-    <group ref={ref} scale={1.3} position={[0, -0.2, 0]}>
-      {/* Central filter vessel (cylinder + domes) - moves slightly back/down */}
-      <group position={[0, -offset * 0.2, 0]}>
-        <mesh position={[0, 0, 0]} material={materials.darkIron}>
-          <cylinderGeometry args={[0.45, 0.45, 1.6, 32]} />
-        </mesh>
-        {/* Top Dome - explodes upward */}
-        <mesh position={[0, 0.8 + offset * 0.6, 0]} material={materials.crimson}>
-          <sphereGeometry args={[0.45, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
-        </mesh>
-        <mesh position={[0, -0.8, 0]} material={materials.darkIron}>
-          <sphereGeometry args={[0.45, 32, 16, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2]} />
-        </mesh>
-      </group>
-      
-      {/* Vessel support structure legs - moves downward */}
-      <group position={[0, -offset * 0.5, 0]}>
-        {[-0.35, 0.35].map((x, i) => (
-          [-0.35, 0.35].map((z, j) => (
-            <mesh key={`${i}-${j}`} position={[x, -1.1, z]} material={materials.steel}>
-              <cylinderGeometry args={[0.04, 0.04, 0.6, 8]} />
-            </mesh>
-          ))
-        ))}
-      </group>
+    <group ref={ref}>
+      <group scale={scaleFactor} position={[0, -center.y * scaleFactor, 0]}>
+        {/* Central filter vessel (cylinder + domes) - moves slightly back/down */}
+        <group position={[0, -offset * 0.2, 0]}>
+          <mesh position={[0, 0, 0]} material={materials.darkIron}>
+            <cylinderGeometry args={[0.45, 0.45, 1.6, 32]} />
+          </mesh>
+          {/* Top Dome - explodes upward */}
+          <mesh position={[0, 0.8 + offset * 0.6, 0]} material={materials.crimson}>
+            <sphereGeometry args={[0.45, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+          </mesh>
+          <mesh position={[0, -0.8, 0]} material={materials.darkIron}>
+            <sphereGeometry args={[0.45, 32, 16, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2]} />
+          </mesh>
+        </group>
+        
+        {/* Vessel support structure legs - moves downward */}
+        <group position={[0, -offset * 0.5, 0]}>
+          {[-0.35, 0.35].map((x, i) => (
+            [-0.35, 0.35].map((z, j) => (
+              <mesh key={`${i}-${j}`} position={[x, -1.1, z]} material={materials.steel}>
+                <cylinderGeometry args={[0.04, 0.04, 0.6, 8]} />
+              </mesh>
+            ))
+          ))}
+        </group>
 
-      {/* Piping networks branching out - left/right explosion */}
-      {/* Left piping moves left */}
-      <group position={[-0.4 - offset, -0.3, 0]} rotation={[0, 0, -Math.PI / 2]}>
-        <mesh material={materials.copper}>
-          <cylinderGeometry args={[0.12, 0.12, 0.8, 16]} />
-        </mesh>
-        <mesh position={[0, 0.3, 0]} material={materials.steel}>
-          <cylinderGeometry args={[0.18, 0.18, 0.06, 16]} />
-        </mesh>
-      </group>
+        {/* Piping networks branching out - left/right explosion */}
+        {/* Left piping moves left */}
+        <group position={[-0.4 - offset, -0.3, 0]} rotation={[0, 0, -Math.PI / 2]}>
+          <mesh material={materials.copper}>
+            <cylinderGeometry args={[0.12, 0.12, 0.8, 16]} />
+          </mesh>
+          <mesh position={[0, 0.3, 0]} material={materials.steel}>
+            <cylinderGeometry args={[0.18, 0.18, 0.06, 16]} />
+          </mesh>
+        </group>
 
-      {/* Right piping moves right */}
-      <group position={[0.4 + offset, 0.3, 0]} rotation={[0, 0, Math.PI / 2]}>
-        <mesh material={materials.steel}>
-          <cylinderGeometry args={[0.12, 0.12, 0.8, 16]} />
-        </mesh>
-        <mesh position={[0, 0.3, 0]} material={materials.crimson}>
-          <cylinderGeometry args={[0.18, 0.18, 0.06, 16]} />
-        </mesh>
-      </group>
+        {/* Right piping moves right */}
+        <group position={[0.4 + offset, 0.3, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <mesh material={materials.steel}>
+            <cylinderGeometry args={[0.12, 0.12, 0.8, 16]} />
+          </mesh>
+          <mesh position={[0, 0.3, 0]} material={materials.crimson}>
+            <cylinderGeometry args={[0.18, 0.18, 0.06, 16]} />
+          </mesh>
+        </group>
 
-      {/* Piping Loop elbow - moves forward and right */}
-      <group position={[0.7 + offset * 1.2, -0.1, offset * 0.5]} rotation={[0, 0, 0]}>
-        <mesh material={materials.steel}>
-          <torusGeometry args={[0.3, 0.1, 16, 32, Math.PI / 2]} />
-        </mesh>
+        {/* Piping Loop elbow - moves forward and right */}
+        <group position={[0.7 + offset * 1.2, -0.1, offset * 0.5]} rotation={[0, 0, 0]}>
+          <mesh material={materials.steel}>
+            <torusGeometry args={[0.3, 0.1, 16, 32, Math.PI / 2]} />
+          </mesh>
+        </group>
       </group>
     </group>
   );
@@ -93,6 +108,7 @@ function MarinePipingAssembly({ rotate, explodeFactor }: { rotate: boolean; expl
 // Assembly 2: Industrial Systems - Storage Tank Skid/Unit
 function IndustrialAssembly({ rotate, explodeFactor }: { rotate: boolean; explodeFactor: number }) {
   const ref = useRef<THREE.Group>(null);
+  const { viewport } = useThree();
   useFrame((state) => {
     if (ref.current) {
       if (rotate) {
@@ -107,48 +123,126 @@ function IndustrialAssembly({ rotate, explodeFactor }: { rotate: boolean; explod
 
   const offset = explodeFactor * 0.8;
 
+  // Approximate dimensions when not exploded
+  const size = { x: 2.2, y: 2.3, z: 1.4 };
+  const center = { x: 0, y: 0.1, z: 0 };
+
+  const scaleFactor = React.useMemo(() => {
+    const maxHoriz = Math.max(size.x, size.z);
+    const sizeY = size.y;
+    const scaleX = (viewport.width * 0.85) / maxHoriz;
+    const scaleY = (viewport.height * 0.85) / sizeY;
+    return Math.min(scaleX, scaleY);
+  }, [viewport.width, viewport.height]);
+
   return (
-    <group ref={ref} scale={1.2} position={[0, -0.2, 0]}>
-      {/* Platform Base - moves downward */}
-      <mesh position={[0, -1.0 - offset * 0.4, 0]} material={materials.darkIron}>
-        <boxGeometry args={[2.2, 0.08, 1.4]} />
-      </mesh>
+    <group ref={ref}>
+      <group scale={scaleFactor} position={[0, -center.y * scaleFactor, 0]}>
+        {/* Platform Base - moves downward */}
+        <mesh position={[0, -1.0 - offset * 0.4, 0]} material={materials.darkIron}>
+          <boxGeometry args={[2.2, 0.08, 1.4]} />
+        </mesh>
 
-      {/* Main Storage Tank - moves left */}
-      <group position={[-0.5 - offset * 0.8, 0, 0]}>
-        <mesh material={materials.steel}>
-          <cylinderGeometry args={[0.5, 0.5, 1.5, 32]} />
-        </mesh>
-        {/* Tank Cap - explodes upward relative to tank */}
-        <mesh position={[0, 0.75 + offset * 0.5, 0]} material={materials.crimson}>
-          <sphereGeometry args={[0.5, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
-        </mesh>
-      </group>
+        {/* Main Storage Tank - moves left */}
+        <group position={[-0.5 - offset * 0.8, 0, 0]}>
+          <mesh material={materials.steel}>
+            <cylinderGeometry args={[0.5, 0.5, 1.5, 32]} />
+          </mesh>
+          {/* Tank Cap - explodes upward relative to tank */}
+          <mesh position={[0, 0.75 + offset * 0.5, 0]} material={materials.crimson}>
+            <sphereGeometry args={[0.5, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+          </mesh>
+        </group>
 
-      {/* Auxiliary process column - moves right */}
-      <group position={[0.5 + offset * 0.8, -0.1, 0.2]}>
-        <mesh material={materials.copper}>
-          <cylinderGeometry args={[0.2, 0.2, 1.3, 24]} />
-        </mesh>
-        <mesh position={[0, 0.65 + offset * 0.5, 0]} material={materials.steel}>
-          <cylinderGeometry args={[0.25, 0.25, 0.08, 24]} />
-        </mesh>
-      </group>
+        {/* Auxiliary process column - moves right */}
+        <group position={[0.5 + offset * 0.8, -0.1, 0.2]}>
+          <mesh material={materials.copper}>
+            <cylinderGeometry args={[0.2, 0.2, 1.3, 24]} />
+          </mesh>
+          <mesh position={[0, 0.65 + offset * 0.5, 0]} material={materials.steel}>
+            <cylinderGeometry args={[0.25, 0.25, 0.08, 24]} />
+          </mesh>
+        </group>
 
-      {/* Interconnecting Process Pipe - explodes upward/forward */}
-      <group position={[0, 0.4 + offset * 0.9, 0.1 + offset * 0.3]} rotation={[0, 0, Math.PI / 2]}>
-        <mesh material={materials.steel}>
-          <cylinderGeometry args={[0.06, 0.06, 1.0, 16]} />
-        </mesh>
+        {/* Interconnecting Process Pipe - explodes upward/forward */}
+        <group position={[0, 0.4 + offset * 0.9, 0.1 + offset * 0.3]} rotation={[0, 0, Math.PI / 2]}>
+          <mesh material={materials.steel}>
+            <cylinderGeometry args={[0.06, 0.06, 1.0, 16]} />
+          </mesh>
+        </group>
       </group>
     </group>
   );
 }
 
-// Assembly 3: Structural Engineering Frame & Connection Joints
+// Assembly 3: Marine Structure GLB Model Loader
 function StructuralAssembly({ rotate, explodeFactor }: { rotate: boolean; explodeFactor: number }) {
   const ref = useRef<THREE.Group>(null);
+  const { viewport } = useThree();
+  
+  // Load GLTF model
+  const { scene } = useGLTF('/models/marine_structure.glb') as any;
+  
+  // Get model center and size
+  const { center, size } = React.useMemo(() => {
+    scene.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(scene);
+    const centerVec = new THREE.Vector3();
+    box.getCenter(centerVec);
+    const sizeVec = new THREE.Vector3();
+    box.getSize(sizeVec);
+    return { center: centerVec, size: sizeVec };
+  }, [scene]);
+
+  // Clone scene
+  const clonedScene = React.useMemo(() => {
+    return scene.clone();
+  }, [scene]);
+
+  const meshesRef = useRef<THREE.Mesh[]>([]);
+  const originalPositions = useRef<THREE.Vector3[]>([]);
+  const explodeDirections = useRef<THREE.Vector3[]>([]);
+
+  // Find all meshes and set up their explode paths
+  useEffect(() => {
+    const meshes: THREE.Mesh[] = [];
+    clonedScene.traverse((child: any) => {
+      if (child.isMesh) {
+        meshes.push(child);
+        // Optimize material visibility for premium crimson/steel structure design
+        if (child.material) {
+          const name = (child.name || '').toLowerCase();
+          if (name.includes('gusset') || name.includes('joint') || name.includes('plate') || name.includes('red') || name.includes('pin')) {
+            child.material = materials.crimson;
+          } else {
+            child.material = materials.structureGrey;
+          }
+        }
+      }
+    });
+    meshesRef.current = meshes;
+    originalPositions.current = meshes.map(m => m.position.clone());
+
+    // Calculate directions from the centered model center
+    explodeDirections.current = meshes.map((mesh) => {
+      // Find the local mesh center relative to the original scene center
+      const meshBox = new THREE.Box3().setFromObject(mesh);
+      const meshCenter = new THREE.Vector3();
+      meshBox.getCenter(meshCenter);
+      
+      const dir = meshCenter.clone().sub(center).normalize();
+      
+      // If the direction vector is zero, assign a default random explosion path
+      if (dir.length() < 0.05) {
+        dir.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
+      }
+      
+      return dir;
+    });
+  }, [clonedScene, center]);
+
   useFrame((state) => {
+    // Rotation of the whole assembly
     if (ref.current) {
       if (rotate) {
         ref.current.rotation.y = state.clock.getElapsedTime() * 0.08;
@@ -158,66 +252,34 @@ function StructuralAssembly({ rotate, explodeFactor }: { rotate: boolean; explod
         ref.current.rotation.x = 0.25;
       }
     }
+
+    // Apply explode displacement to children meshes
+    if (meshesRef.current.length > 0) {
+      meshesRef.current.forEach((mesh, index) => {
+        const origPos = originalPositions.current[index];
+        const dir = explodeDirections.current[index];
+        if (origPos && dir) {
+          const displacement = explodeFactor * 1.5; // Scale displacement appropriately
+          mesh.position.copy(origPos).addScaledVector(dir, displacement);
+        }
+      });
+    }
   });
 
-  const offset = explodeFactor * 0.8;
-
-  const members = [
-    // Bottom Horizontal Chord - moves downward
-    { start: [-1.4, -0.8, 0], end: [1.4, -0.8, 0], dirOffset: [0, -1, 0] },
-    // Top Horizontal Chord - moves upward
-    { start: [-1.0, 0.6, 0], end: [1.0, 0.6, 0], dirOffset: [0, 1, 0] },
-    // Vertical Beams - moves outwards
-    { start: [-1.0, -0.8, 0], end: [-1.0, 0.6, 0], dirOffset: [-1, 0, 0] },
-    { start: [0, -0.8, 0], end: [0, 0.6, 0], dirOffset: [0, 0.2, 1] },
-    { start: [1.0, -0.8, 0], end: [1.0, 0.6, 0], dirOffset: [1, 0, 0] },
-    // Diagonal structural braces - moves outward diagonally
-    { start: [-1.4, -0.8, 0], end: [-1.0, 0.6, 0], dirOffset: [-0.6, 0.5, 0] },
-    { start: [-1.0, 0.6, 0], end: [0, -0.8, 0], dirOffset: [-0.3, -0.5, 0] },
-    { start: [0, -0.8, 0], end: [1.0, 0.6, 0], dirOffset: [0.3, -0.5, 0] },
-    { start: [1.0, 0.6, 0], end: [1.4, -0.8, 0], dirOffset: [0.6, 0.5, 0] }
-  ];
+  // Calculate dynamic scale factor
+  const scaleFactor = React.useMemo(() => {
+    const maxHoriz = Math.max(size.x, size.z);
+    const sizeY = size.y;
+    const scaleX = (viewport.width * 0.85) / (maxHoriz || 1);
+    const scaleY = (viewport.height * 0.85) / (sizeY || 1);
+    return Math.min(scaleX, scaleY);
+  }, [viewport.width, viewport.height, size]);
 
   return (
-    <group ref={ref} scale={1.2} position={[0, 0.1, 0]}>
-      {members.map((member, i) => {
-        const p1 = new THREE.Vector3(...member.start);
-        const p2 = new THREE.Vector3(...member.end);
-        const distance = p1.distanceTo(p2);
-        
-        // Base centered position
-        const basePosition = p1.clone().add(p2).multiplyScalar(0.5);
-        // Exploded position adjustment
-        const position = new THREE.Vector3(
-          basePosition.x + member.dirOffset[0] * offset,
-          basePosition.y + member.dirOffset[1] * offset,
-          basePosition.z + member.dirOffset[2] * offset
-        );
-
-        const direction = new THREE.Vector3().subVectors(p2, p1).normalize();
-        const orientation = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
-
-        return (
-          <mesh key={i} position={position} quaternion={orientation} material={materials.structureGrey}>
-            <boxGeometry args={[0.07, distance, 0.07]} />
-          </mesh>
-        );
-      })}
-
-      {/* Red Highlight connection joint plates (Gussets) - explodes outward from center */}
-      {[-1.0, 0, 1.0].map((x, idx) => {
-        const xOffset = x * offset * 1.4;
-        return (
-          <group key={idx}>
-            <mesh position={[x + xOffset, -0.8 - offset * 0.4, 0]} material={materials.crimson}>
-              <boxGeometry args={[0.15, 0.15, 0.09]} />
-            </mesh>
-            <mesh position={[x + xOffset, 0.6 + offset * 0.4, 0]} material={materials.crimson}>
-              <boxGeometry args={[0.15, 0.15, 0.09]} />
-            </mesh>
-          </group>
-        );
-      })}
+    <group ref={ref}>
+      <group scale={scaleFactor} position={center.clone().multiplyScalar(-scaleFactor)}>
+        <primitive object={clonedScene} />
+      </group>
     </group>
   );
 }
@@ -225,10 +287,26 @@ function StructuralAssembly({ rotate, explodeFactor }: { rotate: boolean; explod
 // Assembly 4: Exploded Marine Deck Component (Circular Hatch)
 function MechanicalAssembly({ rotate, explodeFactor }: { rotate: boolean; explodeFactor: number }) {
   const ref = useRef<THREE.Group>(null);
+  const { viewport } = useThree();
   
   // Load GLTF model
   const { scene } = useGLTF('/models/circular_hatch.glb') as any;
-  const clonedScene = React.useMemo(() => scene.clone(), [scene]);
+  
+  // Get model center and size
+  const { center, size } = React.useMemo(() => {
+    scene.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(scene);
+    const centerVec = new THREE.Vector3();
+    box.getCenter(centerVec);
+    const sizeVec = new THREE.Vector3();
+    box.getSize(sizeVec);
+    return { center: centerVec, size: sizeVec };
+  }, [scene]);
+
+  // Clone scene
+  const clonedScene = React.useMemo(() => {
+    return scene.clone();
+  }, [scene]);
   
   const meshesRef = useRef<THREE.Mesh[]>([]);
   const originalPositions = useRef<THREE.Vector3[]>([]);
@@ -255,11 +333,6 @@ function MechanicalAssembly({ rotate, explodeFactor }: { rotate: boolean; explod
     meshesRef.current = meshes;
     originalPositions.current = meshes.map(m => m.position.clone());
 
-    // Calculate scene center
-    const box = new THREE.Box3().setFromObject(clonedScene);
-    const center = new THREE.Vector3();
-    box.getCenter(center);
-
     explodeDirections.current = meshes.map((mesh) => {
       const meshBox = new THREE.Box3().setFromObject(mesh);
       const meshCenter = new THREE.Vector3();
@@ -281,7 +354,7 @@ function MechanicalAssembly({ rotate, explodeFactor }: { rotate: boolean; explod
       
       return dir.normalize();
     });
-  }, [clonedScene]);
+  }, [clonedScene, center]);
 
   useFrame((state) => {
     // Rotation of the whole assembly
@@ -309,9 +382,20 @@ function MechanicalAssembly({ rotate, explodeFactor }: { rotate: boolean; explod
     }
   });
 
+  // Calculate dynamic scale factor
+  const scaleFactor = React.useMemo(() => {
+    const maxHoriz = Math.max(size.x, size.z);
+    const sizeY = size.y;
+    const scaleX = (viewport.width * 0.85) / (maxHoriz || 1);
+    const scaleY = (viewport.height * 0.85) / (sizeY || 1);
+    return Math.min(scaleX, scaleY);
+  }, [viewport.width, viewport.height, size]);
+
   return (
-    <group ref={ref} scale={2.2} position={[0, -0.15, 0]}>
-      <primitive object={clonedScene} />
+    <group ref={ref}>
+      <group scale={scaleFactor} position={center.clone().multiplyScalar(-scaleFactor)}>
+        <primitive object={clonedScene} />
+      </group>
     </group>
   );
 }
@@ -324,7 +408,7 @@ export default function ThreeShowcase() {
   const categories = [
     { id: 'marine', name: 'Marine Piping' },
     { id: 'industrial', name: 'Industrial Systems' },
-    { id: 'structural', name: 'Structural Engineering' },
+    { id: 'structural', name: 'Marine Structure' },
     { id: 'mechanical', name: 'Circular Hatch' },
   ] as const;
 
