@@ -19,8 +19,14 @@ const materials = {
 function MarinePipingAssembly({ rotate, explodeFactor }: { rotate: boolean; explodeFactor: number }) {
   const ref = useRef<THREE.Group>(null);
   useFrame((state) => {
-    if (rotate && ref.current) {
-      ref.current.rotation.y = state.clock.getElapsedTime() * 0.12;
+    if (ref.current) {
+      if (rotate) {
+        ref.current.rotation.y = state.clock.getElapsedTime() * 0.12;
+        ref.current.rotation.x = 0.1;
+      } else {
+        ref.current.rotation.y = -0.5;
+        ref.current.rotation.x = 0.2;
+      }
     }
   });
 
@@ -88,8 +94,14 @@ function MarinePipingAssembly({ rotate, explodeFactor }: { rotate: boolean; expl
 function IndustrialAssembly({ rotate, explodeFactor }: { rotate: boolean; explodeFactor: number }) {
   const ref = useRef<THREE.Group>(null);
   useFrame((state) => {
-    if (rotate && ref.current) {
-      ref.current.rotation.y = state.clock.getElapsedTime() * 0.1;
+    if (ref.current) {
+      if (rotate) {
+        ref.current.rotation.y = state.clock.getElapsedTime() * 0.1;
+        ref.current.rotation.x = 0.1;
+      } else {
+        ref.current.rotation.y = 0.6;
+        ref.current.rotation.x = 0.2;
+      }
     }
   });
 
@@ -137,8 +149,14 @@ function IndustrialAssembly({ rotate, explodeFactor }: { rotate: boolean; explod
 function StructuralAssembly({ rotate, explodeFactor }: { rotate: boolean; explodeFactor: number }) {
   const ref = useRef<THREE.Group>(null);
   useFrame((state) => {
-    if (rotate && ref.current) {
-      ref.current.rotation.y = state.clock.getElapsedTime() * 0.08;
+    if (ref.current) {
+      if (rotate) {
+        ref.current.rotation.y = state.clock.getElapsedTime() * 0.08;
+        ref.current.rotation.x = 0.15;
+      } else {
+        ref.current.rotation.y = 0.45;
+        ref.current.rotation.x = 0.25;
+      }
     }
   });
 
@@ -267,8 +285,15 @@ function MechanicalAssembly({ rotate, explodeFactor }: { rotate: boolean; explod
 
   useFrame((state) => {
     // Rotation of the whole assembly
-    if (rotate && ref.current) {
-      ref.current.rotation.y = state.clock.getElapsedTime() * 0.1;
+    if (ref.current) {
+      if (rotate) {
+        ref.current.rotation.y = state.clock.getElapsedTime() * 0.1;
+        ref.current.rotation.x = 0.35; // default tilt while rotating
+      } else {
+        // A nice, clear perspective angle when static
+        ref.current.rotation.y = -0.45; // slightly turned to the side
+        ref.current.rotation.x = 0.55; // tilted forward so we can see the top cover/wheel clearly
+      }
     }
 
     // Apply explode displacement to children
@@ -285,7 +310,7 @@ function MechanicalAssembly({ rotate, explodeFactor }: { rotate: boolean; explod
   });
 
   return (
-    <group ref={ref} scale={1.8} position={[0, -0.2, 0]}>
+    <group ref={ref} scale={2.2} position={[0, -0.15, 0]}>
       <primitive object={clonedScene} />
     </group>
   );
@@ -294,7 +319,7 @@ function MechanicalAssembly({ rotate, explodeFactor }: { rotate: boolean; explod
 export default function ThreeShowcase() {
   const [activeCategory, setActiveCategory] = useState<'marine' | 'industrial' | 'structural' | 'mechanical'>('marine');
   const [explodeFactor, setExplodeFactor] = useState<number>(0);
-  const [autoRotate, setAutoRotate] = useState<boolean>(true);
+  const [autoRotate, setAutoRotate] = useState<boolean>(false);
 
   const categories = [
     { id: 'marine', name: 'Marine Piping' },
