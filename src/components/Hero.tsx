@@ -52,13 +52,6 @@ export default function Hero({ onOpenConsult }: HeroProps) {
           initial="hidden"
           animate="visible"
         >
-          {/* Badge */}
-          <motion.div 
-            variants={itemVariants}
-            className="inline-block px-4 py-1 border border-border/80 rounded-full text-[10px] uppercase font-mono tracking-widest text-gray-400 bg-black/40 mb-6"
-          >
-            Freelance Engineering Design Consultancy
-          </motion.div>
 
           {/* Title */}
           <motion.h1 

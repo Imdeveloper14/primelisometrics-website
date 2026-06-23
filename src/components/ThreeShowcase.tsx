@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Grid } from '@react-three/drei';
+import { OrbitControls, Grid, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 
 // Materials definitions (optimized for maximum visibility, bright metallic values, and bold highlights)
@@ -204,70 +204,89 @@ function StructuralAssembly({ rotate, explodeFactor }: { rotate: boolean; explod
   );
 }
 
-// Assembly 4: Exploded Mechanical Component (Globe Valve & Actuator)
+// Assembly 4: Exploded Marine Deck Component (Circular Hatch)
 function MechanicalAssembly({ rotate, explodeFactor }: { rotate: boolean; explodeFactor: number }) {
   const ref = useRef<THREE.Group>(null);
+  
+  // Load GLTF model
+  const { scene } = useGLTF('/models/circular_hatch.glb') as any;
+  const clonedScene = React.useMemo(() => scene.clone(), [scene]);
+  
+  const meshesRef = useRef<THREE.Mesh[]>([]);
+  const originalPositions = useRef<THREE.Vector3[]>([]);
+  const explodeDirections = useRef<THREE.Vector3[]>([]);
+
+  // Find all meshes and set up their explode paths
+  useEffect(() => {
+    const meshes: THREE.Mesh[] = [];
+    clonedScene.traverse((child: any) => {
+      if (child.isMesh) {
+        meshes.push(child);
+        // Optimize material visibility for premium crimson/steel design
+        if (child.material) {
+          const name = (child.name || '').toLowerCase();
+          // Apply contrasting premium materials to parts
+          if (name.includes('seal') || name.includes('gasket') || name.includes('rubber') || name.includes('handle') || name.includes('wheel') || name.includes('latch')) {
+            child.material = materials.crimson;
+          } else {
+            child.material = materials.steel;
+          }
+        }
+      }
+    });
+    meshesRef.current = meshes;
+    originalPositions.current = meshes.map(m => m.position.clone());
+
+    // Calculate scene center
+    const box = new THREE.Box3().setFromObject(clonedScene);
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+
+    explodeDirections.current = meshes.map((mesh) => {
+      const meshBox = new THREE.Box3().setFromObject(mesh);
+      const meshCenter = new THREE.Vector3();
+      meshBox.getCenter(meshCenter);
+      
+      // Explode direction: cover & wheel move UP, base stays down/moves down
+      const dir = new THREE.Vector3().subVectors(meshCenter, center);
+      
+      // Since it is a circular deck hatch:
+      if (meshCenter.y > center.y) {
+        dir.y = Math.max(dir.y, 1.2); // force strong upward push for cover/handle
+        dir.x *= 0.15; // keep it tight to vertical axis
+        dir.z *= 0.15;
+      } else {
+        dir.y = Math.min(dir.y, -0.6); // force base/frame down
+        dir.x *= 0.4;
+        dir.z *= 0.4;
+      }
+      
+      return dir.normalize();
+    });
+  }, [clonedScene]);
+
   useFrame((state) => {
+    // Rotation of the whole assembly
     if (rotate && ref.current) {
       ref.current.rotation.y = state.clock.getElapsedTime() * 0.1;
     }
+
+    // Apply explode displacement to children
+    if (meshesRef.current.length > 0) {
+      meshesRef.current.forEach((mesh, index) => {
+        const origPos = originalPositions.current[index];
+        const dir = explodeDirections.current[index];
+        if (origPos && dir) {
+          const displacement = explodeFactor * 1.6; // Scale displacement appropriately
+          mesh.position.copy(origPos).addScaledVector(dir, displacement);
+        }
+      });
+    }
   });
 
-  const explodeOffset = explodeFactor * 0.95;
-
   return (
-    <group ref={ref} scale={1.3} position={[0, -0.2, 0]}>
-      {/* 1. Main valve central housing body */}
-      <mesh position={[0, 0, 0]} material={materials.steel}>
-        <sphereGeometry args={[0.42, 32, 32]} />
-      </mesh>
-
-      {/* 2. Left connection adapter (slides left on explode) */}
-      <group position={[-0.4 - explodeOffset, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-        <mesh material={materials.steel}>
-          <cylinderGeometry args={[0.16, 0.16, 0.4, 32]} />
-        </mesh>
-        <mesh position={[0, 0.15, 0]} material={materials.crimson}>
-          <cylinderGeometry args={[0.28, 0.28, 0.08, 32]} />
-        </mesh>
-      </group>
-
-      {/* 3. Right connection adapter (slides right on explode) */}
-      <group position={[0.4 + explodeOffset, 0, 0]} rotation={[0, 0, -Math.PI / 2]}>
-        <mesh material={materials.steel}>
-          <cylinderGeometry args={[0.16, 0.16, 0.4, 32]} />
-        </mesh>
-        <mesh position={[0, 0.15, 0]} material={materials.steel}>
-          <cylinderGeometry args={[0.28, 0.28, 0.08, 32]} />
-        </mesh>
-      </group>
-
-      {/* 4. Core Gate plug piston (slides down inside body) */}
-      <mesh position={[0, -explodeOffset * 0.5, 0]} material={materials.gold}>
-        <cylinderGeometry args={[0.14, 0.14, 0.28, 16]} />
-      </mesh>
-
-      {/* 5. Valve bonnet cap (slides upward on explode) */}
-      <group position={[0, 0.38 + explodeOffset, 0]}>
-        <mesh material={materials.steel}>
-          <cylinderGeometry args={[0.24, 0.24, 0.1, 16]} />
-        </mesh>
-      </group>
-
-      {/* 6. Gold stem & indicator rod (slides further upward) */}
-      <mesh position={[0, 0.65 + explodeOffset * 1.3, 0]} material={materials.gold}>
-        <cylinderGeometry args={[0.04, 0.04, 0.5, 16]} />
-      </mesh>
-
-      {/* 7. Actuator Handwheel ring (slides topmost on explode) */}
-      <group position={[0, 1.0 + explodeOffset * 1.6, 0]}>
-        <mesh rotation={[Math.PI / 2, 0, 0]} material={materials.crimson}>
-          <torusGeometry args={[0.3, 0.05, 16, 64]} />
-        </mesh>
-        <mesh material={materials.crimson}>
-          <cylinderGeometry args={[0.02, 0.02, 0.6, 16]} />
-        </mesh>
-      </group>
+    <group ref={ref} scale={1.8} position={[0, -0.2, 0]}>
+      <primitive object={clonedScene} />
     </group>
   );
 }
@@ -281,7 +300,7 @@ export default function ThreeShowcase() {
     { id: 'marine', name: 'Marine Piping' },
     { id: 'industrial', name: 'Industrial Systems' },
     { id: 'structural', name: 'Structural Engineering' },
-    { id: 'mechanical', name: 'Mechanical Components' },
+    { id: 'mechanical', name: 'Circular Hatch' },
   ] as const;
 
   return (
@@ -368,7 +387,7 @@ export default function ThreeShowcase() {
                 <div className="bg-black/60 p-4 border border-[#222222] rounded font-mono text-[9px] text-gray-400 leading-relaxed flex flex-col gap-2">
                   <div className="font-semibold text-white uppercase text-[10px]">Model Metadata</div>
                   <div>FILE_NAME: {activeCategory}_assembly.stp</div>
-                  <div>POLY_COUNT: {activeCategory === 'marine' ? '12,500' : activeCategory === 'industrial' ? '8,200' : '15,600'} tris</div>
+                  <div>POLY_COUNT: {activeCategory === 'marine' ? '12,500' : activeCategory === 'industrial' ? '8,200' : activeCategory === 'structural' ? '15,600' : '22,400'} tris</div>
                   <div>DRAFT_DATE: 2026.06.23</div>
                   <div>UNIT_SCALE: mm [1:1]</div>
                 </div>
