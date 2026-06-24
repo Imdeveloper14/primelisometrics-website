@@ -144,7 +144,7 @@ body {
   font-size: 8px;
 }
 
-/* Loader fade out */
+/* Loader fade out and alignment keyframes */
 .loader-wrapper {
   transition: opacity 0.8s ease, visibility 0.8s;
 }
@@ -152,4 +152,109 @@ body {
 .loader-wrapper.fade-out {
   opacity: 0;
   visibility: hidden;
+}
+
+/* Dynamic draw circles for CAD Blueprint */
+.draw-circle-animated {
+  stroke-dasharray: 377;
+  stroke-dashoffset: 377;
+  animation: drawCircle 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes drawCircle {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.draw-circle-dashed {
+  stroke-dasharray: 6 4;
+  stroke-dashoffset: 500;
+  animation: drawDashed 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes drawDashed {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.draw-circle-reverse {
+  stroke-dasharray: 220;
+  stroke-dashoffset: 220;
+  animation: drawCircle 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards, rotateCircle 4s infinite linear;
+}
+
+.rotate-animated {
+  animation: rotateCircle 8s infinite linear;
+}
+
+.hex-rotate-animated {
+  transform-origin: center;
+  animation: rotateCircleReverse 16s infinite linear;
+}
+
+@keyframes rotateCircleReverse {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+/* Draw polygon */
+.draw-polygon {
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
+  animation: drawCircle 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Laser scanner animation */
+.laser-scanner {
+  top: 0;
+  animation: laserScan 1.2s ease-in-out infinite;
+}
+
+@keyframes laserScan {
+  0% {
+    top: 15%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.8;
+  }
+  85% {
+    opacity: 0.8;
+  }
+  100% {
+    top: 85%;
+    opacity: 0;
+  }
+}
+
+/* Logo energy pulse */
+.logo-pulse-animated {
+  animation: logoPulse 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes logoPulse {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 40px rgba(255,23,68,0.9));
+  }
+  20% {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 70px rgba(255,23,68,1)) brightness(1.2);
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 40px rgba(255,23,68,0.9));
+  }
+}
+
+/* Fade in class */
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

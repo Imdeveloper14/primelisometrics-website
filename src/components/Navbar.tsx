@@ -2,7 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 
-export default function Navbar() {
+interface NavbarProps {
+  isLoaded?: boolean;
+}
+
+export default function Navbar({ isLoaded = true }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
@@ -68,7 +72,11 @@ export default function Navbar() {
         isScrolled 
           ? 'bg-black/85 backdrop-blur-md border-border/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)]' 
           : 'bg-transparent border-transparent'
-      } ${isHidden ? '-translate-y-full' : 'translate-y-0'}`}
+      } ${
+        isHidden ? '-translate-y-full' : 'translate-y-0'
+      } ${
+        !isLoaded ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'
+      }`}
     >
       <div className="container mx-auto px-6 flex justify-between items-center">
         {/* Logo */}
