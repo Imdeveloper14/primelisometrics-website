@@ -5,34 +5,44 @@ import React from 'react';
 export default function Services() {
   const servicesList = [
     {
-      title: '3D CAD Modeling',
-      desc: 'Accurate 3D models for engineering, manufacturing, and product development.',
+      title: 'Engineering Design',
+      desc: 'Comprehensive engineering design and stability assessments for marine, commercial, and industrial installations.',
+      icon: 'ph-compass',
+    },
+    {
+      title: 'CAD Modeling',
+      desc: 'Accurate 3D CAD modeling and digital engineering for assemblies, prototypes, and complex equipment.',
       icon: 'ph-cube',
     },
     {
-      title: 'Marine Design Solutions',
-      desc: 'Design support for marine systems, ship stability, BWTS, and retrofit projects.',
-      icon: 'ph-anchor',
+      title: 'Product Development',
+      desc: 'Complete product development support, transitioning concepts into production-ready physical prototypes.',
+      icon: 'ph-lightbulb',
     },
     {
-      title: 'Pipe Design & AutoCAD Plant 3D',
-      desc: 'Piping layouts, routing, isometrics, and production-ready documentation.',
+      title: 'Simulation Engineering',
+      desc: 'Advanced simulation engineering, FEA, and fluid dynamic assessments to validate structural design integrity.',
+      icon: 'ph-cpu',
+    },
+    {
+      title: 'Manufacturing Solutions',
+      desc: 'Delivering detailed spool layouts, isometrics, and smart manufacturing solutions for fabrication shops.',
       icon: 'ph-flow-arrow',
     },
     {
-      title: 'Technical Drafting',
-      desc: 'Detailed engineering drawings and technical documentation.',
-      icon: 'ph-pencil-line',
-    },
-    {
-      title: '3D Printable Models',
-      desc: 'Optimized CAD models for additive manufacturing and prototyping.',
-      icon: 'ph-printer',
-    },
-    {
-      title: 'Industrial Design Support',
-      desc: 'CAD assistance for industrial equipment and production systems.',
+      title: 'Industrial Engineering',
+      desc: 'Industrial engineering design, workflow optimization, and system layouts for plants and workspaces.',
       icon: 'ph-factory',
+    },
+    {
+      title: 'Design Optimization',
+      desc: 'Strategic design optimization to minimize material usage, reduce drag, and improve structural efficiency.',
+      icon: 'ph-chart-line-up',
+    },
+    {
+      title: 'Digital Engineering',
+      desc: 'High-fidelity digital engineering, 3D laser scan conversions, and reverse engineering modeling services.',
+      icon: 'ph-graph',
     },
   ];
 

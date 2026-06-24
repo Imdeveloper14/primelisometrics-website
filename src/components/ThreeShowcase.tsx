@@ -19,6 +19,47 @@ const materials = {
 function MarinePipingAssembly({ rotate }: { rotate: boolean }) {
   const ref = useRef<THREE.Group>(null);
   const { viewport } = useThree();
+
+  // Load GLTF model
+  const { scene } = useGLTF('/models/marine_piping.glb') as any;
+
+  // Get model center and size
+  const { center, size } = React.useMemo(() => {
+    scene.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(scene);
+    const centerVec = new THREE.Vector3();
+    box.getCenter(centerVec);
+    const sizeVec = new THREE.Vector3();
+    box.getSize(sizeVec);
+    return { center: centerVec, size: sizeVec };
+  }, [scene]);
+
+  // Clone scene
+  const clonedScene = React.useMemo(() => {
+    return scene.clone();
+  }, [scene]);
+
+  // Find all meshes and apply premium materials
+  useEffect(() => {
+    clonedScene.traverse((child: any) => {
+      if (child.isMesh) {
+        if (child.material) {
+          const name = (child.name || '').toLowerCase();
+          // Apply contrasting premium materials to parts
+          if (name.includes('valve') || name.includes('handle') || name.includes('pump') || name.includes('red') || name.includes('joint') || name.includes('flange') || name.includes('accent')) {
+            child.material = materials.crimson;
+          } else if (name.includes('pipe') || name.includes('tube') || name.includes('line') || name.includes('copper')) {
+            child.material = materials.copper;
+          } else if (name.includes('structure') || name.includes('skid') || name.includes('frame') || name.includes('base') || name.includes('support')) {
+            child.material = materials.darkIron;
+          } else {
+            child.material = materials.steel;
+          }
+        }
+      }
+    });
+  }, [clonedScene]);
+
   useFrame((state) => {
     if (ref.current) {
       if (rotate) {
@@ -31,73 +72,18 @@ function MarinePipingAssembly({ rotate }: { rotate: boolean }) {
     }
   });
 
-  // Approximate dimensions when not exploded
-  const size = { x: 1.6, y: 2.2, z: 0.7 };
-  const center = { x: 0, y: -0.3, z: 0 };
-
   const scaleFactor = React.useMemo(() => {
     const maxHoriz = Math.max(size.x, size.z);
     const sizeY = size.y;
-    const scaleX = (viewport.width * 0.85) / maxHoriz;
-    const scaleY = (viewport.height * 0.85) / sizeY;
+    const scaleX = (viewport.width * 0.85) / (maxHoriz || 1);
+    const scaleY = (viewport.height * 0.85) / (sizeY || 1);
     return Math.min(scaleX, scaleY);
-  }, [viewport.width, viewport.height]);
+  }, [viewport.width, viewport.height, size]);
 
   return (
     <group ref={ref}>
-      <group scale={scaleFactor} position={[0, -center.y * scaleFactor, 0]}>
-        {/* Central filter vessel (cylinder + domes) */}
-        <group position={[0, 0, 0]}>
-          <mesh position={[0, 0, 0]} material={materials.darkIron}>
-            <cylinderGeometry args={[0.45, 0.45, 1.6, 32]} />
-          </mesh>
-          {/* Top Dome */}
-          <mesh position={[0, 0.8, 0]} material={materials.crimson}>
-            <sphereGeometry args={[0.45, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
-          </mesh>
-          <mesh position={[0, -0.8, 0]} material={materials.darkIron}>
-            <sphereGeometry args={[0.45, 32, 16, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2]} />
-          </mesh>
-        </group>
-        
-        {/* Vessel support structure legs */}
-        <group position={[0, 0, 0]}>
-          {[-0.35, 0.35].map((x, i) => (
-            [-0.35, 0.35].map((z, j) => (
-              <mesh key={`${i}-${j}`} position={[x, -1.1, z]} material={materials.steel}>
-                <cylinderGeometry args={[0.04, 0.04, 0.6, 8]} />
-              </mesh>
-            ))
-          ))}
-        </group>
-
-        {/* Piping networks branching out */}
-        {/* Left piping */}
-        <group position={[-0.4, -0.3, 0]} rotation={[0, 0, -Math.PI / 2]}>
-          <mesh material={materials.copper}>
-            <cylinderGeometry args={[0.12, 0.12, 0.8, 16]} />
-          </mesh>
-          <mesh position={[0, 0.3, 0]} material={materials.steel}>
-            <cylinderGeometry args={[0.18, 0.18, 0.06, 16]} />
-          </mesh>
-        </group>
-
-        {/* Right piping */}
-        <group position={[0.4, 0.3, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <mesh material={materials.steel}>
-            <cylinderGeometry args={[0.12, 0.12, 0.8, 16]} />
-          </mesh>
-          <mesh position={[0, 0.3, 0]} material={materials.crimson}>
-            <cylinderGeometry args={[0.18, 0.18, 0.06, 16]} />
-          </mesh>
-        </group>
-
-        {/* Piping Loop elbow */}
-        <group position={[0.7, -0.1, 0]} rotation={[0, 0, 0]}>
-          <mesh material={materials.steel}>
-            <torusGeometry args={[0.3, 0.1, 16, 32, Math.PI / 2]} />
-          </mesh>
-        </group>
+      <group scale={scaleFactor} position={center.clone().multiplyScalar(-scaleFactor)}>
+        <primitive object={clonedScene} />
       </group>
     </group>
   );
@@ -107,6 +93,47 @@ function MarinePipingAssembly({ rotate }: { rotate: boolean }) {
 function IndustrialAssembly({ rotate }: { rotate: boolean }) {
   const ref = useRef<THREE.Group>(null);
   const { viewport } = useThree();
+
+  // Load GLTF model
+  const { scene } = useGLTF('/models/industrial_system.glb') as any;
+
+  // Get model center and size
+  const { center, size } = React.useMemo(() => {
+    scene.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(scene);
+    const centerVec = new THREE.Vector3();
+    box.getCenter(centerVec);
+    const sizeVec = new THREE.Vector3();
+    box.getSize(sizeVec);
+    return { center: centerVec, size: sizeVec };
+  }, [scene]);
+
+  // Clone scene
+  const clonedScene = React.useMemo(() => {
+    return scene.clone();
+  }, [scene]);
+
+  // Find all meshes and apply premium materials
+  useEffect(() => {
+    clonedScene.traverse((child: any) => {
+      if (child.isMesh) {
+        if (child.material) {
+          const name = (child.name || '').toLowerCase();
+          // Apply contrasting premium materials to parts
+          if (name.includes('valve') || name.includes('handle') || name.includes('pump') || name.includes('red') || name.includes('joint') || name.includes('flange') || name.includes('accent')) {
+            child.material = materials.crimson;
+          } else if (name.includes('pipe') || name.includes('tube') || name.includes('line') || name.includes('copper')) {
+            child.material = materials.copper;
+          } else if (name.includes('structure') || name.includes('skid') || name.includes('frame') || name.includes('base') || name.includes('support')) {
+            child.material = materials.darkIron;
+          } else {
+            child.material = materials.steel;
+          }
+        }
+      }
+    });
+  }, [clonedScene]);
+
   useFrame((state) => {
     if (ref.current) {
       if (rotate) {
@@ -119,53 +146,18 @@ function IndustrialAssembly({ rotate }: { rotate: boolean }) {
     }
   });
 
-  // Approximate dimensions when not exploded
-  const size = { x: 2.2, y: 2.3, z: 1.4 };
-  const center = { x: 0, y: 0.1, z: 0 };
-
   const scaleFactor = React.useMemo(() => {
     const maxHoriz = Math.max(size.x, size.z);
     const sizeY = size.y;
-    const scaleX = (viewport.width * 0.85) / maxHoriz;
-    const scaleY = (viewport.height * 0.85) / sizeY;
+    const scaleX = (viewport.width * 0.85) / (maxHoriz || 1);
+    const scaleY = (viewport.height * 0.85) / (sizeY || 1);
     return Math.min(scaleX, scaleY);
-  }, [viewport.width, viewport.height]);
+  }, [viewport.width, viewport.height, size]);
 
   return (
     <group ref={ref}>
-      <group scale={scaleFactor} position={[0, -center.y * scaleFactor, 0]}>
-        {/* Platform Base */}
-        <mesh position={[0, -1.0, 0]} material={materials.darkIron}>
-          <boxGeometry args={[2.2, 0.08, 1.4]} />
-        </mesh>
-
-        {/* Main Storage Tank */}
-        <group position={[-0.5, 0, 0]}>
-          <mesh material={materials.steel}>
-            <cylinderGeometry args={[0.5, 0.5, 1.5, 32]} />
-          </mesh>
-          {/* Tank Cap */}
-          <mesh position={[0, 0.75, 0]} material={materials.crimson}>
-            <sphereGeometry args={[0.5, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
-          </mesh>
-        </group>
-
-        {/* Auxiliary process column */}
-        <group position={[0.5, -0.1, 0.2]}>
-          <mesh material={materials.copper}>
-            <cylinderGeometry args={[0.2, 0.2, 1.3, 24]} />
-          </mesh>
-          <mesh position={[0, 0.65, 0]} material={materials.steel}>
-            <cylinderGeometry args={[0.25, 0.25, 0.08, 24]} />
-          </mesh>
-        </group>
-
-        {/* Interconnecting Process Pipe */}
-        <group position={[0, 0.4, 0.1]} rotation={[0, 0, Math.PI / 2]}>
-          <mesh material={materials.steel}>
-            <cylinderGeometry args={[0.06, 0.06, 1.0, 16]} />
-          </mesh>
-        </group>
+      <group scale={scaleFactor} position={center.clone().multiplyScalar(-scaleFactor)}>
+        <primitive object={clonedScene} />
       </group>
     </group>
   );
@@ -315,8 +307,82 @@ function MechanicalAssembly({ rotate }: { rotate: boolean }) {
   );
 }
 
+// Assembly 5: Structural Foundation Component
+function FoundationAssembly({ rotate }: { rotate: boolean }) {
+  const ref = useRef<THREE.Group>(null);
+  const { viewport } = useThree();
+  
+  // Load GLTF model
+  const { scene } = useGLTF('/models/structure_foundation.glb') as any;
+  
+  // Get model center and size
+  const { center, size } = React.useMemo(() => {
+    scene.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(scene);
+    const centerVec = new THREE.Vector3();
+    box.getCenter(centerVec);
+    const sizeVec = new THREE.Vector3();
+    box.getSize(sizeVec);
+    return { center: centerVec, size: sizeVec };
+  }, [scene]);
+
+  // Clone scene
+  const clonedScene = React.useMemo(() => {
+    return scene.clone();
+  }, [scene]);
+  
+  // Find all meshes and apply premium materials
+  useEffect(() => {
+    clonedScene.traverse((child: any) => {
+      if (child.isMesh) {
+        if (child.material) {
+          const name = (child.name || '').toLowerCase();
+          // Apply contrasting premium materials to parts
+          if (name.includes('gusset') || name.includes('joint') || name.includes('plate') || name.includes('red') || name.includes('pin') || name.includes('bolt')) {
+            child.material = materials.crimson;
+          } else if (name.includes('beam') || name.includes('girder') || name.includes('frame') || name.includes('structure')) {
+            child.material = materials.steel;
+          } else {
+            child.material = materials.structureGrey;
+          }
+        }
+      }
+    });
+  }, [clonedScene]);
+
+  useFrame((state) => {
+    // Rotation of the whole assembly
+    if (ref.current) {
+      if (rotate) {
+        ref.current.rotation.y = state.clock.getElapsedTime() * 0.09;
+        ref.current.rotation.x = 0.12;
+      } else {
+        ref.current.rotation.y = 0.35;
+        ref.current.rotation.x = 0.2;
+      }
+    }
+  });
+
+  // Calculate dynamic scale factor
+  const scaleFactor = React.useMemo(() => {
+    const maxHoriz = Math.max(size.x, size.z);
+    const sizeY = size.y;
+    const scaleX = (viewport.width * 0.85) / (maxHoriz || 1);
+    const scaleY = (viewport.height * 0.85) / (sizeY || 1);
+    return Math.min(scaleX, scaleY);
+  }, [viewport.width, viewport.height, size]);
+
+  return (
+    <group ref={ref}>
+      <group scale={scaleFactor} position={center.clone().multiplyScalar(-scaleFactor)}>
+        <primitive object={clonedScene} />
+      </group>
+    </group>
+  );
+}
+
 export default function ThreeShowcase() {
-  const [activeCategory, setActiveCategory] = useState<'marine' | 'industrial' | 'structural' | 'mechanical'>('marine');
+  const [activeCategory, setActiveCategory] = useState<'marine' | 'industrial' | 'structural' | 'mechanical' | 'foundation'>('marine');
   const [autoRotate, setAutoRotate] = useState<boolean>(false);
 
   const categories = [
@@ -324,6 +390,7 @@ export default function ThreeShowcase() {
     { id: 'industrial', name: 'Industrial Systems' },
     { id: 'structural', name: 'Marine Structure' },
     { id: 'mechanical', name: 'Circular Hatch' },
+    { id: 'foundation', name: 'Structure Foundation' },
   ] as const;
 
   return (
@@ -389,7 +456,7 @@ export default function ThreeShowcase() {
                 <div className="bg-black/60 p-4 border border-[#222222] rounded font-mono text-[9px] text-gray-400 leading-relaxed flex flex-col gap-2">
                   <div className="font-semibold text-white uppercase text-[10px]">Model Metadata</div>
                   <div>FILE_NAME: {activeCategory}_assembly.stp</div>
-                  <div>POLY_COUNT: {activeCategory === 'marine' ? '12,500' : activeCategory === 'industrial' ? '8,200' : activeCategory === 'structural' ? '15,600' : '22,400'} tris</div>
+                  <div>POLY_COUNT: {activeCategory === 'marine' ? '12,500' : activeCategory === 'industrial' ? '8,200' : activeCategory === 'structural' ? '15,600' : activeCategory === 'mechanical' ? '22,400' : '9,400'} tris</div>
                   <div>DRAFT_DATE: 2026.06.23</div>
                   <div>UNIT_SCALE: mm [1:1]</div>
                 </div>
@@ -423,6 +490,9 @@ export default function ThreeShowcase() {
               {activeCategory === 'structural' && <StructuralAssembly rotate={autoRotate} />}
               {activeCategory === 'mechanical' && (
                 <MechanicalAssembly rotate={autoRotate} />
+              )}
+              {activeCategory === 'foundation' && (
+                <FoundationAssembly rotate={autoRotate} />
               )}
 
               <OrbitControls enableZoom={true} enablePan={true} maxDistance={6} minDistance={1.8} />

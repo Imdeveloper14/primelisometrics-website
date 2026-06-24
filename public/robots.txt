@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://royal-feather-b793.chandrunavalarch.workers.dev/sitemap.xml

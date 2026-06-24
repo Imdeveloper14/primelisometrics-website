@@ -55,7 +55,7 @@ export default function Contact({ onOpenConsult }: ContactProps) {
               <span className="text-[11px] font-mono tracking-[0.25em] text-accent uppercase font-semibold block mb-2">Connect</span>
               <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4 tracking-tight">Start a Project</h2>
               <p className="text-sm text-gray-400 leading-relaxed">
-                Ready to partner with <strong>Primelisometrics</strong>? Fill out the form to request a quote or schedule a design consultation.
+                Ready to partner with <strong>PRIMELISOMETRICS</strong>? Fill out the form to request a quote or schedule a design consultation.
               </p>
             </div>
 

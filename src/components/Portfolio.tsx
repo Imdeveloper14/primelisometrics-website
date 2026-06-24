@@ -23,9 +23,9 @@ export default function Portfolio() {
   const projects: Project[] = [
     {
       id: 1,
-      title: "New Build Q3 Barge",
+      title: "New Built Barge",
       desc: "Executed intact and probabilistic damage stability calculations, structural designs, and full midship 3D models.",
-      img: "images/drone1.png",
+      img: "images/new_built_barge.jpg",
       category: "naval-architecture",
       tags: ["Naval Architecture", "Stability"],
       specs: [
@@ -127,8 +127,8 @@ export default function Portfolio() {
         {/* Before / After Slider Section (New Visual Feature) */}
         <div className="mb-20 max-w-4xl mx-auto border border-[#222222] rounded-xl overflow-hidden bg-black/40 backdrop-blur-md">
           <div className="p-4 border-b border-[#222222] flex justify-between items-center bg-black/60">
-            <span className="text-[10px] font-mono text-accent uppercase tracking-widest font-bold">Interactive CAD Render Analysis</span>
-            <span className="text-[9px] text-gray-400 font-mono hidden sm:inline">HOVER & DRAG SLIDER LEFT/RIGHT</span>
+            <span className="text-xs sm:text-sm font-mono text-accent uppercase tracking-wider font-extrabold drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]">Interactive CAD Render Analysis</span>
+            <span className="text-[11px] sm:text-xs text-white font-mono hidden sm:inline font-semibold tracking-wider">HOVER & DRAG SLIDER LEFT/RIGHT</span>
           </div>
           
           <div 
@@ -139,13 +139,13 @@ export default function Portfolio() {
           >
             {/* Background: Final Render (Speed Boat Hull) */}
             <img 
-              src="images/drone2.png" 
+              src="images/finished_3d_model.jpg" 
               alt="Final CAD Render" 
-              className="absolute inset-0 h-full w-full object-cover pointer-events-none"
+              className="absolute inset-0 h-full w-full object-contain object-center pointer-events-none"
             />
             
             {/* Label Right */}
-            <div className="absolute bottom-4 right-4 z-10 font-mono text-[9px] text-white bg-black/80 px-2 py-1 border border-[#333] rounded">
+            <div className="absolute bottom-4 right-4 z-10 font-mono text-[11px] sm:text-xs text-white bg-black/95 px-3 py-1.5 border border-white/40 rounded-md font-bold tracking-wider shadow-[0_0_12px_rgba(255,255,255,0.2)]">
               3D FINISHED MODEL
             </div>
 
@@ -155,14 +155,14 @@ export default function Portfolio() {
               style={{ clipPath: `polygon(0 0, ${sliderPosition}% 0, ${sliderPosition}% 100%, 0 100%)` }}
             >
               <img 
-                src="images/drone1.png" 
+                src="images/draft_blueprint.jpg" 
                 alt="Wireframe Layout" 
-                className="absolute inset-0 h-full w-full object-cover"
+                className="absolute inset-0 h-full w-full object-contain object-center"
               />
             </div>
             
             {/* Label Left */}
-            <div className="absolute bottom-4 left-4 z-10 font-mono text-[9px] text-accent bg-black/80 px-2 py-1 border border-accent/30 rounded">
+            <div className="absolute bottom-4 left-4 z-10 font-mono text-[11px] sm:text-xs text-accent bg-black/95 px-3 py-1.5 border border-accent rounded-md font-bold tracking-wider shadow-[0_0_12px_rgba(239,68,68,0.3)]">
               DRAFT BLUEPRINT
             </div>
 

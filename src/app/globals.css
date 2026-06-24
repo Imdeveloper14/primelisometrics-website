@@ -170,7 +170,7 @@ body {
 .draw-circle-dashed {
   stroke-dasharray: 6 4;
   stroke-dashoffset: 500;
-  animation: drawDashed 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: drawDashed 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards, rotateCircle 25s infinite linear;
 }
 
 @keyframes drawDashed {
@@ -209,7 +209,7 @@ body {
 /* Laser scanner animation */
 .laser-scanner {
   top: 0;
-  animation: laserScan 1.2s ease-in-out infinite;
+  animation: laserScan 1.5s ease-in-out infinite;
 }
 
 @keyframes laserScan {
@@ -257,4 +257,102 @@ body {
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+/* Tagline pulse glow */
+.tagline-pulse-glow {
+  animation: textPulseGlow 2s ease-in-out infinite alternate;
+}
+
+.tagline-pulse-glow-intense {
+  animation: textPulseGlowIntense 0.3s ease-out forwards;
+}
+
+@keyframes textPulseGlow {
+  0% {
+    text-shadow: 0 0 10px rgba(255,23,68,0.4), 0 0 2px rgba(255,255,255,0.7);
+  }
+  100% {
+    text-shadow: 0 0 20px rgba(255,23,68,0.8), 0 0 4px rgba(255,255,255,0.9), 0 0 8px rgba(255,23,68,0.4);
+  }
+}
+
+@keyframes textPulseGlowIntense {
+  0% {
+    text-shadow: 0 0 20px rgba(255,23,68,0.8), 0 0 4px rgba(255,255,255,0.9);
+    transform: scale(1);
+  }
+  100% {
+    text-shadow: 0 0 35px rgba(255,23,68,1), 0 0 10px rgba(255,255,255,1), 0 0 20px rgba(255,23,68,0.8);
+    transform: scale(1.02);
+  }
+}
+
+/* Subtle flicker effect for typewriter HUD feel */
+.text-flicker-animated {
+  animation: textFlicker 0.15s infinite alternate;
+}
+
+@keyframes textFlicker {
+  0% { opacity: 0.96; }
+  100% { opacity: 1; }
+}
+
+/* Hexagon container pulse */
+.hex-pulse-animated {
+  transform-origin: center;
+  animation: hexPulse 3s ease-in-out infinite alternate;
+}
+
+@keyframes hexPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(1.025);
+    opacity: 1;
+  }
+}
+
+/* Crosshairs pulse */
+.crosshair-pulse-animated {
+  animation: crosshairPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes crosshairPulse {
+  0% { opacity: 0.35; }
+  100% { opacity: 0.7; }
+}
+
+/* Technical HUD text coordinates flickering */
+.hud-flicker-animated {
+  animation: hudFlicker 4s infinite;
+}
+
+@keyframes hudFlicker {
+  0%, 100% { opacity: 1; }
+  31% { opacity: 1; }
+  32% { opacity: 0.4; }
+  33% { opacity: 1; }
+  77% { opacity: 1; }
+  78% { opacity: 0.6; }
+  79% { opacity: 1; }
+}
+
+/* Glowing Ambient Backdrop breathing */
+.glow-breathe-animated {
+  transform-origin: center;
+  animation: glowBreathe 3s ease-in-out infinite alternate;
+}
+
+@keyframes glowBreathe {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1.1);
+    opacity: 0.75;
+  }
 }

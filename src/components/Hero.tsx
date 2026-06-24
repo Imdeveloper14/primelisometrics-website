@@ -87,27 +87,33 @@ export default function Hero({ onOpenConsult, isLoaded = true }: HeroProps) {
           {/* Title */}
           <motion.h1 
             variants={itemVariants}
-            className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white mb-6 leading-tight flex flex-col"
+            className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white mb-4 leading-tight"
           >
-            <span>Freelance CAD Design Services</span>
-            <span>for Marine, Civil &</span>
-            <span className="text-gradient-red">Industrial Projects</span>
+            <span className="text-gradient-red">PRIMELISOMETRICS</span>
           </motion.h1>
 
-          {/* Subtitle */}
-          <motion.p 
+          {/* Tagline */}
+          <motion.h2 
             variants={itemVariants}
-            className="text-base sm:text-lg md:text-xl font-medium text-gray-200 mb-4 max-w-xl"
+            className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-3"
           >
-            Engineering Ideas into Reality.
-          </motion.p>
+            Engineering Beyond Limits
+          </motion.h2>
+
+          {/* Subheading */}
+          <motion.h3 
+            variants={itemVariants}
+            className="text-xs sm:text-sm font-mono text-accent uppercase tracking-[0.25em] font-bold mb-6"
+          >
+            Advanced Design • Simulation • Manufacturing
+          </motion.h3>
 
           {/* Description */}
           <motion.p 
             variants={itemVariants}
             className="text-sm md:text-base text-gray-400 mb-8 max-w-xl leading-relaxed"
           >
-            Primelisometrics provides professional 3D CAD modeling, technical drafting, piping design, and production-ready engineering solutions for clients across marine, civil, industrial, and manufacturing sectors. We help transform concepts into accurate, practical, and implementation-ready designs.
+            PRIMELISOMETRICS is an engineering workspace dedicated to advanced design, simulation, manufacturing, product development, and innovative engineering solutions.
           </motion.p>
 
           {/* CTAs */}

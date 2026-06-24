@@ -15,39 +15,114 @@ import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import ConsultationModal from '@/components/ConsultationModal';
 
+function TypewriterTagline({ startDelay, isLoaded, loaderPhase }: { startDelay: number; isLoaded: boolean; loaderPhase: number }) {
+  const fullText = "ENGINEERING BEYOND LIMITS";
+  const [displayedText, setDisplayedText] = useState("");
+  const [showCursor, setShowCursor] = useState(true);
+  const [typingComplete, setTypingComplete] = useState(false);
+  const [showSecondary, setShowSecondary] = useState(false);
+
+  useEffect(() => {
+    // Typing animation
+    let index = 0;
+    let typingInterval: NodeJS.Timeout;
+
+    const startTimer = setTimeout(() => {
+      typingInterval = setInterval(() => {
+        if (index <= fullText.length) {
+          setDisplayedText(fullText.slice(0, index));
+          index++;
+        } else {
+          clearInterval(typingInterval);
+          setTypingComplete(true);
+          // Show secondary subtitle after 400ms pause
+          setTimeout(() => {
+            setShowSecondary(true);
+          }, 400);
+        }
+      }, 70); // 70ms per character
+    }, startDelay);
+
+    // Blinking cursor
+    const cursorInterval = setInterval(() => {
+      setShowCursor((prev) => !prev);
+    }, 450);
+
+    return () => {
+      clearTimeout(startTimer);
+      clearInterval(typingInterval);
+      clearInterval(cursorInterval);
+    };
+  }, [startDelay]);
+
+  return (
+    <div className={`mt-10 sm:mt-12 flex flex-col items-center justify-center select-none font-mono text-center transition-all duration-700 ${
+      isLoaded ? 'opacity-0 scale-95 translate-y-[-20px]' : 'opacity-100'
+    }`}>
+      {/* Main Tagline */}
+      <h2 
+        className={`text-lg sm:text-2xl md:text-3xl font-extrabold tracking-[0.25em] uppercase text-white flex items-center justify-center min-h-[40px] px-4 transition-all duration-300 ${
+          typingComplete ? (loaderPhase === 3 ? 'tagline-pulse-glow-intense font-black' : 'tagline-pulse-glow font-black') : 'text-flicker-animated'
+        }`}
+        style={{
+          textShadow: loaderPhase === 3 
+            ? '0 0 25px rgba(255,23,68,1), 0 0 8px rgba(255,255,255,1)' 
+            : '0 0 10px rgba(255,23,68,0.5), 0 0 2px rgba(255,255,255,0.8)'
+        }}
+      >
+        <span>{displayedText}</span>
+        <span className={`text-[#ff1744] font-normal transition-opacity duration-100 ${
+          showCursor ? 'opacity-100' : 'opacity-0'
+        }`}>|</span>
+      </h2>
+
+      {/* Secondary Line */}
+      <p 
+        className={`text-[9px] sm:text-xs tracking-[0.3em] uppercase mt-3 font-medium transition-all duration-[800ms] ease-out ${
+          showSecondary ? 'opacity-85 translate-y-0 scale-100' : 'opacity-0 translate-y-3 scale-95'
+        }`}
+        style={{
+          textShadow: loaderPhase === 3 
+            ? '0 0 15px rgba(255, 23, 68, 0.8)' 
+            : '0 0 8px rgba(255, 23, 68, 0.4)',
+          color: loaderPhase === 3 
+            ? 'rgba(255, 255, 255, 1)' 
+            : 'rgba(255, 255, 255, 0.8)'
+        }}
+      >
+        Advanced Design • Simulation • Manufacturing
+      </p>
+    </div>
+  );
+}
+
 export default function Home() {
-  const [loaderPhase, setLoaderPhase] = useState(1); // 1 = Fade in logo, 2 = CAD drawings & laser scan, 3 = Wording swap & energy pulse
+  const [loaderPhase, setLoaderPhase] = useState(2); // Start at Phase 2 to animate all graphics immediately
   const [showLoader, setShowLoader] = useState(true);
   const [fadeLoader, setFadeLoader] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [consultModalOpen, setConsultModalOpen] = useState(false);
 
   useEffect(() => {
-    // Coordinated loading screen sequence (fast, total ~1.8s, never blocks page >2s)
-    
-    // Phase 2: Start CAD schematics and technical lines drawing
-    const p2Timer = setTimeout(() => {
-      setLoaderPhase(2);
-    }, 500);
+    // Synchronized loading screen sequence (total ~7.5s)
 
-    // Phase 3: Technical text swap and energy pulse flash
+    // Phase 3: Final logo energy pulse flash (at 6.5s)
     const p3Timer = setTimeout(() => {
       setLoaderPhase(3);
-    }, 1200);
+    }, 6500);
 
-    // Fade out / Seamless Dissolve trigger
+    // Fade out / Seamless Dissolve trigger (at 6.8s)
     const fadeTimer = setTimeout(() => {
       setFadeLoader(true);
-      setIsLoaded(true); // Trigger hero stagged texts and navbar slide-in
-    }, 1800);
+      setIsLoaded(true); // Trigger hero staged texts and navbar slide-in
+    }, 6800);
 
-    // Completely remove loader overlay from DOM once faded
+    // Completely remove loader overlay from DOM once faded (at 7.5s)
     const removeTimer = setTimeout(() => {
       setShowLoader(false);
-    }, 2500);
+    }, 7500);
 
     return () => {
-      clearTimeout(p2Timer);
       clearTimeout(p3Timer);
       clearTimeout(fadeTimer);
       clearTimeout(removeTimer);
@@ -85,9 +160,11 @@ export default function Home() {
                   </radialGradient>
                 </defs>
 
-                {/* Axis Grid Lines */}
-                <line x1="10" y1="100" x2="190" y2="100" className="blueprint-line opacity-50" style={{ stroke: '#ff1744', strokeWidth: '1.5px' }} />
-                <line x1="100" y1="10" x2="100" y2="190" className="blueprint-line opacity-50" style={{ stroke: '#ff1744', strokeWidth: '1.5px' }} />
+                {/* Axis Grid Lines (softly pulsing crosshairs) */}
+                <g className="crosshair-pulse-animated">
+                  <line x1="10" y1="100" x2="190" y2="100" className="blueprint-line opacity-50" style={{ stroke: '#ff1744', strokeWidth: '1.5px' }} />
+                  <line x1="100" y1="10" x2="100" y2="190" className="blueprint-line opacity-50" style={{ stroke: '#ff1744', strokeWidth: '1.5px' }} />
+                </g>
                 
                 {/* Rotating circles - Phase 2 */}
                 <circle 
@@ -127,18 +204,20 @@ export default function Home() {
                   style={{ stroke: '#ff1744', strokeWidth: '1.5px' }} 
                 />
                 
-                {/* Structural polygon */}
-                <polygon 
-                  points="50,50 150,50 170,100 150,150 50,150 30,100" 
-                  className={`blueprint-polygon transition-all duration-1000 ${
-                    loaderPhase >= 2 ? 'draw-polygon hex-rotate-animated' : 'opacity-0'
-                  }`} 
-                  style={{ stroke: '#ff1744', fill: 'rgba(255,23,68,0.03)', strokeWidth: '2px' }} 
-                />
+                {/* Structural polygon (subtly pulsing hexagon) */}
+                <g className="hex-pulse-animated">
+                  <polygon 
+                    points="50,50 150,50 170,100 150,150 50,150 30,100" 
+                    className={`blueprint-polygon transition-all duration-1000 ${
+                      loaderPhase >= 2 ? 'draw-polygon hex-rotate-animated' : 'opacity-0'
+                    }`} 
+                    style={{ stroke: '#ff1744', fill: 'rgba(255,23,68,0.03)', strokeWidth: '2px' }} 
+                  />
+                </g>
                 
-                {/* Technical measurements and coordinates */}
+                {/* Technical measurements and coordinates (flickering HUD) */}
                 {loaderPhase >= 2 && (
-                  <g className="animate-fade-in font-mono text-[6px]" style={{ fill: '#ff1744' }}>
+                  <g className="hud-flicker-animated animate-fade-in font-mono text-[6px]" style={{ fill: '#ff1744' }}>
                     <text x="12" y="94">LOC: 24.11</text>
                     <text x="12" y="112">SYS: RDY</text>
                     <text x="145" y="94">CAD: V3</text>
@@ -156,10 +235,8 @@ export default function Home() {
                 <circle cx="100" cy="100" r="48" fill="url(#center-mask)" />
               </svg>
 
-              {/* Glowing Ambient Backdrop */}
-              <div className={`absolute w-[180px] h-[180px] rounded-full bg-accent/20 filter blur-[40px] z-5 transition-all duration-700 ${
-                loaderPhase >= 3 ? 'scale-125 opacity-100' : 'scale-90 opacity-60'
-              }`} />
+              {/* Glowing Ambient Backdrop (slowly breathing glow) */}
+              <div className={`absolute w-[180px] h-[180px] rounded-full bg-accent/20 filter blur-[40px] z-5 glow-breathe-animated`} />
 
               {/* Logo Icon Only - Center placed on top of blueprint with intense bloom glow */}
               <img
@@ -174,25 +251,14 @@ export default function Home() {
                 }`}
               />
 
-              {/* Laser scanning bar - Phase 2 */}
-              {loaderPhase === 2 && (
+              {/* Laser scanning bar */}
+              {!fadeLoader && (
                 <div className="laser-scanner absolute left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-[#ff1744] to-transparent opacity-80 z-20 pointer-events-none" />
               )}
             </div>
 
-            {/* Technical text caption */}
-            <div className="h-8 flex items-center justify-center">
-              <p 
-                className="loader-text text-sm sm:text-base md:text-lg font-mono tracking-[0.4em] uppercase text-accent font-bold transition-all duration-500" 
-                style={{ 
-                  color: '#ff1744', 
-                  textShadow: '0 0 15px rgba(255,23,68,0.7)',
-                  opacity: loaderPhase === 3 ? 0.9 : 0.7 
-                }}
-              >
-                {loaderPhase < 3 ? "PREPARING ENGINEERING WORKSPACE" : "Engineering Beyond Limits"}
-              </p>
-            </div>
+            {/* Typewriter Tagline (types concurrently starting at 0.3s) */}
+            <TypewriterTagline startDelay={300} isLoaded={fadeLoader} loaderPhase={loaderPhase} />
           </div>
         </div>
       )}
