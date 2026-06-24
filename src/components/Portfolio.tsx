@@ -36,15 +36,15 @@ export default function Portfolio() {
     },
     {
       id: 2,
-      title: "27ft Speed Boat",
-      desc: "Designed a hydrodynamically streamlined 3D hull for a 27ft speed boat using Rhino 3D for MKEL Projects.",
-      img: "images/drone2.png",
-      category: "hydrodynamics",
-      tags: ["Hydrodynamics", "Rhino 3D"],
+      title: "Stealth Drone",
+      desc: "Designed an aerodynamic multirotor casing, structural frame assembly, and optimized layouts for high-performance UAV concepts.",
+      img: "images/finished_3d_model.jpg",
+      category: "structural",
+      tags: ["Industrial Design", "3D CAD"],
       specs: [
-        { label: "Software", val: "Rhino 3D" },
-        { label: "Length Over All", val: "27 feet" },
-        { label: "Optimization", val: "Resistance Minimization" }
+        { label: "Software", val: "SolidWorks" },
+        { label: "Model Type", val: "Multirotor UAV" },
+        { label: "Optimization", val: "Aerodynamics & Weight" }
       ]
     },
     {

@@ -75,7 +75,7 @@ export default function About() {
             <div>
               <span className="text-[11px] font-mono tracking-[0.25em] text-accent uppercase font-semibold block mb-2">About</span>
               <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4 tracking-tight">
-                About <span className="text-gradient-red">PRIMELISOMETRICS</span>
+                About <span className="text-gradient-red">Primelisometrics</span>
               </h2>
               <p className="text-sm md:text-base font-semibold text-gray-200">
                 Delivering production-ready engineering and design solutions for marine, civil, and industrial projects.
@@ -85,7 +85,7 @@ export default function About() {
             <div className="bg-card-bg border border-border p-6 rounded-lg backdrop-blur-md relative overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-r from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
               <p className="text-sm text-gray-400 leading-relaxed">
-                PRIMELISOMETRICS is a freelance engineering design consultancy providing professional CAD design, 3D modeling, piping design, marine systems design, technical drafting, and production-ready engineering solutions for marine, civil, industrial, and manufacturing sectors.
+                Primelisometrics is a freelance engineering design consultancy providing professional CAD design, 3D modeling, piping design, marine systems design, technical drafting, and production-ready engineering solutions for marine, civil, industrial, and manufacturing sectors.
               </p>
             </div>
 

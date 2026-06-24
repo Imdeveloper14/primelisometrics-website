@@ -356,3 +356,10 @@ body {
     opacity: 0.75;
   }
 }
+
+/* Hide header when footer is visible */
+.header-hidden {
+  transform: translateY(-100%) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}

@@ -10,6 +10,7 @@ export default function Navbar({ isLoaded = true }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
+  const [isFooterVisible, setIsFooterVisible] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
 
   useEffect(() => {
@@ -53,7 +54,28 @@ export default function Navbar({ isLoaded = true }: NavbarProps) {
     };
 
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    // Detect when footer enters the viewport to hide the header
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          setIsFooterVisible(entry.isIntersecting);
+        });
+      },
+      { root: null, threshold: 0 }
+    );
+
+    const footer = document.querySelector('footer');
+    if (footer) {
+      observer.observe(footer);
+    }
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (footer) {
+        observer.unobserve(footer);
+      }
+    };
   }, [isOpen]);
 
   const navLinks = [
@@ -76,19 +98,18 @@ export default function Navbar({ isLoaded = true }: NavbarProps) {
         isHidden ? '-translate-y-full' : 'translate-y-0'
       } ${
         !isLoaded ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'
+      } ${
+        isFooterVisible ? 'header-hidden' : ''
       }`}
     >
       <div className="container mx-auto px-6 flex justify-between items-center">
         {/* Logo */}
-        <a href="#" className="flex items-center gap-3">
+        <a href="#" className="flex items-center">
           <img 
             src="images/logo.png" 
-            alt="PRIMELISOMETRICS Logo" 
-            className="h-10 md:h-12 w-auto object-contain transition-all duration-300 filter drop-shadow-[0_0_10px_rgba(220,20,60,0.15)]"
+            alt="Primelisometrics Logo" 
+            className="h-16 md:h-[96px] w-auto max-w-[420px] object-contain transition-all duration-300 filter drop-shadow-[0_0_10px_rgba(220,20,60,0.15)]"
           />
-          <span className="text-lg md:text-xl font-bold font-mono text-white tracking-[0.2em] uppercase">
-            PRIMELISOMETRICS
-          </span>
         </a>
 
         {/* Desktop Menu */}
@@ -126,15 +147,12 @@ export default function Navbar({ isLoaded = true }: NavbarProps) {
           }`}
           aria-label="Mobile Navigation"
         >
-          <div className="mb-10 flex items-center gap-3">
+          <div className="mb-10 flex justify-start">
             <img 
               src="images/logo.png" 
-              alt="PRIMELISOMETRICS Logo" 
-              className="h-10 w-auto object-contain filter drop-shadow-[0_0_10px_rgba(220,20,60,0.15)]"
+              alt="Primelisometrics Logo" 
+              className="h-20 w-auto object-contain filter drop-shadow-[0_0_10px_rgba(220,20,60,0.15)]"
             />
-            <span className="text-xs font-bold font-mono text-white tracking-[0.15em] uppercase">
-              PRIMELISOMETRICS
-            </span>
           </div>
           <ul className="flex flex-col gap-6">
             {navLinks.map((link) => (

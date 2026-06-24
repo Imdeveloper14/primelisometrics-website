@@ -14,22 +14,19 @@ export default function Footer() {
           
           {/* Brand Info */}
           <div className="md:col-span-6 flex flex-col gap-4">
-            <a href="#" className="flex items-center gap-3">
+            <a href="#" className="flex justify-start">
               <img 
                 src="images/logo.png" 
-                alt="PRIMELISOMETRICS Logo" 
-                className="w-12 h-auto object-contain filter drop-shadow-[0_0_8px_rgba(220,20,60,0.1)]"
+                alt="Primelisometrics Logo" 
+                className="w-[210px] sm:w-[260px] md:w-[315px] h-auto object-contain filter drop-shadow-[0_0_8px_rgba(220,20,60,0.1)] mb-2"
                 loading="lazy"
               />
-              <span className="text-lg md:text-xl font-bold font-mono text-white tracking-[0.2em] uppercase">
-                PRIMELISOMETRICS
-              </span>
             </a>
             <p className="text-white font-extrabold font-mono text-xs uppercase tracking-widest mt-2">
-              Engineering Beyond Limits
+              Precision Design. Practical Solutions.
             </p>
             <p className="text-xs text-gray-500 max-w-sm leading-relaxed">
-              PRIMELISOMETRICS is an advanced engineering platform focused on design, simulation, manufacturing, innovation, and engineering excellence.
+              Freelance engineering design consultancy providing production-ready solutions for marine, civil, industrial, and manufacturing sectors.
             </p>
           </div>
 
@@ -82,13 +79,14 @@ export default function Footer() {
 
         </div>
 
-        <div className="border-t border-[#111] mt-12 pt-8 text-center flex flex-col justify-center items-center gap-2">
-          <p className="text-[11px] font-mono text-white font-bold uppercase tracking-widest">
-            PRIMELISOMETRICS &copy; 2025
+        {/* Bottom copyright */}
+        <div className="border-t border-[#111] mt-12 pt-8 text-center flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+            &copy; {currentYear} Primelisometrics. All Rights Reserved.
           </p>
-          <p className="text-[9px] font-mono text-gray-500 uppercase tracking-widest">
-            Engineering Beyond Limits
-          </p>
+          <div className="text-[9px] font-mono text-gray-600 uppercase tracking-widest">
+            ENGINEERED WITH PRECISION
+          </div>
         </div>
 
       </div>
