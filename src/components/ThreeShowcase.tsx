@@ -384,6 +384,39 @@ function FoundationAssembly({ rotate }: { rotate: boolean }) {
 export default function ThreeShowcase() {
   const [activeCategory, setActiveCategory] = useState<'marine' | 'industrial' | 'structural' | 'mechanical' | 'foundation'>('marine');
   const [autoRotate, setAutoRotate] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [isInView, setIsInView] = useState<boolean>(false);
+  const [isInteractive, setIsInteractive] = useState<boolean>(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsInteractive(false);
+  }, [activeCategory]);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInView(entry.isIntersecting);
+      },
+      { threshold: 0.05 }
+    );
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
 
   const categories = [
     { id: 'marine', name: 'Marine Piping' },
@@ -394,7 +427,7 @@ export default function ThreeShowcase() {
   ] as const;
 
   return (
-    <section id="three-showcase" className="relative py-20 bg-gradient-to-b from-black to-background-alt border-y border-[#151515]">
+    <section ref={sectionRef} id="three-showcase" className="relative py-20 bg-gradient-to-b from-black to-background-alt border-y border-[#151515]">
       {/* Background design elements */}
       <div className="absolute inset-0 blueprint-grid opacity-30 pointer-events-none" />
       <div className="absolute top-0 right-0 w-96 h-96 bg-accent/5 rounded-full filter blur-[100px] pointer-events-none" />
@@ -474,48 +507,94 @@ export default function ThreeShowcase() {
             <div className="absolute inset-0 blueprint-grid-fine opacity-35 pointer-events-none" />
 
             {/* Live Model Canvas */}
-            <Canvas camera={{ position: [0, 1.2, 3.2], fov: 45 }} gl={{ antialias: true, alpha: false }}>
-              {/* Rich lighting system for bright reflections and deep depth */}
-              <ambientLight intensity={0.8} />
-              <pointLight position={[8, 10, 8]} intensity={2.2} />
-              <pointLight position={[-8, -8, -8]} intensity={0.5} />
-              <directionalLight position={[0, 6, 2]} intensity={2.0} />
-              
-              {/* Rim lighting setup */}
-              <directionalLight position={[4, 0, -4]} intensity={1.5} color="#ffffff" />
-              <directionalLight position={[-4, 0, 4]} intensity={1.0} color="#DC143C" />
-              
-              {activeCategory === 'marine' && <MarinePipingAssembly rotate={autoRotate} />}
-              {activeCategory === 'industrial' && <IndustrialAssembly rotate={autoRotate} />}
-              {activeCategory === 'structural' && <StructuralAssembly rotate={autoRotate} />}
-              {activeCategory === 'mechanical' && (
-                <MechanicalAssembly rotate={autoRotate} />
-              )}
-              {activeCategory === 'foundation' && (
-                <FoundationAssembly rotate={autoRotate} />
-              )}
+            {isInView ? (
+              <div className={`w-full h-full ${isMobile && !isInteractive ? 'pointer-events-none' : ''}`}>
+                <Canvas 
+                  camera={{ position: [0, 1.2, 3.2], fov: 45 }} 
+                  gl={{ 
+                    antialias: !isMobile, 
+                    alpha: false,
+                    powerPreference: "high-performance"
+                  }}
+                  dpr={isMobile ? 1 : [1, 1.5]}
+                >
+                  {/* Rich lighting system for bright reflections and deep depth */}
+                  <ambientLight intensity={0.8} />
+                  <pointLight position={[8, 10, 8]} intensity={2.2} />
+                  <pointLight position={[-8, -8, -8]} intensity={0.5} />
+                  <directionalLight position={[0, 6, 2]} intensity={2.0} />
+                  
+                  {/* Rim lighting setup only on desktop */}
+                  {!isMobile && (
+                    <>
+                      <directionalLight position={[4, 0, -4]} intensity={1.5} color="#ffffff" />
+                      <directionalLight position={[-4, 0, 4]} intensity={1.0} color="#DC143C" />
+                    </>
+                  )}
+                  
+                  {activeCategory === 'marine' && <MarinePipingAssembly rotate={autoRotate} />}
+                  {activeCategory === 'industrial' && <IndustrialAssembly rotate={autoRotate} />}
+                  {activeCategory === 'structural' && <StructuralAssembly rotate={autoRotate} />}
+                  {activeCategory === 'mechanical' && (
+                    <MechanicalAssembly rotate={autoRotate} />
+                  )}
+                  {activeCategory === 'foundation' && (
+                    <FoundationAssembly rotate={autoRotate} />
+                  )}
 
-              <OrbitControls enableZoom={true} enablePan={true} maxDistance={6} minDistance={1.8} />
-              
-              <Grid
-                position={[0, -1.4, 0]}
-                args={[10, 10]}
-                cellSize={0.5}
-                cellThickness={0.5}
-                cellColor="rgba(220, 20, 60, 0.15)"
-                sectionSize={2.0}
-                sectionThickness={0.8}
-                sectionColor="rgba(220, 20, 60, 0.35)"
-                fadeDistance={20}
-                infiniteGrid
-              />
-            </Canvas>
+                  <OrbitControls enableZoom={true} enablePan={true} maxDistance={6} minDistance={1.8} />
+                  
+                  <Grid
+                    position={[0, -1.4, 0]}
+                    args={[10, 10]}
+                    cellSize={0.5}
+                    cellThickness={0.5}
+                    cellColor="rgba(220, 20, 60, 0.15)"
+                    sectionSize={2.0}
+                    sectionThickness={0.8}
+                    sectionColor="rgba(220, 20, 60, 0.35)"
+                    fadeDistance={20}
+                    infiniteGrid
+                  />
+                </Canvas>
+              </div>
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center font-mono text-[10px] text-gray-500 gap-2 bg-black">
+                <i className="ph ph-cpu text-lg animate-pulse text-accent"></i>
+                <span>INITIALIZING 3D GRAPHICS PIPELINE...</span>
+              </div>
+            )}
+
+            {/* Tap to Interact Overlay on Mobile */}
+            {isMobile && !isInteractive && (
+              <div 
+                onClick={() => setIsInteractive(true)}
+                className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex flex-col items-center justify-center cursor-pointer z-30 transition-all duration-300 pointer-events-auto"
+              >
+                <div className="bg-black/90 border border-accent/40 rounded-lg px-4 py-3 flex flex-col items-center gap-2 max-w-[240px] text-center shadow-[0_0_20px_rgba(220,20,60,0.25)]">
+                  <i className="ph ph-hand-tap text-accent text-xl animate-bounce"></i>
+                  <span className="font-mono text-[10px] text-white uppercase font-bold tracking-wider">Tap to Interact in 3D</span>
+                  <span className="font-mono text-[8px] text-gray-500 uppercase leading-tight">Prevents scroll trapping on mobile screens</span>
+                </div>
+              </div>
+            )}
+            
+            {/* Exit Interaction mode button on Mobile */}
+            {isMobile && isInteractive && (
+              <button 
+                onClick={() => setIsInteractive(false)}
+                className="absolute top-4 right-4 z-40 bg-black/90 border border-[#333] px-3 py-1.5 rounded-md font-mono text-[9px] text-white font-bold uppercase tracking-wider shadow-md flex items-center gap-1.5 hover:border-accent transition-all cursor-pointer pointer-events-auto"
+              >
+                <i className="ph ph-lock-key text-accent text-xs"></i>
+                <span>LOCK SCROLL</span>
+              </button>
+            )}
 
             {/* Corner bracket overlay borders */}
-            <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-accent/40 m-3" />
-            <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-accent/40 m-3" />
-            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-accent/40 m-3" />
-            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-accent/40 m-3" />
+            <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-accent/40 m-3 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-accent/40 m-3 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-accent/40 m-3 pointer-events-none" />
+            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-accent/40 m-3 pointer-events-none" />
           </div>
 
         </div>

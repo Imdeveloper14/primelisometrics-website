@@ -8,7 +8,6 @@ import About from '@/components/About';
 import Services from '@/components/Services';
 import Skills from '@/components/Skills';
 import Portfolio from '@/components/Portfolio';
-import CaseStudy from '@/components/CaseStudy';
 import Workflow from '@/components/Workflow';
 import Testimonials from '@/components/Testimonials';
 import Contact from '@/components/Contact';
@@ -38,9 +37,9 @@ function TypewriterTagline({ startDelay, isLoaded, loaderPhase }: { startDelay: 
           // Show secondary subtitle after 400ms pause
           setTimeout(() => {
             setShowSecondary(true);
-          }, 400);
+          }, 300);
         }
-      }, 70); // 70ms per character
+      }, 50); // 50ms per character
     }, startDelay);
 
     // Blinking cursor
@@ -106,21 +105,21 @@ export default function Home() {
   useEffect(() => {
     // Synchronized loading screen sequence (total ~7.5s)
 
-    // Phase 3: Final logo energy pulse flash (at 6.5s)
+    // Phase 3: Final logo energy pulse flash (at 2.8s)
     const p3Timer = setTimeout(() => {
       setLoaderPhase(3);
-    }, 6500);
+    }, 2800);
 
-    // Fade out / Seamless Dissolve trigger (at 6.8s)
+    // Fade out / Seamless Dissolve trigger (at 3.1s)
     const fadeTimer = setTimeout(() => {
       setFadeLoader(true);
       setIsLoaded(true); // Trigger hero staged texts and navbar slide-in
-    }, 6800);
+    }, 3100);
 
-    // Completely remove loader overlay from DOM once faded (at 7.5s)
+    // Completely remove loader overlay from DOM once faded (at 3.8s)
     const removeTimer = setTimeout(() => {
       setShowLoader(false);
-    }, 7500);
+    }, 3800);
 
     return () => {
       clearTimeout(p3Timer);
@@ -257,8 +256,8 @@ export default function Home() {
               )}
             </div>
 
-            {/* Typewriter Tagline (types concurrently starting at 0.3s) */}
-            <TypewriterTagline startDelay={300} isLoaded={fadeLoader} loaderPhase={loaderPhase} />
+            {/* Typewriter Tagline (types concurrently starting at 0.2s) */}
+            <TypewriterTagline startDelay={200} isLoaded={fadeLoader} loaderPhase={loaderPhase} />
           </div>
         </div>
       )}
@@ -285,9 +284,6 @@ export default function Home() {
           
           {/* Projects gallery and before/after slider */}
           <Portfolio />
-          
-          {/* Featured Case study */}
-          <CaseStudy />
           
           {/* Workflow timeline progress tracker */}
           <Workflow />
