@@ -2,133 +2,76 @@
 
 import React, { useRef, useState, Suspense, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
+import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 
-// Procedural 3D Pipe Assembly (Acts as immediate, reliable fallback rendering or default visible model)
-function PipeAssemblyMesh() {
+// Assembly: Circular Hatch 3D Model loaded dynamically
+function HatchAssemblyMesh() {
   const groupRef = useRef<THREE.Group>(null);
 
-  // Smooth automatic floating (gentle vertical bobbing) & slow auto-rotation
+  // Load GLTF model
+  const { scene } = useGLTF('/models/circular_hatch.glb') as any;
+
+  // Get model center and size
+  const { center, size } = React.useMemo(() => {
+    scene.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(scene);
+    const centerVec = new THREE.Vector3();
+    box.getCenter(centerVec);
+    const sizeVec = new THREE.Vector3();
+    box.getSize(sizeVec);
+    return { center: centerVec, size: sizeVec };
+  }, [scene]);
+
+  // Clone scene
+  const clonedScene = React.useMemo(() => {
+    return scene.clone();
+  }, [scene]);
+
+  // Materials definitions
+  const materials = React.useMemo(() => ({
+    steel: new THREE.MeshStandardMaterial({ color: '#c0c0c0', roughness: 0.15, metalness: 0.85 }),
+    darkIron: new THREE.MeshStandardMaterial({ color: '#555555', roughness: 0.3, metalness: 0.75 }),
+    crimson: new THREE.MeshStandardMaterial({ color: '#DC143C', roughness: 0.2, metalness: 0.8 }),
+  }), []);
+
+  // Apply materials
+  useEffect(() => {
+    clonedScene.traverse((child: any) => {
+      if (child.isMesh) {
+        if (child.material) {
+          const name = (child.name || '').toLowerCase();
+          if (name.includes('red') || name.includes('joint') || name.includes('handle') || name.includes('bolt') || name.includes('accent')) {
+            child.material = materials.crimson;
+          } else if (name.includes('gear') || name.includes('pinion') || name.includes('bracket') || name.includes('plate')) {
+            child.material = materials.darkIron;
+          } else {
+            child.material = materials.steel;
+          }
+        }
+      }
+    });
+  }, [clonedScene, materials]);
+
+  // Smooth automatic floating & slow auto-rotation
   useFrame((state) => {
     if (groupRef.current) {
       const elapsed = state.clock.getElapsedTime();
       groupRef.current.rotation.y = elapsed * 0.18;
       groupRef.current.rotation.x = Math.sin(elapsed * 0.4) * 0.06;
-      groupRef.current.position.y = -0.15 + Math.sin(elapsed * 1.4) * 0.08;
+      groupRef.current.position.y = -0.1 + Math.sin(elapsed * 1.4) * 0.06;
     }
   });
 
-  // Harmonious metallic material setup
-  const metalMaterial = new THREE.MeshStandardMaterial({
-    color: '#a0a0a0', // Bright silver-grey
-    roughness: 0.15,
-    metalness: 0.85,
-  });
-
-  const valveBodyMaterial = new THREE.MeshStandardMaterial({
-    color: '#333333', // Contrast dark grey
-    roughness: 0.25,
-    metalness: 0.8,
-  });
-
-  const neonRedMaterial = new THREE.MeshBasicMaterial({
-    color: '#DC143C', // Accent red branding
-  });
-
-  const redAccentMaterial = new THREE.MeshStandardMaterial({
-    color: '#DC143C',
-    roughness: 0.2,
-    metalness: 0.8,
-  });
+  const scaleFactor = React.useMemo(() => {
+    const maxHoriz = Math.max(size.x, size.z);
+    return 1.8 / (maxHoriz || 1);
+  }, [size]);
 
   return (
     <group ref={groupRef}>
-      {/* 1. Main horizontal pipe */}
-      <mesh rotation={[0, 0, Math.PI / 2]} material={metalMaterial} position={[0, 0, 0]}>
-        <cylinderGeometry args={[0.25, 0.25, 3.2, 32]} />
-      </mesh>
-
-      {/* 2. Connection Flanges (rings) */}
-      <mesh rotation={[0, 0, Math.PI / 2]} material={metalMaterial} position={[-1.2, 0, 0]}>
-        <cylinderGeometry args={[0.38, 0.38, 0.12, 32]} />
-      </mesh>
-      <mesh rotation={[0, 0, Math.PI / 2]} material={metalMaterial} position={[1.2, 0, 0]}>
-        <cylinderGeometry args={[0.38, 0.38, 0.12, 32]} />
-      </mesh>
-
-      {/* 3. Central Valve body */}
-      <group position={[0, 0, 0]}>
-        <mesh material={valveBodyMaterial}>
-          <sphereGeometry args={[0.48, 32, 32]} />
-        </mesh>
-
-        {/* Valve neck stem */}
-        <mesh position={[0, 0.6, 0]} material={metalMaterial}>
-          <cylinderGeometry args={[0.1, 0.1, 0.5, 16]} />
-        </mesh>
-
-        {/* Valve Wheel hand ring */}
-        <group position={[0, 0.85, 0]}>
-          <mesh rotation={[Math.PI / 2, 0, 0]} material={redAccentMaterial}>
-            <torusGeometry args={[0.42, 0.08, 16, 64]} />
-          </mesh>
-          {/* Wheel spokes */}
-          <mesh material={redAccentMaterial}>
-            <cylinderGeometry args={[0.03, 0.03, 0.8, 16]} />
-          </mesh>
-          <mesh rotation={[0, Math.PI / 2, 0]} material={redAccentMaterial}>
-            <cylinderGeometry args={[0.03, 0.03, 0.8, 16]} />
-          </mesh>
-        </group>
-      </group>
-
-      {/* 4. Branch pipe going downwards */}
-      <group position={[-0.6, -0.75, 0]}>
-        <mesh material={metalMaterial}>
-          <cylinderGeometry args={[0.16, 0.16, 1.5, 32]} />
-        </mesh>
-        <mesh position={[0, -0.7, 0]} material={metalMaterial}>
-          <cylinderGeometry args={[0.26, 0.26, 0.1, 32]} />
-        </mesh>
-      </group>
-
-      {/* Elbow connection for branch */}
-      <mesh position={[-0.6, 0, 0]} material={metalMaterial}>
-        <sphereGeometry args={[0.26, 32, 16]} />
-      </mesh>
-
-      {/* 5. Isometric support structural frame */}
-      <group position={[0, -1.1, -0.4]}>
-        <mesh material={valveBodyMaterial}>
-          <boxGeometry args={[1.8, 0.08, 0.8]} />
-        </mesh>
-        <mesh position={[-0.8, -0.4, 0]} material={metalMaterial}>
-          <cylinderGeometry args={[0.04, 0.04, 0.8, 8]} />
-        </mesh>
-        <mesh position={[0.8, -0.4, 0]} material={metalMaterial}>
-          <cylinderGeometry args={[0.04, 0.04, 0.8, 8]} />
-        </mesh>
-      </group>
-
-      {/* 6. Glowing Red Highlights/Hotspots attached specifically to visual nodes */}
-      <group position={[0, 0.85, 0]}>
-        <mesh scale={[1.8, 1.8, 1.8]}>
-          <sphereGeometry args={[0.05, 16, 16]} />
-          <meshBasicMaterial color="#DC143C" transparent opacity={0.3} />
-        </mesh>
-        <mesh material={neonRedMaterial}>
-          <sphereGeometry args={[0.04, 16, 16]} />
-        </mesh>
-      </group>
-
-      <group position={[-1.2, 0.4, 0]}>
-        <mesh scale={[1.8, 1.8, 1.8]}>
-          <sphereGeometry args={[0.05, 16, 16]} />
-          <meshBasicMaterial color="#DC143C" transparent opacity={0.3} />
-        </mesh>
-        <mesh material={neonRedMaterial}>
-          <sphereGeometry args={[0.04, 16, 16]} />
-        </mesh>
+      <group scale={scaleFactor} position={center.clone().multiplyScalar(-scaleFactor)}>
+        <primitive object={clonedScene} />
       </group>
     </group>
   );
@@ -211,7 +154,7 @@ export default function PipingCanvas() {
             <directionalLight position={[4, 0, -4]} intensity={1.5} color="#ffffff" />
             <directionalLight position={[-4, 0, 4]} intensity={1.2} color="#DC143C" />
 
-            <PipeAssemblyMesh />
+            <HatchAssemblyMesh />
             
             <CustomGrid />
           </Canvas>

@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
-import ThreeShowcase from '@/components/ThreeShowcase';
 import About from '@/components/About';
 import Services from '@/components/Services';
 import Skills from '@/components/Skills';
@@ -101,6 +100,25 @@ export default function Home() {
   const [fadeLoader, setFadeLoader] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [consultModalOpen, setConsultModalOpen] = useState(false);
+  const [isOffline, setIsOffline] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handleOffline = () => setIsOffline(true);
+    const handleOnline = () => setIsOffline(false);
+
+    if (typeof window !== 'undefined') {
+      setIsOffline(!window.navigator.onLine);
+      window.addEventListener('offline', handleOffline);
+      window.addEventListener('online', handleOnline);
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('offline', handleOffline);
+        window.removeEventListener('online', handleOnline);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     // Synchronized loading screen sequence (total ~7.5s)
@@ -270,9 +288,6 @@ export default function Home() {
           {/* Hero with piping visualizer */}
           <Hero onOpenConsult={() => setConsultModalOpen(true)} isLoaded={isLoaded} />
           
-          {/* ThreeJS Category Model Showcase */}
-          <ThreeShowcase />
-          
           {/* About Section with Stats */}
           <About />
           
@@ -303,6 +318,48 @@ export default function Home() {
           onClose={() => setConsultModalOpen(false)} 
         />
       </div>
+
+      {/* Offline Overlay */}
+      {isOffline && (
+        <div className="fixed inset-0 z-[100000] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-6 select-none animate-fade-in">
+          {/* Blueprint background */}
+          <div className="absolute inset-0 blueprint-grid opacity-15 pointer-events-none" />
+          
+          <div className="text-center max-w-sm flex flex-col items-center gap-6 relative z-10">
+            {/* Pulsing warning CAD graphics */}
+            <div className="relative flex items-center justify-center w-36 h-36 border border-accent/30 rounded-full animate-pulse shadow-[0_0_30px_rgba(255,23,68,0.15)]">
+              <svg className="absolute inset-0 w-full h-full animate-[spin_10s_linear_infinite]" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" stroke="#ff1744" strokeWidth="1" strokeDasharray="5 5" fill="none" opacity="0.4" />
+                <path d="M 50,5 L 50,20 M 50,95 L 50,80 M 5,50 L 20,50 M 95,50 L 80,50" stroke="#ff1744" strokeWidth="1" opacity="0.5" />
+              </svg>
+              <i className="ph ph-wifi-slash text-accent text-5xl drop-shadow-[0_0_15px_rgba(255,23,68,0.8)] animate-pulse"></i>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <h1 className="font-mono text-lg font-extrabold text-white tracking-[0.2em] uppercase drop-shadow-[0_0_8px_rgba(255,255,255,0.1)]">
+                CONNECTION OFFLINE
+              </h1>
+              <p className="font-mono text-[10px] text-accent uppercase tracking-widest font-semibold">
+                Link with CAD Server Interrupted
+              </p>
+            </div>
+
+            <p className="text-xs text-gray-400 leading-relaxed">
+              Your internet connection is currently unavailable. Please verify your network configuration. The workspace will sync automatically when communication is restored.
+            </p>
+
+            {/* Pulsing loading dots */}
+            <div className="flex items-center gap-2 mt-4 font-mono text-[9px] text-gray-500 uppercase tracking-widest">
+              <span>SCANNING FOR SIGNAL</span>
+              <span className="flex gap-1.5 items-center">
+                <span className="w-1.5 h-1.5 bg-accent rounded-full animate-ping" />
+                <span className="w-1.5 h-1.5 bg-accent rounded-full animate-ping [animation-delay:0.2s]" />
+                <span className="w-1.5 h-1.5 bg-accent rounded-full animate-ping [animation-delay:0.4s]" />
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

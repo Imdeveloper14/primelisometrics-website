@@ -46,7 +46,7 @@ export default function Services() {
         {/* Section Header */}
         <div className="text-center mb-16">
           <span className="text-[11px] font-mono tracking-[0.25em] text-accent uppercase font-semibold block mb-2">Services</span>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4 tracking-tight">What I Offer</h2>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4 tracking-tight">What We Offer</h2>
           <p className="text-sm md:text-base text-gray-400 max-w-2xl mx-auto leading-relaxed">
             As a Freelance CAD Specialist, I provide flexible and cost-effective design support for businesses, consultants, engineering teams, manufacturers, and project contractors.
           </p>
