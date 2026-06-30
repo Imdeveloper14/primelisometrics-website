@@ -35,7 +35,8 @@ export default function CalculatorsHubPage() {
       id: 'holtrop-mennen',
       name: 'Holtrop & Mennen Resistance Calculator',
       description: 'Power prediction method for displacement ships based on regression analysis of model test results and full-scale data.',
-      status: 'coming-soon',
+      status: 'active',
+      path: '/holtrop-calculator',
       category: 'Displacement Hull'
     },
     {

@@ -104,7 +104,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
                 email: email,
                 customer_email: email,
                 product: 'Insel & Molland Calculator',
-                payment_plan: '2 calculations for ₹10',
+                payment_plan: '2 calculations for ₹199',
                 timestamp: dateTimeStr,
                 session_key: sessionId,
                 user_ip: ip,

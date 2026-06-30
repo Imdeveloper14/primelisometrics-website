@@ -72,7 +72,7 @@ export default function Navbar({ isLoaded = true }: NavbarProps) {
 
     // Set initial active section based on current path
     const path = window.location.pathname;
-    if (path.includes('/calculators') || path.includes('/calculator') || path.includes('/savitsky-calculator')) {
+    if (path.includes('/calculators') || path.includes('/calculator') || path.includes('/savitsky-calculator') || path.includes('/holtrop-calculator')) {
       setActiveSection('calculators');
     }
 

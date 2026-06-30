@@ -68,7 +68,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       name: 'Primelisometrics Catamaran Access',
       usage: 'single_use',
       fixed_amount: true,
-      payment_amount: 1000, // ₹10 INR in paise
+      payment_amount: 19900, // ₹199 INR in paise
       description: 'Insel & Molland Calculator Access',
       notes: {
         product: 'Insel & Molland Calculator Access',
@@ -113,7 +113,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
     const linkEndpoint = 'https://api.razorpay.com/v1/payment_links';
     const linkReqBody = {
-      amount: 1000, // ₹10 INR in paise
+      amount: 19900, // ₹199 INR in paise
       currency: 'INR',
       accept_partial: false,
       description: 'Insel & Molland Calculator Access',

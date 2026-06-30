@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Holtrop & Mennen Resistance and Power Calculator</title>
+<style>
+:root{--bg:#f7f8fb;--card:#fff;--line:#d8dee8;--text:#111827;--muted:#6b7280;--accent:#2563eb;--ok:#15803d;--warn:#b45309;--info:#0369a1}*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}.wrap{max-width:1660px;margin:0 auto;padding:22px}h1{margin:0 0 8px;font-size:30px}.lead{margin:0 0 18px;color:var(--muted);max-width:1450px;line-height:1.5}.grid{display:grid;gap:18px}.main{grid-template-columns:460px 1fr}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 1px 4px rgba(0,0,0,.04)}.pad{padding:18px}.section{font-size:17px;font-weight:900;margin:0 0 14px}.subsection{font-size:13px;font-weight:900;margin:14px 0 8px}.field{margin-bottom:12px}label{display:block;font-size:13px;font-weight:750;margin-bottom:6px}input,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:12px;font-size:14px;background:white}.duo{display:grid;grid-template-columns:1fr 1fr;gap:8px}.trio{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}button{padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;font-weight:850;cursor:pointer;font-size:13px}button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.notice{padding:12px 14px;border-radius:14px;background:#eef6ff;border:1px solid #cfe2ff;color:#123766;font-size:13px;line-height:1.45}.notice.warn{background:#fef3c7;border-color:#fcd34d;color:#92400e}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.metric{border:1px solid var(--line);border-radius:16px;padding:14px}.metric .k{font-size:12px;color:var(--muted);margin-bottom:4px}.metric .v{font-size:25px;font-weight:950}.metric .n{font-size:12px;color:var(--muted);margin-top:4px}.status{font-weight:850}.ok{color:var(--ok)}.warn{color:var(--warn)}.info{color:var(--info)}.tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}.tabbtn{padding:8px 12px;font-size:12px}.tabbtn.active{background:var(--accent);color:#fff;border-color:var(--accent)}.tabpanel{display:none}.tabpanel.active{display:block}.formula{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#f8fafc;border:1px solid var(--line);padding:12px;border-radius:12px;line-height:1.55;font-size:12px;white-space:pre-wrap;overflow-x:auto}.range-table-wrap{max-height:500px;overflow:auto;border:1px solid var(--line);border-radius:14px}table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{padding:8px;border-top:1px solid var(--line);text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}.small{font-size:12px;color:var(--muted);line-height:1.45}.results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}.result-box{border:1px solid var(--line);border-radius:12px;padding:12px}.result-box .label{font-size:11px;color:var(--muted);font-weight:750;margin-bottom:4px}.result-box .value{font-size:18px;font-weight:950}.result-box .unit{font-size:11px;color:var(--muted)}.engine-best{border:2px solid var(--ok);background:#f0fdf4;border-radius:14px;padding:14px;margin-bottom:12px}.engine-best .tag{font-size:11px;font-weight:900;color:var(--ok);letter-spacing:.5px;margin-bottom:4px}.engine-best .name{font-size:18px;font-weight:950;margin-bottom:4px}.table-wrap{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:14px}svg{width:100%;height:390px;display:block;background:#fff;border-radius:12px}.chartbox svg{height:430px;min-width:820px}.chartbox{border:1px solid var(--line);border-radius:16px;padding:10px;margin-bottom:12px;overflow-x:auto;overflow-y:hidden}.chartbox::-webkit-scrollbar{height:8px}.chartbox::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:8px}.chart-title{font-size:14px;font-weight:900;margin:0 0 8px}@media (max-width:1250px){.main{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.results-grid{grid-template-columns:1fr 1fr}}@media (max-width:760px){.main,.metrics,.results-grid{grid-template-columns:1fr}}
+
+@keyframes bannerGlow {
+  0% { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06), 0 0 0 0 rgba(37,99,235,0.4); }
+  50% { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05), 0 0 12px 6px rgba(37,99,235,0.6); }
+  100% { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06), 0 0 0 0 rgba(37,99,235,0.4); }
+}
+.animated-sticky-banner {
+  position: sticky;
+  top: 10px;
+  z-index: 9999;
+  animation: bannerGlow 3s infinite ease-in-out;
+  transition: all 0.4s ease;
+}
+.email-input-box {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  font-size: 14px;
+  margin-top: 8px;
+  margin-bottom: 12px;
+}
+.email-input-box:focus {
+  outline: 2px solid var(--accent);
+  border-color: transparent;
+}
+#payment-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(17,24,39,0.7);
+  z-index: 10000;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+<h1>Holtrop & Mennen Resistance and Power Calculator</h1>
+<p class="lead">Statistical displacement-ship resistance prediction based on Holtrop & Mennen component breakdown: frictional resistance, hull form factor, appendages, wave resistance, bulb pressure, transom pressure, correlation allowance, propulsion factors and propulsion power prediction.</p>
+  <!-- Freemium Status Banner -->
+  <div id="freemium-banner" class="notice info animated-sticky-banner" style="margin-bottom:18px; font-weight:800; font-size:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+    <span id="freemium-message">You have 1 free use of this calculator.</span>
+    <button id="pay-btn" onclick="openPaymentModal()" style="padding:6px 12px; margin:0; background:var(--accent); color:#fff; border-color:var(--accent); font-size:12px;">Buy Now</button>
+  </div>
+
+  <!-- Secure Payment Simulation Modal -->
+  <div id="payment-modal">
+    <div style="background:#fff; color:#111; max-width:480px; width:100%; border-radius:18px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.3); border:1px solid #d8dee8; text-align:center;">
+      <h3 style="margin-top:0; font-size:20px; font-weight:800; color:#111827;">Unlock 2 Calculations</h3>
+      <p id="payment-modal-desc" style="font-size:13.5px; color:#4b5563; line-height:1.5; margin-bottom:18px;">
+        Your free calculation has been used. Purchase 2 additional calculations for ₹199.
+      </p>
+
+      <!-- Email Capture Stage -->
+      <div id="email-capture-container" style="text-align:left; margin-bottom:18px;">
+        <label for="payment-email-input" style="font-weight:700; color:#374151;">Email Address</label>
+        <input id="payment-email-input" class="email-input-box" type="email" placeholder="you@example.com" oninput="validateModalEmail()" />
+        <button id="payment-continue-btn" class="primary" onclick="submitEmailLead()" style="width:100%; padding:11px; border-radius:12px; font-weight:800; cursor:pointer;" disabled>Continue</button>
+      </div>
+
+      <!-- UPI QR Code Container (hidden initially) -->
+      <div id="qr-container" style="display:none; margin:15px 0 20px 0; border:1px dashed #2563eb; border-radius:12px; padding:20px; background:#f0f7ff;">
+        <h4 style="margin:0 0 12px 0; color:#2563eb; font-weight:800; font-size:16px;">Pay ₹199 using UPI QR Code</h4>
+        <img id="qr-image" style="max-width:200px; height:200px; display:block; margin:0 auto 12px auto; border-radius:8px; background:#fff; padding:8px; border:1px solid #e5e7eb;" src="" />
+        <p style="font-size:13px; color:#1f2937; font-weight:700; margin:0 0 8px 0; line-height:1.4;">Scan this QR code and pay ₹199 to unlock the calculator.</p>
+        <div style="display:flex; justify-content:center; align-items:center; gap:8px; color:#4b5563; font-size:12.5px;">
+          <span class="spinner" style="border: 2px solid #e5e7eb; border-top: 2px solid #2563eb; border-radius: 50%; width: 12px; height: 12px; animation: spin 1s linear infinite;"></span>
+          <span id="qr-status-text">Waiting for payment verification...</span>
+        </div>
+      </div>
+
+      <div id="payment-initial-info" style="display:none; background:#f3f4f6; border:1px solid #e5e7eb; border-radius:12px; padding:16px; margin-bottom:18px; text-align:left;">
+        <div style="display:flex; justify-content:space-between; font-weight:800; font-size:15px; margin-bottom:6px; color:#111827;">
+          <span>2 Premium Calculations</span>
+          <span style="color:#2563eb;">₹199 INR</span>
+        </div>
+        <div style="font-size:11px; color:#6b7280; line-height:1.4;">Scan the QR code to pay instantly via any UPI app (GPay, PhonePe, Paytm, BHIM).</div>
+      </div>
+
+      <div style="display:flex; gap:12px; margin-top:12px;">
+        <button id="pay-now-btn" class="primary" onclick="startCheckout()" style="display:none; flex:1; background:#2563eb; color:#fff; border-color:#2563eb; padding:10px 14px; border-radius:12px; font-weight:800; cursor:pointer;">Generate QR Code</button>
+        <button onclick="closePaymentModal()" style="flex:1; padding:10px 14px; border:1px solid #d8dee8; border-radius:12px; font-weight:800; background:#fff; cursor:pointer;">Cancel</button>
+      </div>
+    </div>
+  </div>
+<div class="grid main">
+<div class="card pad">
+<h2 class="section">Inputs</h2>
+<div class="tabs"><button id="tab_si_btn" class="tabbtn active" onclick="setUnitMode('si')">SI</button><button id="tab_imp_btn" class="tabbtn" onclick="setUnitMode('imp')">Imperial</button></div>
+<div id="tab_si" class="tabpanel active">
+<h3 class="subsection">Main dimensions</h3>
+<div class="field"><label>Waterline length L (m)</label><input id="si_L" type="number" value="205" step="0.01"></div>
+<div class="field"><label>Length between perpendiculars LPP (m)</label><input id="si_Lpp" type="number" value="200" step="0.01"></div>
+<div class="field"><label>Breadth moulded B (m)</label><input id="si_B" type="number" value="32" step="0.01"></div>
+<div class="duo"><div class="field"><label>Forward draught TF (m)</label><input id="si_TF" type="number" value="10" step="0.01"></div><div class="field"><label>After draught TA (m)</label><input id="si_TA" type="number" value="10" step="0.01"></div></div>
+<div class="field"><label>Displacement volume ∇ (m³)</label><input id="si_dispvol" type="number" value="37500" step="1"></div>
+<h3 class="subsection">Form coefficients</h3>
+<div class="duo"><div class="field"><label>Block coefficient CB</label><input id="si_CB" type="number" value="0.5833" step="0.0001"></div><div class="field"><label>Midship coefficient CM</label><input id="si_CM" type="number" value="0.980" step="0.001"></div></div>
+<div class="duo"><div class="field"><label>Waterplane coefficient CWP</label><input id="si_CWP" type="number" value="0.750" step="0.001"></div><div class="field"><label>LCB forward of 0.5L (%)</label><input id="si_lcb" type="number" value="-0.75" step="0.01"></div></div>
+<h3 class="subsection">Bulb, transom and appendages</h3>
+<div class="duo"><div class="field"><label>Bulb transverse area ABT (m²)</label><input id="si_ABT" type="number" value="20" step="0.1"></div><div class="field"><label>Bulb centre height hB (m)</label><input id="si_hB" type="number" value="4" step="0.01"></div></div>
+<div class="duo"><div class="field"><label>Transom area AT (m²)</label><input id="si_AT" type="number" value="16" step="0.1"></div><div class="field"><label>Appendage area SAPP (m²)</label><input id="si_SAPP" type="number" value="50" step="0.1"></div></div>
+</div>
+<div id="tab_imp" class="tabpanel">
+<h3 class="subsection">Main dimensions</h3>
+<div class="field"><label>Waterline length L (ft)</label><input id="imp_L" type="number" value="672.57" step="0.1"></div>
+<div class="field"><label>Length between perpendiculars LPP (ft)</label><input id="imp_Lpp" type="number" value="656.17" step="0.1"></div>
+<div class="field"><label>Breadth moulded B (ft)</label><input id="imp_B" type="number" value="104.99" step="0.1"></div>
+<div class="duo"><div class="field"><label>Forward draught TF (ft)</label><input id="imp_TF" type="number" value="32.81" step="0.1"></div><div class="field"><label>After draught TA (ft)</label><input id="imp_TA" type="number" value="32.81" step="0.1"></div></div>
+<div class="field"><label>Displacement volume ∇ (ft³)</label><input id="imp_dispvol" type="number" value="1324301" step="1"></div>
+<h3 class="subsection">Form coefficients</h3>
+<div class="duo"><div class="field"><label>Block coefficient CB</label><input id="imp_CB" type="number" value="0.5833" step="0.0001"></div><div class="field"><label>Midship coefficient CM</label><input id="imp_CM" type="number" value="0.980" step="0.001"></div></div>
+<div class="duo"><div class="field"><label>Waterplane coefficient CWP</label><input id="imp_CWP" type="number" value="0.750" step="0.001"></div><div class="field"><label>LCB forward of 0.5L (%)</label><input id="imp_lcb" type="number" value="-0.75" step="0.01"></div></div>
+<h3 class="subsection">Bulb, transom and appendages</h3>
+<div class="duo"><div class="field"><label>Bulb transverse area ABT (ft²)</label><input id="imp_ABT" type="number" value="215.28" step="0.1"></div><div class="field"><label>Bulb centre height hB (ft)</label><input id="imp_hB" type="number" value="13.12" step="0.1"></div></div>
+<div class="duo"><div class="field"><label>Transom area AT (ft²)</label><input id="imp_AT" type="number" value="172.22" step="0.1"></div><div class="field"><label>Appendage area SAPP (ft²)</label><input id="imp_SAPP" type="number" value="538.20" step="0.1"></div></div>
+</div>
+<h3 class="subsection">Method and environment</h3>
+<div class="field"><label>Holtrop method version</label><select id="method_version"><option value="1984" selected>1984 re-analysis: updated form factor and high-Fn wave formula</option><option value="1978">1978 approximate method: original form factor and wave formula</option></select></div>
+<div class="duo"><div class="field"><label>Water type</label><select id="water_type"><option value="salt" selected>Saltwater 1025 kg/m³</option><option value="fresh">Freshwater 1000 kg/m³</option></select></div><div class="field"><label>Afterbody Cstern</label><input id="Cstern" type="number" value="10" step="1"></div></div>
+<div class="duo"><div class="field"><label>Equivalent appendage factor 1+k₂</label><input id="k2eq" type="number" value="1.50" step="0.01"></div><div class="field"><label>Bow-thruster tunnel diameter d (m)</label><input id="thruster_d" type="number" value="0" step="0.01"></div></div>
+<div class="duo"><div class="field"><label>Bow-thruster coefficient CBTO</label><input id="CBTO" type="number" value="0.006" step="0.001"></div><div class="field"><label>Hull roughness ks (µm)</label><input id="ks" type="number" value="150" step="1"></div></div>
+<h3 class="subsection">Propulsion and engines</h3>
+<div class="duo"><div class="field"><label>Screw arrangement</label><select id="screw_type"><option value="single_conventional" selected>Single screw, conventional stern</option><option value="single_open">Single screw, open stern</option><option value="twin">Twin / multiple screw</option></select></div><div class="field"><label>Propeller diameter D (m)</label><input id="prop_D" type="number" value="8" step="0.01"></div></div>
+<div class="duo"><div class="field"><label>Blade area ratio AE/AO</label><input id="AEAO" type="number" value="0.739" step="0.001"></div><div class="field"><label>Pitch ratio P/D</label><input id="PD" type="number" value="0.95" step="0.01"></div></div>
+<div class="duo"><div class="field"><label>Open-water efficiency ηO</label><input id="etaO" type="number" value="0.646" min="0.1" max="0.9" step="0.001"></div><div class="field"><label>Shafting efficiency ηS</label><input id="etaS" type="number" value="0.99" min="0.1" max="1" step="0.001"></div></div>
+<div class="duo"><div class="field"><label>Number of engines</label><input id="num_engines" type="number" value="1" min="1" max="6" step="1"></div><div class="field"><label>MCR service margin</label><input id="mcr_margin" type="number" value="0.80" min="0.5" max="1" step="0.01"></div></div>
+<div class="field"><label>Current speed (knots)</label><input id="current_speed" type="number" value="25" min="0.1" step="0.1"></div>
+<div class="field"><label>Speed range (knots)</label><div class="duo"><input id="range_start" type="number" value="5" min="0.1" step="0.1"><input id="range_end" type="number" value="25" min="0.1" step="0.1"></div></div>
+<div class="toolbar"><button class="primary" onclick="recalc()">Calculate</button><button onclick="loadPdfExample()">Load PDF example</button><button onclick="downloadExcel()">Export Excel</button></div>
+</div>
+<div class="grid" style="gap:18px">
+<div class="card pad"><h2 class="section">Final calculated result</h2><div class="metrics">
+<div class="metric"><div class="k">Total resistance RT</div><div id="m-rt" class="v">—</div><div class="n">kN</div></div><div class="metric"><div class="k">Effective power PE</div><div id="m-pe" class="v">—</div><div class="n">kW</div></div><div class="metric"><div class="k">Shaft power PS</div><div id="m-ps" class="v">—</div><div class="n">kW</div></div><div class="metric"><div class="k">Required installed power</div><div id="m-maxpower" class="v">—</div><div class="n">kW = PS / margin</div></div>
+<div class="metric"><div class="k">Hull friction RF</div><div id="m-rf" class="v">—</div><div class="n">kN</div></div><div class="metric"><div class="k">Hull viscous RF(1+k₁)</div><div id="m-rv" class="v">—</div><div class="n">kN</div></div><div class="metric"><div class="k">Appendage resistance RAPP</div><div id="m-rapp" class="v">—</div><div class="n">kN</div></div><div class="metric"><div class="k">Wave resistance RW</div><div id="m-rw" class="v">—</div><div class="n">kN</div></div>
+<div class="metric"><div class="k">Bulb pressure RB</div><div id="m-rb" class="v">—</div><div class="n">kN</div></div><div class="metric"><div class="k">Transom pressure RTR</div><div id="m-rtr" class="v">—</div><div class="n">kN</div></div><div class="metric"><div class="k">Correlation RA</div><div id="m-ra" class="v">—</div><div class="n">kN</div></div><div class="metric"><div class="k">Froude number Fn</div><div id="m-fn" class="v">—</div><div class="n">V/√gL</div></div>
+<div class="metric"><div class="k">Reynolds number</div><div id="m-re" class="v">—</div><div class="n">×10⁹</div></div><div class="metric"><div class="k">Form factor 1+k₁</div><div id="m-k1" class="v">—</div><div class="n">ratio</div></div><div class="metric"><div class="k">Wetted surface S</div><div id="m-S" class="v">—</div><div class="n">m²</div></div><div class="metric"><div class="k">CA</div><div id="m-ca" class="v">—</div><div class="n">×10⁻³</div></div>
+<div class="metric"><div class="k">Wake fraction w</div><div id="m-w" class="v">—</div><div class="n">estimated</div></div><div class="metric"><div class="k">Thrust deduction t</div><div id="m-t" class="v">—</div><div class="n">estimated</div></div><div class="metric"><div class="k">Relative rotative ηR</div><div id="m-etaR" class="v">—</div><div class="n">estimated</div></div><div class="metric"><div class="k">Hull efficiency ηH</div><div id="m-etaH" class="v">—</div><div class="n">(1-t)/(1-w)</div></div>
+</div><div style="margin-top:12px" class="small">Status: <span id="status" class="status">—</span></div></div>
+<div class="card pad"><h2 class="section">Charts</h2><div class="chartbox"><div class="chart-title">Speed vs effective power PE</div><svg id="chart1"></svg><div class="small">Red marker = current speed.</div></div><div class="chartbox"><div class="chart-title">Speed vs required installed power</div><svg id="chart2"></svg><div class="small">Required installed power = shaft power / MCR margin.</div></div><div class="chartbox"><div class="chart-title">Resistance components versus speed</div><svg id="chart3"></svg><div class="small">Component curves show how the Holtrop total is assembled.</div></div></div>
+</div>
+</div>
+<div class="card pad" style="margin-top:18px"><h2 class="section">Speed range performance table</h2><div class="range-table-wrap"><table id="rangeTbl"><thead><tr id="rangeHead"></tr></thead><tbody></tbody></table></div></div>
+<div class="card pad" style="margin-top:18px"><h2 class="section">Formula summary</h2><div class="formula">TOTAL RESISTANCE:
+RT = RF(1+k1) + RAPP + RW + RB + RTR + RA + RBTO
+
+FRICTION:
+Re = V L / ν
+CF = 0.075 / (log10(Re) - 2)^2
+RF = 0.5 ρ V² S CF
+
+WETTED SURFACE:
+S = L(2T+B)√CM [0.453 + 0.4425CB - 0.2862CM - 0.003467B/T + 0.3696CWP] + 2.38ABT/CB
+
+1984 FORM FACTOR:
+1+k1 = 0.93 + 0.487118 c14(B/L)^1.06806(T/L)^0.46106(L/LR)^0.121563(L³/∇)^0.36486(1-CP)^-0.604247
+LR = L(1 - CP + 0.06 CP lcb/(4CP - 1))
+c14 = 1 + 0.011 Cstern
+
+WAVE RESISTANCE:
+Low/moderate Fn uses Holtrop formula RW-A. High-speed Fn > 0.55 uses the 1984 re-analysis RW-B. Between Fn 0.40 and 0.55, the calculator interpolates between both equations.
+
+POWER:
+PE = RT V
+ηH = (1-t)/(1-w)
+PS = PE / (ηO ηR ηS ηH)
+Required installed power = PS / MCR service margin</div></div>
+</div>
+<script>
+let unitMode='si'; const FT=0.3048, FT2=0.09290304, FT3=0.028316846592, KNOT=0.514444, g=9.81, nu=1.188e-6, KW_PER_HP=0.745699872;
+const ENGINE_DB=[{manufacturer:'Yanmar',name:'3JH40',hp:39,rpm:3800,weight:134,type:'Diesel inboard'},{manufacturer:'Yanmar',name:'4JH45',hp:44,rpm:3000,weight:218,type:'Diesel inboard'},{manufacturer:'Volvo Penta',name:'D2-50',hp:50,rpm:3000,weight:186,type:'Diesel inboard'},{manufacturer:'Yanmar',name:'4LV170',hp:170,rpm:3300,weight:365,type:'Diesel inboard'},{manufacturer:'Volvo Penta',name:'D3-220',hp:220,rpm:3500,weight:357,type:'Diesel inboard'},{manufacturer:'Cummins',name:'QSB 6.7',hp:220,rpm:2600,weight:580,type:'Diesel inboard'},{manufacturer:'Volvo Penta',name:'D4-225',hp:225,rpm:3500,weight:410,type:'Diesel inboard'},{manufacturer:'Perkins',name:'Sabre M225C',hp:225,rpm:3000,weight:481,type:'Diesel inboard'},{manufacturer:'Cummins',name:'QSB 5.9',hp:300,rpm:2800,weight:522,type:'Diesel inboard'},{manufacturer:'Perkins',name:'M300C',hp:300,rpm:2800,weight:590,type:'Diesel inboard'},{manufacturer:'Volvo Penta',name:'D6-370',hp:370,rpm:3500,weight:540,type:'Diesel inboard'},{manufacturer:'Yanmar',name:'8LV370',hp:370,rpm:3500,weight:562,type:'Diesel inboard'},{manufacturer:'Volvo Penta',name:'D6-400',hp:400,rpm:3500,weight:562,type:'Diesel inboard'},{manufacturer:'Yanmar',name:'6LY440',hp:440,rpm:3300,weight:595,type:'Diesel inboard'},{manufacturer:'Volvo Penta',name:'D8-440',hp:440,rpm:2500,weight:770,type:'Diesel inboard'},{manufacturer:'Cummins',name:'QSC 8.3',hp:450,rpm:2600,weight:717,type:'Diesel inboard'},{manufacturer:'John Deere',name:'6090',hp:500,rpm:2100,weight:1015,type:'Diesel inboard'},{manufacturer:'Cummins',name:'QSL9',hp:530,rpm:2100,weight:884,type:'Diesel inboard'},{manufacturer:'Volvo Penta',name:'D11-625',hp:625,rpm:2300,weight:1080,type:'Diesel inboard'},{manufacturer:'Scania',name:'DI13 074M',hp:700,rpm:2300,weight:1090,type:'Diesel inboard'},{manufacturer:'Cummins',name:'QSM11',hp:715,rpm:2300,weight:1117,type:'Diesel inboard'},{manufacturer:'Caterpillar',name:'C12',hp:705,rpm:2300,weight:1166,type:'Diesel inboard'},{manufacturer:'MAN',name:'i6-730',hp:730,rpm:2300,weight:1180,type:'Diesel inboard'},{manufacturer:'Volvo Penta',name:'D13-900',hp:900,rpm:2300,weight:1350,type:'Diesel inboard'},{manufacturer:'MAN',name:'V8-1000',hp:1000,rpm:2300,weight:1450,type:'Diesel inboard'},{manufacturer:'Cummins',name:'QSK19',hp:1015,rpm:1900,weight:1996,type:'Diesel inboard'},{manufacturer:'Caterpillar',name:'C18',hp:1015,rpm:2100,weight:2150,type:'Diesel inboard'},{manufacturer:'MTU',name:'8V2000 M72',hp:1480,rpm:2450,weight:2200,type:'Diesel inboard'},{manufacturer:'Caterpillar',name:'C32',hp:1625,rpm:2300,weight:3084,type:'Diesel inboard'},{manufacturer:'MAN',name:'V12-1800',hp:1800,rpm:2300,weight:2580,type:'Diesel inboard'},{manufacturer:'MTU',name:'12V2000 M94',hp:2000,rpm:2450,weight:2860,type:'Diesel inboard'}].sort((a,b)=>a.hp-b.hp);
+function setUnitMode(m){unitMode=m;document.getElementById('tab_si').classList.toggle('active',m==='si');document.getElementById('tab_imp').classList.toggle('active',m==='imp');document.getElementById('tab_si_btn').classList.toggle('active',m==='si');document.getElementById('tab_imp_btn').classList.toggle('active',m==='imp');recalc();}
+function val(id){const x=parseFloat(document.getElementById(id)?.value);return isFinite(x)?x:0} function fmt(x,n=2){return isFinite(x)?Number(x).toLocaleString(undefined,{minimumFractionDigits:n,maximumFractionDigits:n}):'—'} function clamp(x,a,b){return Math.max(a,Math.min(b,x))}
+function rho(){return document.getElementById('water_type').value==='fresh'?1000:1025} function margin(){return Math.max(0.1,val('mcr_margin')||0.8)} function nEng(){return Math.max(1,Math.round(val('num_engines')||1))}
+function getInputs(){const p=unitMode==='si'?'si':'imp', sc=unitMode==='si'?1:FT, aSc=unitMode==='si'?1:FT2, vSc=unitMode==='si'?1:FT3;return {L:val(p+'_L')*sc,Lpp:val(p+'_Lpp')*sc,B:val(p+'_B')*sc,TF:val(p+'_TF')*sc,TA:val(p+'_TA')*sc,disp:val(p+'_dispvol')*vSc,CB:val(p+'_CB'),CM:val(p+'_CM'),CWP:val(p+'_CWP'),lcb:val(p+'_lcb'),ABT:val(p+'_ABT')*aSc,hB:val(p+'_hB')*sc,AT:val(p+'_AT')*aSc,SAPP:val(p+'_SAPP')*aSc,Cstern:val('Cstern'),k2eq:val('k2eq'),thruster_d:val('thruster_d'),CBTO:val('CBTO'),ks:val('ks')/1e6,D:val('prop_D'),AEAO:val('AEAO'),PD:val('PD'),etaO:val('etaO'),etaS:val('etaS'),screw:document.getElementById('screw_type').value,method:document.getElementById('method_version').value};}
+function coeffs(inp,v){const T=(inp.TF+inp.TA)/2, CP=inp.CB/Math.max(inp.CM,1e-9), LR=inp.L*(1-CP+0.06*CP*inp.lcb/(4*CP-1)); const c14=1+0.011*inp.Cstern; let k1;if(inp.method==='1978'){let c12=T/inp.L>0.05?Math.pow(T/inp.L,0.2228446):(T/inp.L>0.02?48.2*Math.pow(T/inp.L-0.02,2.078)+0.479948:0.479948);let c13=1+0.003*inp.Cstern;k1=c13*(0.93+c12*Math.pow(inp.B/LR,0.92497)*Math.pow(0.95-CP,-0.521448)*Math.pow(1-CP+0.0225*inp.lcb,0.6906));}else{k1=0.93+0.487118*c14*Math.pow(inp.B/inp.L,1.06806)*Math.pow(T/inp.L,0.46106)*Math.pow(inp.L/Math.max(LR,1e-9),0.121563)*Math.pow(Math.pow(inp.L,3)/Math.max(inp.disp,1e-9),0.36486)*Math.pow(Math.max(1-CP,1e-6),-0.604247);} const S=inp.L*(2*T+inp.B)*Math.sqrt(Math.max(inp.CM,0.001))*(0.453+0.4425*inp.CB-0.2862*inp.CM-0.003467*inp.B/T+0.3696*inp.CWP)+2.38*inp.ABT/Math.max(inp.CB,1e-9); const Re=v*inp.L/nu, CF=0.075/Math.pow(Math.log10(Math.max(Re,1))-2,2); return {T,CP,LR,k1,S,Re,CF};}
+function c7fn(BL,LB){if(BL<0.11)return 0.229577*Math.pow(BL,1/3); if(BL<0.25)return BL; return 0.5-0.0625*LB;}
+function c15fn(L,disp){const x=Math.pow(L,3)/Math.max(disp,1e-9); if(x<512)return -1.69385; if(x>1726.91)return 0; return -1.69385+(Math.pow(x,1/3)-8)/2.36;}
+function entranceAngle(inp,coef){let val=1+89*Math.exp(-Math.pow(inp.L/inp.B,0.80856)*Math.pow(1-inp.CWP,0.30484)*Math.pow(1-coef.CP-0.0225*inp.lcb,0.6367)*Math.pow(inp.L/Math.max(coef.LR,1e-9),0.34574)*Math.pow(100*Math.max(inp.disp,1e-9)/Math.pow(inp.L,3),0.16302)); return clamp(val,1,90);}
+function c3fn(inp,coef){if(inp.ABT<=0)return 0; const hB=Math.min(inp.hB,0.6*inp.TF); const den=inp.B*coef.T*(0.31*Math.sqrt(inp.ABT)+inp.TF-hB); return den>0?0.56*Math.pow(inp.ABT,1.5)/den:0;}
+function waveLow(inp,coef,v){const Fn=v/Math.sqrt(g*inp.L), BL=inp.B/inp.L, LB=inp.L/inp.B, c7=c7fn(BL,LB), iE=entranceAngle(inp,coef), c1=2223105*Math.pow(c7,3.78613)*Math.pow(coef.T/inp.L,1.07961)*Math.pow(90-iE,-1.37565), c3=c3fn(inp,coef), c2=Math.exp(-1.89*Math.sqrt(Math.max(c3,0))), c5=Math.max(0,1-0.8*inp.AT/(inp.B*coef.T*inp.CM)), lambda=LB<12?1.446*coef.CP-0.03*LB:1.446*coef.CP-0.36, c16=coef.CP<0.8?8.07981*coef.CP-13.8673*Math.pow(coef.CP,2)+6.984388*Math.pow(coef.CP,3):1.73014-0.7067*coef.CP, m1=0.0140407*inp.L/coef.T-1.75254*Math.pow(Math.max(inp.disp,1e-9),1/3)/inp.L-4.79323*BL-c16, c15=c15fn(inp.L,inp.disp), m4=c15*0.4*Math.exp(-0.034*Math.pow(Fn,-3.29)), d=-0.9; const RW=c1*c2*c5*inp.disp*rho()*g*Math.exp(m1*Math.pow(Fn,d)+m4*Math.cos(lambda*Math.pow(Fn,-2))); return {RW,Fn,iE,c1,c2,c3,c5,lambda,m1,m4};}
+function waveHigh(inp,coef,v){const Fn=v/Math.sqrt(g*inp.L), BL=inp.B/inp.L, LB=inp.L/inp.B, c3=c3fn(inp,coef), c2=Math.exp(-1.89*Math.sqrt(Math.max(c3,0))), c5=Math.max(0,1-0.8*inp.AT/(inp.B*coef.T*inp.CM)), lambda=LB<12?1.446*coef.CP-0.03*LB:1.446*coef.CP-0.36, c17=6919.3*Math.pow(inp.CM,-1.3346)*Math.pow(inp.disp/Math.pow(inp.L,3),2.00977)*Math.pow(Math.max(LB-2,0.001),1.40692), m3=-7.2035*Math.pow(BL,0.326869)*Math.pow(coef.T/inp.B,0.605375), c15=c15fn(inp.L,inp.disp), m4=c15*0.4*Math.exp(-0.034*Math.pow(Fn,-3.29)), d=-0.9; const RW=c17*c2*c5*inp.disp*rho()*g*Math.exp(m3*Math.pow(Fn,d)+m4*Math.cos(lambda*Math.pow(Fn,-2))); return {RW,Fn,c17,m3,m4};}
+function wave(inp,coef,v){const Fn=v/Math.sqrt(g*inp.L); const a=waveLow(inp,coef,v), b=waveHigh(inp,coef,v); let RW;if(inp.method==='1978')RW=a.RW; else if(Fn<=0.4)RW=a.RW; else if(Fn>=0.55)RW=b.RW; else RW=a.RW+(10*Fn-4)*(b.RW-a.RW)/1.5; return {...a,RW,RWlow:a.RW,RWhigh:b.RW};}
+function propulsion(inp,coef,RT){const CF=coef.CF, CA=correlationCA(inp,coef).CA, Cv=coef.k1*CF+CA, CP1=1.45*coef.CP-0.315-0.0225*inp.lcb; let w,t,etaR; const D=inp.D||0.01, TA=inp.TA; if(inp.screw==='single_open'){w=0.3*inp.CB+10*Cv*inp.CB-0.1;t=0.10;etaR=0.98;} else if(inp.screw==='twin'){w=0.3095*inp.CB+10*Cv*inp.CB-0.23*D/Math.sqrt(Math.max(inp.B*coef.T,1e-9));t=0.325*inp.CB-0.1885*D/Math.sqrt(Math.max(inp.B*coef.T,1e-9));etaR=0.9737+0.111*(coef.CP-0.0225*inp.lcb)-0.06325*inp.PD;} else {let c8=inp.B/TA<5?inp.B*coef.S/(inp.L*D*TA):coef.S*(7*inp.B/TA-25)/(inp.L*D*(inp.B/TA-3)); let c9=c8<28?c8:32-16/(c8-24); let c11=TA/D<2?TA/D:0.0833333*Math.pow(TA/D,3)+1.33333; let c19=coef.CP<0.7?0.12997/(0.95-inp.CB)-0.11056/(0.95-coef.CP):0.18567/(1.3571-inp.CM)-0.71276+0.38648*coef.CP; let c20=1+0.015*inp.Cstern; w=c9*c20*Cv*inp.L/TA*(0.050776+0.93405*c11*Cv/(1-CP1))+0.27915*c20*Math.sqrt(inp.B/(inp.L*(1-CP1)))+c19*c20; t=0.25014*Math.pow(inp.B/inp.L,0.28956)*Math.pow(Math.sqrt(inp.B*coef.T)/D,0.2624)/Math.pow(1-coef.CP+0.0225*inp.lcb,0.01762)+0.0015*inp.Cstern; etaR=0.9922-0.05908*inp.AEAO+0.07424*(coef.CP-0.0225*inp.lcb);} w=clamp(w,0,0.75); t=clamp(t,0,0.6); etaR=clamp(etaR,0.75,1.08); const etaH=(1-t)/(1-w); return {w,t,etaR,etaH,Cv,CP1};}
+function correlationCA(inp,coef){let c4=inp.TF/inp.L<=0.04?inp.TF/inp.L:0.04; let c2=waveLow(inp,coef,Math.max(0.1,val('current_speed')*KNOT)).c2; let CA=0.006*Math.pow(inp.L+100,-0.16)-0.00205+0.003*Math.sqrt(inp.L/7.5)*Math.pow(inp.CB,4)*c2*(0.04-c4); const std=150e-6; if(inp.ks>std){CA += Math.max(0,(0.105*Math.pow(inp.ks,1/3)-0.005579)/Math.pow(inp.L,1/3));} return {CA,c4};}
+function calcAtSpeed(speedKn){const inp=getInputs(); const v=speedKn*KNOT; const coef=coeffs(inp,v); const qS=0.5*rho()*v*v; const RF=qS*coef.S*coef.CF; const Rv=RF*coef.k1; const RAPP=qS*inp.SAPP*inp.k2eq*coef.CF; const RBTO=inp.thruster_d>0?rho()*v*v*Math.PI*inp.thruster_d*inp.thruster_d*inp.CBTO:0; const wav=wave(inp,coef,v); const hB=Math.min(inp.hB,0.6*inp.TF); let PB=0,Fni=0,RB=0;if(inp.ABT>0 && inp.TF-1.5*hB>0){PB=0.56*Math.sqrt(inp.ABT)/(inp.TF-1.5*hB); Fni=v/Math.sqrt(Math.max(g*(inp.TF-hB-0.25*Math.sqrt(inp.ABT))+0.15*v*v,1e-9)); RB=0.11*Math.exp(-3*PB*PB)*Math.pow(Fni,3)*Math.pow(inp.ABT,1.5)*rho()*g/(1+Fni*Fni);} let Fnt=0,c6=0,RTR=0;if(inp.AT>0){Fnt=v/Math.sqrt(Math.max(2*g*inp.AT/(inp.B+inp.B*inp.CWP),1e-9)); c6=Fnt<5?0.2*(1-0.2*Fnt):0; RTR=0.5*rho()*v*v*inp.AT*c6;} const ca=correlationCA(inp,coef); const RA=qS*coef.S*ca.CA; const RT=Rv+RAPP+wav.RW+RB+RTR+RA+RBTO; const PE=RT*v/1000; const prop=propulsion(inp,coef,RT); const etaO=clamp(inp.etaO,0.1,0.9), etaS=clamp(inp.etaS,0.1,1); const PS=PE/(etaO*prop.etaR*etaS*prop.etaH); return {...inp,...coef,...wav,...ca,...prop,speedKn,v,RF,Rv,RAPP,RBTO,RB,PB,Fni,Fnt,c6,RTR,RA,RT,PE,PS,maxPower:PS/margin()};}
+function speedRange(){let a=val('range_start')||1,b=val('range_end')||val('current_speed')||1,c=val('current_speed')||b;let lo=Math.max(0.1,Math.min(a,b,c)),hi=Math.max(a,b,c,0.1),out=[];const step=Math.max(0.25,(hi-lo)/28);for(let s=lo;s<=hi+1e-9;s+=step)out.push(Number(s.toFixed(3)));[a,b,c,hi].forEach(x=>{if(x>0&&!out.some(y=>Math.abs(y-x)<0.01))out.push(Number(x.toFixed(3))) });return out.sort((x,y)=>x-y);}
+function actualRecalc(){const r=calcAtSpeed(val('current_speed')||1); const set=(id,x,n=2)=>document.getElementById(id).textContent=fmt(x,n); set('m-rt',r.RT/1000,2);set('m-pe',r.PE,0);set('m-ps',r.PS,0);set('m-maxpower',r.maxPower,0);set('m-rf',r.RF/1000,2);set('m-rv',r.Rv/1000,2);set('m-rapp',r.RAPP/1000,2);set('m-rw',r.RW/1000,2);set('m-rb',r.RB/1000,3);set('m-rtr',r.RTR/1000,2);set('m-ra',r.RA/1000,2);set('m-fn',r.Fn,3);set('m-re',r.Re/1e9,3);set('m-k1',r.k1,3);set('m-S',r.S,1);set('m-ca',r.CA*1000,3);set('m-w',r.w,3);set('m-t',r.t,3);set('m-etaR',r.etaR,3);set('m-etaH',r.etaH,3); const results=speedRange().map(s=>calcAtSpeed(s)).filter(x=>isFinite(x.RT)); buildRangeTable(results); plotLine('chart1',results.map(x=>x.speedKn),results.map(x=>x.PE),r.speedKn,'PE (kW)','PE'); plotLine('chart2',results.map(x=>x.speedKn),results.map(x=>x.maxPower),r.speedKn,'Required installed power (kW)','Power'); plotMulti('chart3',results.map(x=>x.speedKn),[{label:'Viscous',values:results.map(x=>x.Rv/1000),color:'#3b82f6'},{label:'Wave',values:results.map(x=>x.RW/1000),color:'#10b981'},{label:'Appendage',values:results.map(x=>x.RAPP/1000),color:'#f59e0b'},{label:'Total',values:results.map(x=>x.RT/1000),color:'#ef4444'}],r.speedKn,'Resistance (kN)'); document.getElementById('status').innerHTML=`<span class="warn">Calculated with ${r.method==='1984'?'1984 re-analysis':'1978 approximate'} Holtrop-Mennen equations. Validate unusual hulls, high Fn cases, appendage factors and propeller data with model tests or CFD before final design.</span>`;}
+function buildRangeTable(rs){const h=['Speed kn','Fn','RT kN','RF kN','Rv kN','RAPP kN','RW kN','RB kN','RTR kN','RA kN','PE kW','PS kW','Installed kW','1+k1','CF×10³','CA×10³','w','t','ηH'];document.getElementById('rangeHead').innerHTML=h.map(x=>`<th>${x}</th>`).join('');document.querySelector('#rangeTbl tbody').innerHTML=rs.map(r=>`<tr><td>${fmt(r.speedKn,1)}</td><td>${fmt(r.Fn,3)}</td><td>${fmt(r.RT/1000,2)}</td><td>${fmt(r.RF/1000,2)}</td><td>${fmt(r.Rv/1000,2)}</td><td>${fmt(r.RAPP/1000,2)}</td><td>${fmt(r.RW/1000,2)}</td><td>${fmt(r.RB/1000,3)}</td><td>${fmt(r.RTR/1000,2)}</td><td>${fmt(r.RA/1000,2)}</td><td>${fmt(r.PE,0)}</td><td>${fmt(r.PS,0)}</td><td>${fmt(r.maxPower,0)}</td><td>${fmt(r.k1,3)}</td><td>${fmt(r.CF*1000,3)}</td><td>${fmt(r.CA*1000,3)}</td><td>${fmt(r.w,3)}</td><td>${fmt(r.t,3)}</td><td>${fmt(r.etaH,3)}</td></tr>`).join('');}
+function updateEngine(rs){const sizing=rs.reduce((a,b)=>b.maxPower>a.maxPower?b:a,rs[0]); if(!sizing)return; const totalKW=sizing.maxPower, hpReq=totalKW/(nEng()*KW_PER_HP); document.getElementById('m-sizing-speed').textContent=fmt(sizing.speedKn,1); document.getElementById('m-sizing-total').textContent=fmt(totalKW,0); document.getElementById('m-reqhp').textContent=fmt(hpReq,0); const cand=ENGINE_DB.filter(e=>e.hp>=hpReq).sort((a,b)=>a.hp-b.hp), box=document.getElementById('engineRecoBox'); if(!cand.length){const l=ENGINE_DB[ENGINE_DB.length-1];box.innerHTML=`<div class="notice warn">No reference engine meets ${fmt(hpReq,0)} HP per engine. Largest reference engine: <strong>${l.manufacturer} ${l.name}</strong> (${l.hp} HP).</div>`;return;} const b=cand[0], surplus=(b.hp-hpReq)/hpReq*100; box.innerHTML=`<div class="engine-best"><div class="tag">BEST MATCH PER ENGINE</div><div class="name">${b.manufacturer} ${b.name}</div><div class="small">Sizing point: <strong>${fmt(sizing.speedKn,1)} kn</strong>; total installed power: <strong>${fmt(totalKW,0)} kW</strong>; ${nEng()} engine(s).</div><div class="small">Rated power: <strong>${b.hp} HP</strong> (${fmt(b.hp*KW_PER_HP,0)} kW) at ${b.rpm} rpm · Weight ${b.weight} kg · ${b.type}</div><div class="small">Margin above required per engine: <strong>${fmt(surplus,1)}%</strong></div></div>${cand.slice(1,4).length?`<div class="table-wrap"><table><thead><tr><th>Also suitable</th><th>HP</th><th>kW</th><th>RPM</th><th>Margin</th></tr></thead><tbody>${cand.slice(1,4).map(e=>`<tr><td>${e.manufacturer} ${e.name}</td><td>${e.hp}</td><td>${fmt(e.hp*KW_PER_HP,0)}</td><td>${e.rpm}</td><td>${fmt((e.hp-hpReq)/hpReq*100,1)}%</td></tr>`).join('')}</tbody></table></div>`:''}`;}
+function nice(range,round){const e=Math.floor(Math.log10(range||1)),f=range/Math.pow(10,e);let n=round?(f<1.5?1:f<3?2:f<7?5:10):(f<=1?1:f<=2?2:f<=5?5:10);return n*Math.pow(10,e)}
+function plotLine(id,xs,ys,marker,yLabel,pointLabel){
+  plotMulti(id,xs,[{label:pointLabel,values:ys,color:'#7c3aed'}],marker,yLabel,true);
+}
+function plotMulti(id,xs,series,marker,yLabel,single=false){
+  const svg=document.getElementById(id);
+  const W=Math.max(svg.clientWidth||0,820), H=430;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  svg.setAttribute('preserveAspectRatio','xMinYMin meet');
+  const pL=105,pR=36,pT=70,pB=78;
+  if(!xs.length || !series.length){svg.innerHTML='';return;}
+  const all=series.flatMap(s=>s.values).filter(Number.isFinite);
+  if(!all.length){svg.innerHTML='';return;}
+  let xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...all),ymax=Math.max(...all);
+  if(!isFinite(xmin)||!isFinite(xmax)||!isFinite(ymin)||!isFinite(ymax)){svg.innerHTML='';return;}
+  if(ymin>0)ymin=0;
+  if(ymax===ymin)ymax=ymin+1;
+  const yStep=Math.max(nice((ymax-ymin)/5,true),1e-9);
+  ymin=Math.floor(ymin/yStep)*yStep;
+  ymax=Math.ceil(ymax/yStep)*yStep;
+  const mx=x=>pL+(x-xmin)/(xmax-xmin||1)*(W-pL-pR);
+  const my=y=>H-pB-(y-ymin)/(ymax-ymin||1)*(H-pT-pB);
+  const esc=t=>String(t).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+  let out=`<rect width="${W}" height="${H}" fill="white"/>`;
+  // plot background and grid
+  for(let y=ymin;y<=ymax+0.5*yStep;y+=yStep){
+    const yy=my(y);
+    out+=`<line x1="${pL}" y1="${yy}" x2="${W-pR}" y2="${yy}" stroke="#e5e7eb"/>`;
+    out+=`<text x="${pL-12}" y="${yy+4}" text-anchor="end" font-size="12" fill="#111827">${fmt(y,Math.abs(y)>=100?0:1)}</text>`;
+  }
+  const xStep=Math.max(nice((xmax-xmin)/8,true),1e-9);
+  const xStart=Math.ceil(xmin/xStep)*xStep;
+  for(let x=xStart;x<=xmax+1e-9;x+=xStep){
+    const xx=mx(x);
+    out+=`<line x1="${xx}" y1="${pT}" x2="${xx}" y2="${H-pB}" stroke="#f1f5f9"/>`;
+    out+=`<text x="${xx}" y="${H-pB+24}" text-anchor="middle" font-size="12" fill="#111827">${fmt(x,0)}</text>`;
+  }
+  out+=`<line x1="${pL}" y1="${H-pB}" x2="${W-pR}" y2="${H-pB}" stroke="#111827" stroke-width="2"/>`;
+  out+=`<line x1="${pL}" y1="${H-pB}" x2="${pL}" y2="${pT}" stroke="#111827" stroke-width="2"/>`;
+  // legend wraps automatically
+  let lx=pL+8, ly=pT-34;
+  series.forEach((s,idx)=>{
+    const labelW=Math.max(80, esc(s.label).length*8+44);
+    if(lx+labelW>W-pR){lx=pL+8;ly+=20;}
+    out+=`<line x1="${lx}" y1="${ly}" x2="${lx+24}" y2="${ly}" stroke="${s.color}" stroke-width="4"/>`;
+    out+=`<text x="${lx+32}" y="${ly+4}" font-size="12" font-weight="800" fill="#111827">${esc(s.label)}</text>`;
+    lx+=labelW;
+  });
+  series.forEach(s=>{
+    const pts=xs.map((x,i)=>`${mx(x)},${my(s.values[i])}`).join(' ');
+    out+=`<polyline fill="none" stroke="${s.color}" stroke-width="3" points="${pts}"/>`;
+  });
+  if(isFinite(marker)){
+    let i=0,b=Infinity;
+    xs.forEach((x,j)=>{const d=Math.abs(x-marker);if(d<b){b=d;i=j;}});
+    const markerSeries=single?series[0]:series[series.length-1];
+    const px=mx(xs[i]), py=my(markerSeries.values[i]);
+    out+=`<line x1="${px}" y1="${pT}" x2="${px}" y2="${H-pB}" stroke="#ef4444" stroke-dasharray="6 5"/>`;
+    out+=`<circle cx="${px}" cy="${py}" r="6" fill="#ef4444" stroke="#111827"/>`;
+  }
+  out+=`<text x="${(pL+W-pR)/2}" y="${H-18}" text-anchor="middle" font-size="14" font-weight="800">Speed (knots)</text>`;
+  out+=`<text x="24" y="${(pT+H-pB)/2}" text-anchor="middle" font-size="14" font-weight="800" transform="rotate(-90 24 ${(pT+H-pB)/2})">${esc(yLabel)}</text>`;
+  svg.innerHTML=out;
+}
+
+function loadPdfExample(){setUnitMode('si'); const vals={si_L:205,si_Lpp:200,si_B:32,si_TF:10,si_TA:10,si_dispvol:37500,si_CB:0.5833,si_CM:0.98,si_CWP:0.75,si_lcb:-0.75,si_ABT:20,si_hB:4,si_AT:16,si_SAPP:50,Cstern:10,k2eq:1.5,prop_D:8,AEAO:0.739,PD:0.95,etaO:0.646,etaS:0.99,num_engines:1,current_speed:25,range_start:5,range_end:25}; Object.entries(vals).forEach(([k,v])=>{document.getElementById(k).value=v});document.getElementById('method_version').value='1978';recalc();}
+async function downloadExcel(){
+
+  try {
+    const resStatus = await fetch('/api/status');
+    const dataStatus = await resStatus.json();
+    if (dataStatus && !dataStatus.error) {
+      dbStatus = dataStatus;
+    }
+  } catch (err) {
+    console.error("Error validating payment status before export:", err);
+  }
+
+  const remaining = dbStatus.paid_calculations_remaining || 0;
+  if (remaining === 0) {
+    alert("Please purchase another 2 calculations to export Excel.");
+    openPaymentModal();
+    return;
+  }
+
+  const rs=speedRange().map(s=>calcAtSpeed(s)).filter(r=>r && isFinite(r.RT));
+  if(!rs.length){alert('No valid results to export.');return;}
+  if(!window.ExcelJS){alert('ExcelJS could not be loaded.');return;}
+
+  const wb=new ExcelJS.Workbook();
+  wb.creator='Holtrop & Mennen Calculator';
+  wb.created=new Date();
+  wb.modified=new Date();
+
+  const titleFill={type:'pattern',pattern:'solid',fgColor:{argb:'FF1F4E78'}};
+  const sectionFill={type:'pattern',pattern:'solid',fgColor:{argb:'FFD9EAF7'}};
+  const headerFill={type:'pattern',pattern:'solid',fgColor:{argb:'FF5B9BD5'}};
+  const inputFill={type:'pattern',pattern:'solid',fgColor:{argb:'FFF4F9FF'}};
+  const thin={style:'thin',color:{argb:'FFD9E2F3'}};
+  const border={top:thin,left:thin,bottom:thin,right:thin};
+  const titleFont={bold:true,size:16,color:{argb:'FFFFFFFF'}};
+  const sectionFont={bold:true,size:12,color:{argb:'FF1F4E78'}};
+  const headerFont={bold:true,color:{argb:'FFFFFFFF'}};
+
+  function styleTitle(ws,cell,title,span){
+    ws.getCell(cell).value=title;
+    ws.getCell(cell).font=titleFont;
+    ws.getCell(cell).fill=titleFill;
+    ws.getCell(cell).alignment={vertical:'middle'};
+    const row=Number(cell.replace(/^[A-Z]+/,''));
+    ws.mergeCells(row,1,row,span);
+    ws.getRow(row).height=24;
+  }
+  function styleHeader(row){
+    row.eachCell(c=>{c.font=headerFont;c.fill=headerFill;c.border=border;c.alignment={horizontal:'center',vertical:'middle',wrapText:true};});
+    row.height=26;
+  }
+  function styleSection(ws,rowNo,text,span){
+    ws.getCell(rowNo,1).value=text;
+    ws.getCell(rowNo,1).font=sectionFont;
+    ws.getCell(rowNo,1).fill=sectionFill;
+    ws.mergeCells(rowNo,1,rowNo,span);
+    for(let c=1;c<=span;c++){ws.getCell(rowNo,c).border=border;}
+  }
+  function addPairRows(ws,rows,startRow=1){
+    rows.forEach((r,i)=>{
+      const row=ws.getRow(startRow+i);
+      row.values=r;
+      row.eachCell((c,idx)=>{c.border=border;c.alignment={vertical:'middle'}; if(idx===1)c.font={bold:true};});
+    });
+  }
+
+  // Summary sheet
+  const summary=wb.addWorksheet('Summary',{views:[{showGridLines:false}]});
+  summary.columns=[{width:34},{width:18},{width:16},{width:34},{width:18},{width:16}];
+  styleTitle(summary,'A1','Holtrop & Mennen Resistance and Power Export',6);
+  summary.getCell('A2').value='Created'; summary.getCell('B2').value=new Date().toLocaleString();
+  summary.getCell('D2').value='Method'; summary.getCell('E2').value=document.getElementById('method_version').selectedOptions[0].textContent;
+  ['A2','B2','D2','E2'].forEach(a=>{summary.getCell(a).border=border;});
+
+  const cur=calcAtSpeed(val('current_speed')||rs[rs.length-1].speedKn);
+  styleSection(summary,4,'Current speed result',6);
+  addPairRows(summary,[
+    ['Current speed',cur.speedKn,'knots','Froude number Fn',cur.Fn,''],
+    ['Total resistance RT',cur.RT/1000,'kN','Effective power PE',cur.PE,'kW'],
+    ['Shaft power PS',cur.PS,'kW','Required installed power',cur.maxPower,'kW'],
+    ['Frictional resistance RF',cur.RF/1000,'kN','Viscous hull resistance RF(1+k1)',cur.Rv/1000,'kN'],
+    ['Appendage resistance RAPP',cur.RAPP/1000,'kN','Wave resistance RW',cur.RW/1000,'kN'],
+    ['Bulb resistance RB',cur.RB/1000,'kN','Transom resistance RTR',cur.RTR/1000,'kN'],
+    ['Correlation allowance RA',cur.RA/1000,'kN','Wetted surface S',cur.S,'m2'],
+    ['Hull form factor 1+k1',cur.k1,'','Correlation CA',cur.CA,''],
+    ['Wake fraction w',cur.w,'','Thrust deduction t',cur.t,''],
+    ['Relative rotative efficiency etaR',cur.etaR,'','Hull efficiency etaH',cur.etaH,'']
+  ],5);
+  ['B5','E5','B6','E6','B7','E7','B8','E8','B9','E9','B10','E10','B11','E11','B12','E12','B13','E13','B14','E14'].forEach(a=>summary.getCell(a).numFmt='0.000');
+  ['B6','E6','B7','E7','B8','E8','B9','E9','B10','E10','B11','E11'].forEach(a=>summary.getCell(a).numFmt='#,##0.00');
+  ['B7','E7'].forEach(a=>summary.getCell(a).numFmt='#,##0');
+
+  // Input sheet
+  const input=wb.addWorksheet('Inputs',{views:[{showGridLines:false}]});
+  input.columns=[{width:32},{width:16},{width:14},{width:32},{width:16},{width:14}];
+  styleTitle(input,'A1','Input Data',6);
+  const inp=getInputs();
+  styleSection(input,3,'Hull dimensions and coefficients',6);
+  addPairRows(input,[
+    ['Waterline length L',inp.L,'m','Length between perpendiculars LPP',inp.Lpp,'m'],
+    ['Breadth moulded B',inp.B,'m','Average draught T',(inp.TF+inp.TA)/2,'m'],
+    ['Forward draught TF',inp.TF,'m','After draught TA',inp.TA,'m'],
+    ['Displacement volume ∇',inp.disp,'m3','Block coefficient CB',inp.CB,''],
+    ['Midship coefficient CM',inp.CM,'','Waterplane coefficient CWP',inp.CWP,''],
+    ['LCB forward of 0.5L',inp.lcb,'%','Afterbody Cstern',inp.Cstern,'']
+  ],4);
+  styleSection(input,11,'Appendages, bulb, transom and propulsion',6);
+  addPairRows(input,[
+    ['Bulb transverse area ABT',inp.ABT,'m2','Bulb centre height hB',inp.hB,'m'],
+    ['Transom area AT',inp.AT,'m2','Appendage area SAPP',inp.SAPP,'m2'],
+    ['Appendage factor 1+k2',inp.k2eq,'','Bow-thruster tunnel diameter',inp.thruster_d,'m'],
+    ['Propeller diameter D',inp.D,'m','Blade area ratio AE/AO',inp.AEAO,''],
+    ['Open-water efficiency etaO',inp.etaO,'','Shafting efficiency etaS',inp.etaS,''],
+    ['MCR/service margin',margin(),'','Speed range',`${val('range_start')} - ${val('range_end')}`,'knots']
+  ],12);
+  input.eachRow(r=>r.eachCell(c=>{if(c.address.match(/^[BE]/))c.fill=inputFill;}));
+
+  // Detailed range sheet
+  const data=wb.addWorksheet('Speed Range',{views:[{state:'frozen',xSplit:1,ySplit:4,showGridLines:false}]});
+  data.columns=[
+    {header:'Speed',key:'speedKn',width:12},{header:'Fn',key:'Fn',width:10},{header:'Re',key:'Re',width:14},
+    {header:'RT',key:'RT',width:14},{header:'PE',key:'PE',width:14},{header:'PS',key:'PS',width:14},{header:'Installed',key:'maxPower',width:14},
+    {header:'RF',key:'RF',width:14},{header:'Rv hull',key:'Rv',width:14},{header:'RAPP',key:'RAPP',width:14},{header:'RW',key:'RW',width:14},{header:'RB',key:'RB',width:14},{header:'RTR',key:'RTR',width:14},{header:'RA',key:'RA',width:14},
+    {header:'1+k1',key:'k1',width:12},{header:'S',key:'S',width:14},{header:'CF',key:'CF',width:12},{header:'CA',key:'CA',width:12},{header:'w',key:'w',width:10},{header:'t',key:'t',width:10},{header:'etaR',key:'etaR',width:10},{header:'etaH',key:'etaH',width:10}
+  ];
+  styleTitle(data,'A1','Speed Range Performance Table',22);
+  data.getCell('A2').value='All forces are shown in kN. Power is shown in kW. Coefficients are dimensionless unless noted.';
+  data.mergeCells(2,1,2,22);
+  data.getRow(2).font={italic:true,color:{argb:'FF666666'}};
+  const headerRow=data.getRow(4);
+  headerRow.values=['Speed (kn)','Fn','Re (x10^9)','RT (kN)','PE (kW)','PS (kW)','Installed (kW)','RF (kN)','Rv hull (kN)','RAPP (kN)','RW (kN)','RB (kN)','RTR (kN)','RA (kN)','1+k1','S (m2)','CF x10^3','CA x10^3','w','t','etaR','etaH'];
+  styleHeader(headerRow);
+  rs.forEach(r=>{
+    const row=data.addRow([r.speedKn,r.Fn,r.Re/1e9,r.RT/1000,r.PE,r.PS,r.maxPower,r.RF/1000,r.Rv/1000,r.RAPP/1000,r.RW/1000,r.RB/1000,r.RTR/1000,r.RA/1000,r.k1,r.S,r.CF*1000,r.CA*1000,r.w,r.t,r.etaR,r.etaH]);
+    row.eachCell(c=>{c.border=border;c.numFmt='#,##0.000';});
+    [4,5,6,7,8,9,10,11,12,13,14,16].forEach(i=>row.getCell(i).numFmt='#,##0.00');
+    [5,6,7,16].forEach(i=>row.getCell(i).numFmt='#,##0');
+  });
+  data.autoFilter={from:'A4',to:'V4'};
+
+  // Components sheet
+  const comp=wb.addWorksheet('Components',{views:[{state:'frozen',ySplit:3,showGridLines:false}]});
+  comp.columns=[{width:18},{width:16},{width:16},{width:16},{width:16},{width:16},{width:16},{width:16},{width:16}];
+  styleTitle(comp,'A1','Resistance Components by Speed',9);
+  const compHdr=comp.getRow(3);
+  compHdr.values=['Speed (kn)','RF (kN)','Rv hull (kN)','RAPP (kN)','RW (kN)','RB (kN)','RTR (kN)','RA (kN)','RT (kN)'];
+  styleHeader(compHdr);
+  rs.forEach(r=>{
+    const row=comp.addRow([r.speedKn,r.RF/1000,r.Rv/1000,r.RAPP/1000,r.RW/1000,r.RB/1000,r.RTR/1000,r.RA/1000,r.RT/1000]);
+    row.eachCell(c=>{c.border=border;c.numFmt='#,##0.00';});
+  });
+  comp.autoFilter={from:'A3',to:'I3'};
+
+  // Formula sheet
+  const formulas=wb.addWorksheet('Formula Notes',{views:[{showGridLines:false}]});
+  formulas.columns=[{width:34},{width:95}];
+  styleTitle(formulas,'A1','Formula Notes',2);
+  const fRows=[
+    ['Total resistance','RT = RF(1+k1) + RAPP + RW + RB + RTR + RA + bow-thruster opening resistance'],
+    ['Friction line','CF = 0.075 / (log10(Re) - 2)^2, ITTC 1957'],
+    ['Effective power','PE = RT * V / 1000'],
+    ['Shaft power','PS = PE / (etaO * etaR * etaS * etaH)'],
+    ['Installed power','Installed power = PS / MCR service margin'],
+    ['Note','This export uses the same calculations as the active HTML calculator screen.']
+  ];
+  fRows.forEach((r,i)=>{const row=formulas.getRow(i+3); row.values=r; row.eachCell((c,idx)=>{c.border=border;c.alignment={wrapText:true,vertical:'top'}; if(idx===1)c.font={bold:true};});});
+
+  // Global styling
+  [summary,input,data,comp,formulas].forEach(ws=>{
+    ws.properties.defaultRowHeight=18;
+    ws.eachRow(row=>row.eachCell(cell=>{cell.alignment={...(cell.alignment||{}),vertical:'middle'};}));
+  });
+
+  const buf=await wb.xlsx.writeBuffer();
+  const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='holtrop_mennen_formatted_export.xlsx';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(a.href);
+}
+document.querySelectorAll('input, select').forEach(el => {
+  if (el.id !== 'payment-email-input') {
+    el.addEventListener('input', recalc);
+  }
+});
+window.addEventListener('resize', recalc);
+
+let isInitialLoad = true;
+let isPaymentModalOpen = false;
+let dbStatus = { free_used: false, paid_calculations_remaining: 0, email: null };
+
+async function fetchStatus() {
+  try {
+    const res = await fetch('/api/status');
+    const data = await res.json();
+    if (data && !data.error) {
+      dbStatus = data;
+      checkFreemiumStatus();
+    }
+  } catch (e) {
+    console.error("Failed to load status:", e);
+  }
+}
+
+function checkFreemiumStatus() {
+  const remaining = dbStatus.paid_calculations_remaining || 0;
+  const isFreeUsed = dbStatus.free_used === true || dbStatus.free_used === 1;
+  const banner = document.getElementById('freemium-banner');
+  const msg = document.getElementById('freemium-message');
+  const payBtn = document.getElementById('pay-btn');
+
+  if (remaining > 0) {
+    if (banner) {
+      banner.className = 'notice info animated-sticky-banner';
+      banner.style.backgroundColor = '#d1fae5';
+      banner.style.borderColor = '#34d399';
+      banner.style.color = '#065f46';
+      msg.textContent = `✅ Payment Successful. Remaining Paid Calculations: ${remaining}`;
+      payBtn.style.display = 'none';
+    }
+    return 'paid_active';
+  } else if (isFreeUsed) {
+    if (banner) {
+      banner.className = 'notice warn animated-sticky-banner';
+      banner.style.backgroundColor = '#fef3c7';
+      banner.style.borderColor = '#fcd34d';
+      banner.style.color = '#92400e';
+      msg.textContent = `Remaining Calculations: 0. Purchase again to continue.`;
+      payBtn.style.display = 'inline-block';
+      payBtn.textContent = 'Buy Now';
+    }
+    return 'blocked';
+  } else {
+    if (banner) {
+      banner.className = 'notice info animated-sticky-banner';
+      banner.style.backgroundColor = '#eef6ff';
+      banner.style.borderColor = '#cfe2ff';
+      banner.style.color = '#123766';
+      msg.textContent = 'You have 1 free use of this calculator.';
+      payBtn.style.display = 'inline-block';
+      payBtn.textContent = 'Buy Now';
+    }
+    return 'free_available';
+  }
+}
+
+function validateModalEmail() {
+  const emailVal = document.getElementById('payment-email-input').value.trim();
+  const continueBtn = document.getElementById('payment-continue-btn');
+  const re = /^[^s@]+@[^s@]+\.[^\s@]+$/;
+  const isValid = re.test(emailVal);
+  if (continueBtn) {
+    continueBtn.disabled = !isValid;
+  }
+}
+
+async function submitEmailLead() {
+  const emailVal = document.getElementById('payment-email-input').value.trim();
+  const continueBtn = document.getElementById('payment-continue-btn');
+  if (continueBtn) {
+    continueBtn.disabled = true;
+    continueBtn.textContent = 'Generating QR...';
+  }
+  try {
+    const res = await fetch('/api/status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'store_email', email: emailVal })
+    });
+    const data = await res.json();
+    if (data && !data.error) {
+      dbStatus = data;
+    }
+  } catch (err) {
+    console.warn("[Silent Lead] Failed to record email lead metadata:", err);
+  }
+
+  // Hide email form, show pay button and payment info
+  document.getElementById('email-capture-container').style.display = 'none';
+  document.getElementById('payment-initial-info').style.display = 'block';
+  document.getElementById('pay-now-btn').style.display = 'block';
+  
+  // Automatically trigger QR code generation
+  startCheckout();
+}
+
+function openPaymentModal() {
+  isPaymentModalOpen = true;
+  const modal = document.getElementById('payment-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+  
+  const emailCapture = document.getElementById('email-capture-container');
+  const payBtn = document.getElementById('pay-now-btn');
+  const initialInfo = document.getElementById('payment-initial-info');
+  const qrContainer = document.getElementById('qr-container');
+  
+  if (dbStatus.email) {
+    if (emailCapture) emailCapture.style.display = 'none';
+    if (payBtn) payBtn.style.display = 'block';
+    if (initialInfo) initialInfo.style.display = 'block';
+    if (qrContainer) qrContainer.style.display = 'none';
+    startCheckout();
+  } else {
+    if (emailCapture) {
+      emailCapture.style.display = 'block';
+      const emailInput = document.getElementById('payment-email-input');
+      const continueBtn = document.getElementById('payment-continue-btn');
+      if (emailInput) emailInput.value = '';
+      if (continueBtn) {
+        continueBtn.disabled = true;
+        continueBtn.textContent = 'Continue';
+      }
+    }
+    if (payBtn) payBtn.style.display = 'none';
+    if (initialInfo) initialInfo.style.display = 'none';
+    if (qrContainer) qrContainer.style.display = 'none';
+  }
+}
+
+let paymentPollInterval = null;
+
+function closePaymentModal() {
+  isPaymentModalOpen = false;
+  const modal = document.getElementById('payment-modal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+  if (paymentPollInterval) {
+    clearInterval(paymentPollInterval);
+    paymentPollInterval = null;
+  }
+}
+
+async function startCheckout() {
+  const payBtn = document.getElementById('pay-now-btn');
+  const originalText = payBtn ? payBtn.textContent : '';
+  if (payBtn) {
+    payBtn.disabled = true;
+    payBtn.textContent = 'Generating QR...';
+  }
+
+  try {
+    const response = await fetch('/api/create-razorpay-qr', { method: 'POST' });
+    const data = await response.json();
+    if (!response.ok || data.error) {
+      alert('Error initiating Razorpay QR code: ' + (data.error || 'Unknown error'));
+      if (payBtn) {
+        payBtn.disabled = false;
+        payBtn.textContent = originalText;
+      }
+      return;
+    }
+
+    // Display QR Code
+    const qrImage = document.getElementById('qr-image');
+    if (qrImage) {
+      qrImage.src = data.image_url;
+    }
+    
+    // Hide initial info & pay button
+    const initialInfo = document.getElementById('payment-initial-info');
+    if (initialInfo) initialInfo.style.display = 'none';
+    if (payBtn) payBtn.style.display = 'none';
+
+    // Show QR Container
+    const qrContainer = document.getElementById('qr-container');
+    if (qrContainer) qrContainer.style.display = 'block';
+
+    // Start polling status
+    startPaymentStatusPolling();
+  } catch (err) {
+    console.error(err);
+    alert('Failed to connect to QR API endpoint. Check server configuration.');
+    if (payBtn) {
+      payBtn.disabled = false;
+      payBtn.textContent = originalText;
+    }
+  }
+}
+
+function startPaymentStatusPolling() {
+  if (paymentPollInterval) clearInterval(paymentPollInterval);
+  
+  paymentPollInterval = setInterval(async () => {
+    try {
+      const response = await fetch('/api/razorpay/payment-status');
+      const data = await response.json();
+      
+      if (data && data.paid_access) {
+        clearInterval(paymentPollInterval);
+        paymentPollInterval = null;
+        
+        await fetchStatus();
+        closePaymentModal();
+        alert("Payment successful. Calculator unlocked.");
+      }
+    } catch (err) {
+      console.error("Error polling payment status:", err);
+    }
+  }, 5000); // Poll every 5 seconds
+}
+
+function simulatePaymentSuccess() {
+  dbStatus.paid_calculations_remaining = 2;
+  closePaymentModal();
+  checkFreemiumStatus();
+  actualRecalc();
+}
+
+window.addEventListener('load', () => {
+  recalc();
+  isInitialLoad = false;
+});
+fetchStatus();
+
+async function recalc() {
+  if (isInitialLoad) {
+    actualRecalc();
+    return;
+  }
+
+  // Enforce D1 backend validation prior to calculation running
+  try {
+    const response = await fetch('/api/status');
+    const data = await response.json();
+    if (data && !data.error) {
+      dbStatus = data;
+    }
+  } catch (e) {
+    console.error("Failed to refresh status before calculation:", e);
+  }
+
+  const status = checkFreemiumStatus();
+  if (status === 'blocked') {
+    if (!isPaymentModalOpen) {
+      isPaymentModalOpen = true;
+      setTimeout(() => {
+        openPaymentModal();
+      }, 1500);
+    }
+    return;
+  }
+
+  // If paid calculations are active, decrement count on D1 first
+  if (status === 'paid_active') {
+    try {
+      const response = await fetch('/api/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'consume_calculation' })
+      });
+      const data = await response.json();
+      if (!response.ok || data.error) {
+        alert("Remaining calculations spent. Please purchase calculations to continue.");
+        dbStatus.paid_calculations_remaining = 0;
+        checkFreemiumStatus();
+        openPaymentModal();
+        return;
+      }
+      dbStatus = data;
+      checkFreemiumStatus();
+    } catch (e) {
+      console.error(e);
+      alert("Failed to confirm calculation quota with server.");
+      return;
+    }
+  }
+
+  // Run calculation math
+  actualRecalc();
+
+  // If this was the first free calculation, mark it consumed on D1
+  if (status === 'free_available') {
+    try {
+      const response = await fetch('/api/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'consume_free' })
+      });
+      const data = await response.json();
+      if (data && !data.error) {
+        dbStatus = data;
+        checkFreemiumStatus();
+      }
+    } catch(e) {
+      console.error("Failed to consume free calculator trial:", e);
+    }
+  }
+}
+
+</script>
+</body>
+</html>
