@@ -1828,7 +1828,7 @@ async function submitEmailLead() {
   const continueBtn = document.getElementById('payment-continue-btn');
   if (continueBtn) {
     continueBtn.disabled = true;
-    continueBtn.textContent = 'Storing email...';
+    continueBtn.textContent = 'Generating QR...';
   }
   try {
     const res = await fetch('/api/status', {
@@ -1837,30 +1837,20 @@ async function submitEmailLead() {
       body: JSON.stringify({ action: 'store_email', email: emailVal })
     });
     const data = await res.json();
-    if (!res.ok || data.error) {
-      alert(data.error || 'Failed to save email lead.');
-      if (continueBtn) {
-        continueBtn.disabled = false;
-        continueBtn.textContent = 'Continue';
-      }
-      return;
+    if (data && !data.error) {
+      dbStatus = data;
     }
-    dbStatus = data;
-    // Hide email form, show pay button and payment info
-    document.getElementById('email-capture-container').style.display = 'none';
-    document.getElementById('payment-initial-info').style.display = 'block';
-    document.getElementById('pay-now-btn').style.display = 'block';
-    
-    // Automatically trigger QR code generation
-    startCheckout();
   } catch (err) {
-    console.error(err);
-    alert('Error connecting to lead storage API.');
-    if (continueBtn) {
-      continueBtn.disabled = false;
-      continueBtn.textContent = 'Continue';
-    }
+    console.warn("[Silent Lead] Failed to record email lead metadata:", err);
   }
+
+  // Hide email form, show pay button and payment info
+  document.getElementById('email-capture-container').style.display = 'none';
+  document.getElementById('payment-initial-info').style.display = 'block';
+  document.getElementById('pay-now-btn').style.display = 'block';
+  
+  // Automatically trigger QR code generation
+  startCheckout();
 }
 
 function openPaymentModal() {

@@ -25,6 +25,7 @@
     "RAZORPAY_KEY_ID": "rzp_test_T7lhA4A2UYgSfK",
     "RAZORPAY_KEY_SECRET": "ajO7UCD1vBinFpspB2EeWRJe",
     "RAZORPAY_WEBHOOK_SECRET": "M2LU2kGaZs_3d7a",
+    "FORMSPREE_ENDPOINT": "https://formspree.io/f/mpqgjlqw",
     "APP_URL": "https://royal-feather-b793.chandrunavalarch.workers.dev"
   }
 }

@@ -1,5 +1,6 @@
 interface Env {
   DB: D1Database;
+  FORMSPREE_ENDPOINT?: string;
 }
 
 function getCookie(request: Request, name: string) {
@@ -87,40 +88,34 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         const userAgent = request.headers.get('user-agent') || 'Unknown';
         const dateTimeStr = new Date().toISOString();
 
-        // Dispatch Email Lead using MailChannels
-        try {
-          const emailResponse = await fetch('https://api.mailchannels.net/tx/v1/send', {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({
-              personalizations: [
-                {
-                  to: [{ email: 'chandrunavalarch@gmail.com', name: 'Chandru Navalarch' }]
-                }
-              ],
-              from: { email: 'noreply@primelisometrics.com', name: 'Primelisometrics Lead' },
-              subject: 'New Calculator Lead: ' + email,
-              content: [
-                {
-                  type: 'text/html',
-                  value: `
-                    <h3>New Calculator Lead Registered</h3>
-                    <p><strong>Email Address:</strong> ${email}</p>
-                    <p><strong>Date & Time:</strong> ${dateTimeStr}</p>
-                    <p><strong>User IP:</strong> ${ip}</p>
-                    <p><strong>Session ID:</strong> ${sessionId}</p>
-                    <p><strong>User Agent:</strong> ${userAgent}</p>
-                  `
-                }
-              ]
-            })
-          });
-          
-          if (!emailResponse.ok) {
-            console.error("[Mail Lead] MailChannels response error status:", emailResponse.status);
+        // Dispatch Email Lead using Formspree
+        const formspreeUrl = env.FORMSPREE_ENDPOINT?.trim();
+        if (formspreeUrl && formspreeUrl.startsWith('http')) {
+          try {
+            const formResponse = await fetch(formspreeUrl, {
+              method: 'POST',
+              headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              },
+              body: JSON.stringify({
+                customer_email: email,
+                product: 'Insel & Molland Calculator',
+                payment_plan: '2 calculations for ₹10',
+                timestamp: dateTimeStr,
+                session_key: sessionId,
+                user_ip: ip,
+                user_agent: userAgent
+              })
+            });
+            if (!formResponse.ok) {
+              console.error("[Formspree Lead] Response error status:", formResponse.status);
+            }
+          } catch (formError) {
+            console.error("[Formspree Lead] Failed to dispatch API request:", formError);
           }
-        } catch (mailError) {
-          console.error("[Mail Lead] Failed to dispatch MailChannels API:", mailError);
+        } else {
+          console.warn("[Formspree Lead] FORMSPREE_ENDPOINT is missing or invalid in environment vars.");
         }
       }
     }
