@@ -20,7 +20,9 @@
     }
   ],
   "vars": {
-    "RAZORPAY_KEY_ID": "rzp_test_T7k4zUqXfzygfk",
+    "RAZORPAY_KEY_ID": "rzp_test_T7lhA42UYgSfK",
+    "RAZORPAY_KEY_SECRET": "ajO7UCD1vBinFpspB2EeWRJe",
+    "RAZORPAY_WEBHOOK_SECRET": "RAZORPAY_WEBHOOK_SECRET",
     "APP_URL": "https://royal-feather-b793.chandrunavalarch.workers.dev"
   }
 }

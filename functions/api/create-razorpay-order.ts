@@ -27,12 +27,26 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const keyId = env.RAZORPAY_KEY_ID;
   const keySecret = env.RAZORPAY_KEY_SECRET;
 
-  if (!keyId || !keySecret) {
+  if (!keyId) {
+    console.error("[Razorpay API] Error: RAZORPAY_KEY_ID is missing from environment variables.");
     return new Response(
-      JSON.stringify({ error: 'Server configuration error: Razorpay keys are missing' }),
+      JSON.stringify({ error: 'Server configuration error: RAZORPAY_KEY_ID is missing' }),
       { status: 500 }
     );
   }
+
+  if (!keySecret) {
+    console.error("[Razorpay API] Error: RAZORPAY_KEY_SECRET is missing from environment variables.");
+    return new Response(
+      JSON.stringify({ error: 'Server configuration error: RAZORPAY_KEY_SECRET is missing' }),
+      { status: 500 }
+    );
+  }
+
+  // Safe debug printing of the configured keys
+  const maskedKeyId = keyId.slice(0, 8) + '...' + keyId.slice(-4);
+  const maskedKeySecret = keySecret.slice(0, 4) + '...' + keySecret.slice(-4);
+  console.log(`[Razorpay API] Using Key ID: ${maskedKeyId}, Key Secret length: ${keySecret.length} (${maskedKeySecret})`);
 
   try {
     const receiptId = `rcpt_${crypto.randomUUID().slice(0, 18)}`;
@@ -58,8 +72,15 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const orderData: any = await razorpayResponse.json();
 
     if (!razorpayResponse.ok) {
+      console.error(`[Razorpay API] HTTP ${razorpayResponse.status} Error:`, JSON.stringify(orderData));
+      
+      let errMsg = orderData.error?.description || 'Razorpay order creation failed';
+      if (razorpayResponse.status === 401) {
+        errMsg = `Razorpay authentication failed. Please double check that your Key ID (${maskedKeyId}) and Key Secret match.`;
+      }
+      
       return new Response(
-        JSON.stringify({ error: orderData.error?.description || 'Razorpay order creation failed' }),
+        JSON.stringify({ error: errMsg }),
         { status: razorpayResponse.status }
       );
     }
