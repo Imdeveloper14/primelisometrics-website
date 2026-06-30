@@ -71,8 +71,9 @@ export default function Navbar({ isLoaded = true }: NavbarProps) {
     }
 
     // Set initial active section based on current path
-    if (window.location.pathname.includes('/calculator')) {
-      setActiveSection('calculator');
+    const path = window.location.pathname;
+    if (path.includes('/calculators') || path.includes('/calculator') || path.includes('/savitsky-calculator')) {
+      setActiveSection('calculators');
     }
 
     return () => {
@@ -90,7 +91,7 @@ export default function Navbar({ isLoaded = true }: NavbarProps) {
     { href: '/#portfolio', label: 'Portfolio', id: 'portfolio' },
     { href: '/#workflow', label: 'Workflow', id: 'workflow' },
     { href: '/#contact', label: 'Contact', id: 'contact' },
-    { href: '/calculator', label: 'Calculator', id: 'calculator' },
+    { href: '/calculators', label: 'Resistance Calculators', id: 'calculators' },
   ];
 
   return (

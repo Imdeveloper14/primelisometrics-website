@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Savitsky Planing-Hull Engine Selection Calculator</title>
+<style>
+:root{--bg:#f7f8fb;--card:#ffffff;--line:#d8dee8;--text:#111827;--muted:#6b7280;--accent:#2563eb;--ok:#15803d;--warn:#b45309;--info:#0369a1}*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}.wrap{max-width:1620px;margin:0 auto;padding:22px}h1{margin:0 0 8px;font-size:30px}.lead{margin:0 0 18px;color:var(--muted);max-width:1400px;line-height:1.5}.grid{display:grid;gap:18px}.main{grid-template-columns:440px 1fr}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 1px 4px rgba(0,0,0,.04)}.pad{padding:18px}.section{font-size:17px;font-weight:800;margin:0 0 14px}.field{margin-bottom:12px}label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}input,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:12px;font-size:14px}.duo{display:grid;grid-template-columns:1fr 1fr;gap:8px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}button{padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;font-weight:800;cursor:pointer;font-size:13px}button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.notice{padding:12px 14px;border-radius:14px;background:#eef6ff;border:1px solid #cfe2ff;color:#123766;font-size:13px;line-height:1.45}.notice.warn{background:#fef3c7;border-color:#fcd34d;color:#92400e}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.metric{border:1px solid var(--line);border-radius:16px;padding:14px}.metric .k{font-size:12px;color:var(--muted);margin-bottom:4px}.metric .v{font-size:25px;font-weight:900}.metric .n{font-size:12px;color:var(--muted);margin-top:4px}.status{font-weight:800}.ok{color:var(--ok)}.warn{color:var(--warn)}.tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}.tabbtn{padding:8px 12px;font-size:12px}.tabbtn.active{background:var(--accent);color:#fff;border-color:var(--accent)}.tabpanel{display:none}.tabpanel.active{display:block}.table-wrap{max-height:540px;overflow:auto;border:1px solid var(--line);border-radius:14px}.range-table-wrap{max-height:460px;overflow:auto;border:1px solid var(--line);border-radius:14px}table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{padding:8px;border-top:1px solid var(--line);text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}.small{font-size:12px;color:var(--muted);line-height:1.45}.results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}.result-box{border:1px solid var(--line);border-radius:12px;padding:12px}.result-box .label{font-size:11px;color:var(--muted);font-weight:700;margin-bottom:4px}.result-box .value{font-size:18px;font-weight:900}.result-box .unit{font-size:11px;color:var(--muted)}.engine-best{border:2px solid var(--ok);background:#f0fdf4;border-radius:14px;padding:14px;margin-bottom:12px}.engine-best .tag{font-size:11px;font-weight:800;color:var(--ok);letter-spacing:.5px;margin-bottom:4px}.engine-best .name{font-size:18px;font-weight:900;margin-bottom:4px}.engine-alt-table th,.engine-alt-table td{font-size:12px}svg{width:100%;height:360px;display:block;background:#fff;border-radius:12px}.chartbox svg{height:420px}.chartbox{border:1px solid var(--line);border-radius:16px;padding:10px;margin-bottom:12px}.chart-title{font-size:14px;font-weight:800;margin:0 0 8px}.formula{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#f8fafc;border:1px solid var(--line);padding:12px;border-radius:12px;line-height:1.55;font-size:12px;white-space:pre-wrap;overflow-x:auto}.formula-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.formula-title{font-size:13px;font-weight:900;margin:0 0 8px;color:var(--text)}@media (max-width:900px){.formula-grid{grid-template-columns:1fr}}.hidden-support{display:none}@media (max-width:1250px){.main,.metrics{grid-template-columns:1fr 1fr}.results-grid{grid-template-columns:1fr 1fr}}@media (max-width:760px){.main,.metrics,.results-grid{grid-template-columns:1fr}}
+
+@keyframes bannerGlow {
+  0% { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06), 0 0 0 0 rgba(37,99,235,0.4); }
+  50% { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05), 0 0 12px 6px rgba(37,99,235,0.6); }
+  100% { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06), 0 0 0 0 rgba(37,99,235,0.4); }
+}
+.animated-sticky-banner {
+  position: sticky;
+  top: 10px;
+  z-index: 9999;
+  animation: bannerGlow 3s infinite ease-in-out;
+  transition: all 0.4s ease;
+}
+.email-input-box {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  font-size: 14px;
+  margin-top: 8px;
+  margin-bottom: 12px;
+}
+.email-input-box:focus {
+  outline: 2px solid var(--accent);
+  border-color: transparent;
+}
+#payment-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(17,24,39,0.7);
+  z-index: 10000;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+</head>
+<body>
+
+<div class="wrap">
+  <h1>Savitsky Planing-Hull Resistance & Propulsion Engine Selection Calculator</h1>
+  <p class="lead">Resistance, EHP, BHP, maximum required power, and marine diesel engine matching using the Daniel Savitsky method. This version follows the Insel & Molland calculator layout and shows Insel & Molland-style charts and includes formula blocks at the bottom of the page.</p>
+  <!-- Freemium Status Banner -->
+  <div id="freemium-banner" class="notice info animated-sticky-banner" style="margin-bottom:18px; font-weight:800; font-size:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+    <span id="freemium-message">You have 1 free use of this calculator.</span>
+    <button id="pay-btn" onclick="openPaymentModal()" style="padding:6px 12px; margin:0; background:var(--accent); color:#fff; border-color:var(--accent); font-size:12px;">Buy Now</button>
+  </div>
+
+  <!-- Secure Payment Simulation Modal -->
+  <div id="payment-modal">
+    <div style="background:#fff; color:#111; max-width:480px; width:100%; border-radius:18px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.3); border:1px solid #d8dee8; text-align:center;">
+      <h3 style="margin-top:0; font-size:20px; font-weight:800; color:#111827;">Unlock 2 Calculations</h3>
+      <p id="payment-modal-desc" style="font-size:13.5px; color:#4b5563; line-height:1.5; margin-bottom:18px;">
+        Your free calculation has been used. Purchase 2 additional calculations for ₹10.
+      </p>
+
+      <!-- Email Capture Stage -->
+      <div id="email-capture-container" style="text-align:left; margin-bottom:18px;">
+        <label for="payment-email-input" style="font-weight:700; color:#374151;">Email Address</label>
+        <input id="payment-email-input" class="email-input-box" type="email" placeholder="you@example.com" oninput="validateModalEmail()" />
+        <button id="payment-continue-btn" class="primary" onclick="submitEmailLead()" style="width:100%; padding:11px; border-radius:12px; font-weight:800; cursor:pointer;" disabled>Continue</button>
+      </div>
+
+      <!-- UPI QR Code Container (hidden initially) -->
+      <div id="qr-container" style="display:none; margin:15px 0 20px 0; border:1px dashed #2563eb; border-radius:12px; padding:20px; background:#f0f7ff;">
+        <h4 style="margin:0 0 12px 0; color:#2563eb; font-weight:800; font-size:16px;">Pay ₹10 using UPI QR Code</h4>
+        <img id="qr-image" style="max-width:200px; height:200px; display:block; margin:0 auto 12px auto; border-radius:8px; background:#fff; padding:8px; border:1px solid #e5e7eb;" src="" />
+        <p style="font-size:13px; color:#1f2937; font-weight:700; margin:0 0 8px 0; line-height:1.4;">Scan this QR code and pay ₹10 to unlock the calculator.</p>
+        <div style="display:flex; justify-content:center; align-items:center; gap:8px; color:#4b5563; font-size:12.5px;">
+          <span class="spinner" style="border: 2px solid #e5e7eb; border-top: 2px solid #2563eb; border-radius: 50%; width: 12px; height: 12px; animation: spin 1s linear infinite;"></span>
+          <span id="qr-status-text">Waiting for payment verification...</span>
+        </div>
+      </div>
+
+      <div id="payment-initial-info" style="display:none; background:#f3f4f6; border:1px solid #e5e7eb; border-radius:12px; padding:16px; margin-bottom:18px; text-align:left;">
+        <div style="display:flex; justify-content:space-between; font-weight:800; font-size:15px; margin-bottom:6px; color:#111827;">
+          <span>2 Premium Calculations</span>
+          <span style="color:#2563eb;">₹10 INR</span>
+        </div>
+        <div style="font-size:11px; color:#6b7280; line-height:1.4;">Scan the QR code to pay instantly via any UPI app (GPay, PhonePe, Paytm, BHIM).</div>
+      </div>
+
+      <div style="display:flex; gap:12px; margin-top:12px;">
+        <button id="pay-now-btn" class="primary" onclick="startCheckout()" style="display:none; flex:1; background:#2563eb; color:#fff; border-color:#2563eb; padding:10px 14px; border-radius:12px; font-weight:800; cursor:pointer;">Generate QR Code</button>
+        <button onclick="closePaymentModal()" style="flex:1; padding:10px 14px; border:1px solid #d8dee8; border-radius:12px; font-weight:800; background:#fff; cursor:pointer;">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <div class="grid main">
+    <div class="card pad">
+      <h2 class="section">Inputs</h2>
+      <div class="tabs">
+        <button class="tabbtn active" id="tab_imp_btn" onclick="setUnitMode('imp')">Paper units</button>
+        <button class="tabbtn" id="tab_si_btn" onclick="setUnitMode('si')">SI units</button>
+      </div>
+      <div id="tab_imp" class="tabpanel active">
+        <h3 class="section" style="font-size:13px;margin:12px 0 8px">Hull & loading</h3>
+        <div class="field"><label>Δ weight (lb)</label><input id="imp_weight" type="number" value="60000" step="100"></div>
+        <div class="field hidden-support"><label>Speed V (knots)</label><input id="imp_speed" type="number" value="40" step="0.1"></div>
+        <div class="field"><label>Chine breadth b (ft)</label><input id="imp_beam" type="number" value="14" step="0.1"></div>
+        <div class="field"><label>Average deadrise β (deg)</label><input id="imp_beta" type="number" value="10" step="0.1"></div>
+        <div class="field"><label>LCG (ft from transom)</label><input id="imp_lcg" type="number" value="29.0" step="0.1"></div>
+        <div class="field"><label>VCG (ft)</label><input id="imp_vcg" type="number" value="2.0" step="0.1"></div>
+        <div class="field"><label>f (ft)</label><input id="imp_f" type="number" value="0.50" step="0.01"></div>
+        <div class="field"><label>ε shaft angle (deg)</label><input id="imp_eps" type="number" value="4.0" step="0.1"></div>
+      </div>
+      <div id="tab_si" class="tabpanel">
+        <h3 class="section" style="font-size:13px;margin:12px 0 8px">Hull & loading</h3>
+        <div class="field"><label>Δ mass-equivalent input (kg)</label><input id="si_mass" type="number" value="27215.5" step="1"></div>
+        <div class="field hidden-support"><label>Speed V (knots)</label><input id="si_speed" type="number" value="40.0" step="0.01"></div>
+        <div class="field"><label>Chine breadth b (m)</label><input id="si_beam" type="number" value="4.2672" step="0.001"></div>
+        <div class="field"><label>Average deadrise β (deg)</label><input id="si_beta" type="number" value="10" step="0.1"></div>
+        <div class="field"><label>LCG (m from transom)</label><input id="si_lcg" type="number" value="8.8392" step="0.001"></div>
+        <div class="field"><label>VCG (m)</label><input id="si_vcg" type="number" value="0.6096" step="0.001"></div>
+        <div class="field"><label>f (m)</label><input id="si_f" type="number" value="0.1524" step="0.001"></div>
+        <div class="field"><label>ε shaft angle (deg)</label><input id="si_eps" type="number" value="4.0" step="0.1"></div>
+      </div>
+      <h3 class="section" style="font-size:13px;margin:12px 0 8px">Calculation & propulsion</h3>
+      <div class="duo"><div class="field"><label>ΔCf roughness allowance</label><input id="rough" type="number" value="0.0004" step="0.0001"></div><div class="field"><label>Propulsive efficiency η</label><input id="efficiency" type="number" value="0.60" min="0.01" max="1" step="0.01"></div></div>
+      <div class="duo"><div class="field"><label>Number of engines</label><input id="num_engines" type="number" value="2" min="1" max="4" step="1"></div><div class="field"><label>MCR service margin</label><input id="mcr_margin" type="number" value="0.80" min="0.5" max="1" step="0.01"></div></div>
+      <div class="field"><label>Current speed (knots)</label><input id="current_speed" type="number" value="40" min="0.1" step="0.1" placeholder="Current / analysis speed"></div>
+      <div class="field"><label>Speed range table (knots)</label><div class="duo"><input id="range_start" type="number" value="1" min="0.1" step="0.1" placeholder="Start speed"><input id="range_end" type="number" value="40" min="0.1" step="0.1" placeholder="End speed"></div></div>
+      <div class="notice" style="margin-bottom:12px">Automatic trim is solved for each speed. Engine matching uses the highest required power inside the selected speed range, then divides it across the selected number of engines.</div>
+      <div class="toolbar"><button class="primary" onclick="recalc()">Calculate</button><button onclick="loadPaperCase()">Load paper case</button><button onclick="loadSICase()">Load SI case</button><button onclick="downloadExcel()">Export Excel</button></div>
+    </div>
+    <div class="grid" style="gap:18px">
+      <div class="card pad"><h2 class="section">Final calculated result</h2><div class="metrics">
+        <div class="metric"><div class="k">Equilibrium trim τe</div><div id="m-taue" class="v">—</div><div class="n">deg</div></div>
+        <div class="metric"><div class="k">Total drag D</div><div id="m-drag" class="v">—</div><div id="u-drag" class="n">lb</div></div>
+        <div class="metric"><div class="k">EHP</div><div id="m-ehp" class="v">—</div><div class="n">hp</div></div>
+        <div class="metric"><div class="k">BHP</div><div id="m-bhp" class="v">—</div><div class="n">hp</div></div>
+        <div class="metric"><div class="k">Maximum required power</div><div id="m-maxpower" class="v">—</div><div class="n">hp = BHP / margin</div></div>
+        <div class="metric"><div class="k">Equilibrium mean λe</div><div id="m-lambdae" class="v">—</div><div class="n">ratio</div></div>
+        <div class="metric"><div class="k">Wetted keel length Lk</div><div id="m-lk" class="v">—</div><div id="u-lk" class="n">ft</div></div>
+        <div class="metric"><div class="k">Wetted chine length Lc</div><div id="m-lc" class="v">—</div><div id="u-lc" class="n">ft</div></div>
+        <div class="metric"><div class="k">Draft d</div><div id="m-draft" class="v">—</div><div id="u-draft" class="n">ft</div></div>
+        <div class="metric"><div class="k">Porpoising metric</div><div id="m-porpmetric" class="v">—</div><div class="n">screen</div></div>
+        <div class="metric"><div class="k">Porpoising status</div><div id="m-stability" class="v">—</div><div class="n">trim screen</div></div>
+        <div class="metric"><div class="k">Vₘ/V at τe</div><div id="m-vratio" class="v">—</div><div class="n">ratio</div></div>
+        <div class="metric"><div class="k">Cp at τe</div><div id="m-cp" class="v">—</div><div class="n">coefficient</div></div>
+        <div class="metric"><div class="k">Row 30 at τe</div><div id="m-r30" class="v">—</div><div class="n">check</div></div>
+      </div><div style="margin-top:12px" class="small">Status: <span id="status" class="status">—</span></div></div>
+      <div class="card pad"><h2 class="section">Recommended propulsion engine(s)</h2><div class="notice" style="margin-bottom:12px">Reference engine matching is approximate and should be verified against current manufacturer data sheets and class requirements before final selection.</div><div class="results-grid"><div class="result-box"><div class="label">Sizing speed in range</div><div class="value" id="m-sizing-speed">—</div><div class="unit">knots</div></div><div class="result-box"><div class="label">Sizing total required power</div><div class="value" id="m-sizing-total">—</div><div class="unit">HP</div></div><div class="result-box"><div class="label">Required power per engine</div><div class="value" id="m-reqhp">—</div><div class="unit">HP</div></div></div><div id="engineRecoBox"></div></div>
+      <div class="card pad"><h2 class="section">Charts</h2><div class="chartbox"><div class="chart-title">Speed vs EHP with displacement, transition, and planing regions</div><svg id="chart3"></svg><div class="small">Green = displacement region, orange = transition region, blue = planing region. The red marker labels the EHP corresponding to the currently selected speed.</div></div><div class="chartbox"><div class="chart-title">Maximum required power versus speed</div><svg id="chart4"></svg><div class="small">Maximum required power = BHP / MCR service margin. Green = displacement region, orange = transition region, blue = planing region.</div></div><div class="chartbox"><div class="chart-title">Savitsky trim and coefficient trends vs speed</div><svg id="chart5"></svg><div class="small">Shows equilibrium trim, λe, Cp, and Vm/V across the selected speed range.</div></div></div>
+    </div>
+  </div>
+  <div class="card pad" style="margin-top:18px"><h2 class="section">Speed range performance table</h2><div class="small" style="margin-bottom:10px">Detailed resistance, power, trim, geometry, and porpoising-screen results across the requested speed range.</div><div class="range-table-wrap"><table id="rangeTbl"><thead><tr id="rangeHead"></tr></thead><tbody></tbody></table></div></div>
+  <div class="card pad" style="margin-top:18px">
+    <h2 class="section">Formula Summary</h2>
+    <div class="formula" style="max-width:780px">CLβ = Δ / (0.5 ρV²b²)
+
+Row30 = N(26) + Df(a − f) = 0
+
+D = Δtanτ + Df/cosτ
+
+EHP = D × V / 550
+
+BHP = EHP / η
+
+Maximum Required Power = BHP / MCR Margin
+
+Power per Engine = Maximum Required Power / Number of Engines
+
+Input Data
+     ↓
+CLβ
+     ↓
+Trim Solver
+     ↓
+Resistance (D)
+     ↓
+EHP
+     ↓
+BHP
+     ↓
+Maximum Required Power
+     ↓
+Engine Recommendation</div>
+  </div>
+  <div class="hidden-support"><table id="tbl"><tbody></tbody></table><span id="head1"></span><span id="head2"></span><span id="head3"></span></div>
+</div>
+
+<script>
+
+let unitMode = 'imp';
+const g = 32.174, knotToFps = 1.68781, nu = 1.19e-5, rho = 1.94;
+const FT_PER_M = 3.280839895, LB_PER_KG = 2.20462262185, KNOT_PER_MPS = 1.94384449244;
+const N_PER_LB = 4.44822161526, M_PER_FT = 0.3048;
+
+const HP_PER_KW = 1.34102209;
+const ENGINE_DB = [
+  {manufacturer:'Yanmar', name:'3JH40', hp:39, rpm:3800, weight:134, type:'Diesel inboard'},
+  {manufacturer:'Yanmar', name:'4JH45', hp:44, rpm:3000, weight:218, type:'Diesel inboard'},
+  {manufacturer:'Volvo Penta', name:'D2-50', hp:50, rpm:3000, weight:186, type:'Diesel inboard'},
+  {manufacturer:'Yanmar', name:'4LV170', hp:170, rpm:3300, weight:365, type:'Diesel inboard'},
+  {manufacturer:'Volvo Penta', name:'D3-220', hp:220, rpm:3500, weight:357, type:'Diesel inboard'},
+  {manufacturer:'Cummins', name:'QSB 6.7', hp:220, rpm:2600, weight:580, type:'Diesel inboard'},
+  {manufacturer:'Volvo Penta', name:'D4-225', hp:225, rpm:3500, weight:410, type:'Diesel inboard'},
+  {manufacturer:'Perkins', name:'Sabre M225C', hp:225, rpm:3000, weight:481, type:'Diesel inboard'},
+  {manufacturer:'Cummins', name:'QSB 5.9', hp:300, rpm:2800, weight:522, type:'Diesel inboard'},
+  {manufacturer:'Perkins', name:'M300C', hp:300, rpm:2800, weight:590, type:'Diesel inboard'},
+  {manufacturer:'Volvo Penta', name:'D6-370', hp:370, rpm:3500, weight:540, type:'Diesel inboard'},
+  {manufacturer:'Yanmar', name:'8LV370', hp:370, rpm:3500, weight:562, type:'Diesel inboard'},
+  {manufacturer:'Volvo Penta', name:'D6-400', hp:400, rpm:3500, weight:562, type:'Diesel inboard'},
+  {manufacturer:'Yanmar', name:'6LY440', hp:440, rpm:3300, weight:595, type:'Diesel inboard'},
+  {manufacturer:'Volvo Penta', name:'D8-440', hp:440, rpm:2500, weight:770, type:'Diesel inboard'},
+  {manufacturer:'Cummins', name:'QSC 8.3', hp:450, rpm:2600, weight:717, type:'Diesel inboard'},
+  {manufacturer:'John Deere', name:'6090', hp:500, rpm:2100, weight:1015, type:'Diesel inboard'},
+  {manufacturer:'Cummins', name:'QSL9', hp:530, rpm:2100, weight:884, type:'Diesel inboard'},
+  {manufacturer:'Volvo Penta', name:'D11-625', hp:625, rpm:2300, weight:1080, type:'Diesel inboard'},
+  {manufacturer:'Scania', name:'DI13 074M', hp:700, rpm:2300, weight:1090, type:'Diesel inboard'},
+  {manufacturer:'Cummins', name:'QSM11', hp:715, rpm:2300, weight:1117, type:'Diesel inboard'},
+  {manufacturer:'Caterpillar', name:'C12', hp:705, rpm:2300, weight:1166, type:'Diesel inboard'},
+  {manufacturer:'MAN', name:'i6-730', hp:730, rpm:2300, weight:1180, type:'Diesel inboard'},
+  {manufacturer:'Volvo Penta', name:'D13-900', hp:900, rpm:2300, weight:1350, type:'Diesel inboard'},
+  {manufacturer:'MAN', name:'V8-1000', hp:1000, rpm:2300, weight:1450, type:'Diesel inboard'},
+  {manufacturer:'Cummins', name:'QSK19', hp:1015, rpm:1900, weight:1996, type:'Diesel inboard'},
+  {manufacturer:'Caterpillar', name:'C18', hp:1015, rpm:2100, weight:2150, type:'Diesel inboard'},
+  {manufacturer:'MTU', name:'8V2000 M72', hp:1480, rpm:2450, weight:2200, type:'Diesel inboard'},
+  {manufacturer:'Caterpillar', name:'C32', hp:1625, rpm:2300, weight:3084, type:'Diesel inboard'},
+  {manufacturer:'MAN', name:'V12-1800', hp:1800, rpm:2300, weight:2580, type:'Diesel inboard'},
+  {manufacturer:'MTU', name:'12V2000 M94', hp:2000, rpm:2450, weight:2860, type:'Diesel inboard'}
+].sort((a,b)=>a.hp-b.hp);
+function mcrMargin(){ const m=parseFloat(document.getElementById('mcr_margin')?.value); return (isFinite(m)&&m>0) ? m : 0.80; }
+function numEnginesSelected(){ const n=Math.round(parseFloat(document.getElementById('num_engines')?.value)); return (isFinite(n)&&n>0) ? n : 2; }
+const KW_PER_HP = 0.745699872;
+function getEngineSizing(baseInp, efficiency){
+  const speeds=speedRangeValues();
+  const results=speeds.map(sp=>computeDetailedForSpeed(sp, baseInp, efficiency)).filter(r=>r && isFinite(r.bhp));
+  if(!results.length) return null;
+  const margin=mcrMargin();
+  const nEngines=numEnginesSelected();
+  const sizing=results.reduce((best,r)=>(r.bhp/margin > best.bhp/margin ? r : best), results[0]);
+  const maxPowerHP=sizing.bhp/margin;
+  const reqHP=maxPowerHP/nEngines;
+  return {r:sizing, maxPowerHP, reqHP, nEngines};
+}
+function suggestEngines(requiredHP){
+  const candidates=ENGINE_DB.filter(e=>e.hp>=requiredHP).sort((a,b)=>a.hp-b.hp);
+  return {best:candidates[0]||null, alternatives:candidates.slice(1,4)};
+}
+function updateEngineRecommendation(baseInp, efficiency){
+  const box=document.getElementById('engineRecoBox'); if(!box) return;
+  const speeds=speedRangeValues();
+  const results=speeds.map(sp=>computeDetailedForSpeed(sp, baseInp, efficiency)).filter(r=>r && isFinite(r.bhp));
+  if(!results.length){ box.innerHTML='<div class="small">No valid speed-range result is available for engine selection.</div>'; return; }
+  const margin=mcrMargin(); const nEngines=numEnginesSelected();
+  const sizing=results.reduce((best,r)=>(r.bhp/margin > best.bhp/margin ? r : best), results[0]);
+  const totalHP=sizing.bhp/margin;
+  const requiredHP=totalHP/nEngines;
+  document.getElementById('m-sizing-speed').textContent=fmt(sizing.speed,1);
+  document.getElementById('m-sizing-total').textContent=fmt(totalHP,0);
+  document.getElementById('m-reqhp').textContent=fmt(requiredHP,0);
+  const rec=suggestEngines(requiredHP);
+  if(!rec.best){
+    const largest=ENGINE_DB[ENGINE_DB.length-1];
+    box.innerHTML=`<div class="notice warn">No single reference engine meets ${fmt(requiredHP,0)} HP per engine. Consider more engines, a larger custom-rated engine, or a different propulsion arrangement. Largest reference engine: <strong>${largest.manufacturer} ${largest.name}</strong> (${largest.hp} HP).</div>`;
+    return;
+  }
+  const b=rec.best; const surplus=(b.hp-requiredHP)/requiredHP*100;
+  let html=`<div class="engine-best"><div class="tag">BEST MATCH PER ENGINE — SIZED FROM SPEED RANGE</div><div class="name">${b.manufacturer} ${b.name}</div><div class="small">Sizing point: <strong>${fmt(sizing.speed,1)} kn</strong>; total required installed power: <strong>${fmt(totalHP,0)} HP</strong>; ${nEngines} engine(s).</div><div class="small">Rated power: <strong>${b.hp} HP</strong> at ${b.rpm} rpm · Weight ${b.weight} kg · ${b.type}</div><div class="small">Margin above required power per engine: <strong>${fmt(surplus,1)}%</strong></div></div>`;
+  if(rec.alternatives.length){
+    html += `<div class="small" style="margin-bottom:6px;font-weight:700">Also suitable:</div><div class="table-wrap" style="max-height:220px"><table class="engine-alt-table"><thead><tr><th>Engine</th><th>HP</th><th>RPM</th><th>Weight (kg)</th><th>Margin</th></tr></thead><tbody>${rec.alternatives.map(a=>{const m=(a.hp-requiredHP)/requiredHP*100; return `<tr><td style="text-align:left">${a.manufacturer} ${a.name}</td><td>${a.hp}</td><td>${a.rpm}</td><td>${a.weight}</td><td>${fmt(m,1)}%</td></tr>`;}).join('')}</tbody></table></div>`;
+  }
+  box.innerHTML=html;
+}
+
+
+function setUnitMode(mode){ unitMode = mode; document.getElementById('tab_imp').classList.toggle('active', mode==='imp'); document.getElementById('tab_si').classList.toggle('active', mode==='si'); document.getElementById('tab_imp_btn').classList.toggle('active', mode==='imp'); document.getElementById('tab_si_btn').classList.toggle('active', mode==='si'); recalc(); }
+function val(id){ return parseFloat(document.getElementById(id).value); }
+function rad(d){ return d*Math.PI/180; }
+function fmt(x,n=4){ if(!isFinite(x)) return "—"; return Number(x).toLocaleString(undefined,{maximumFractionDigits:n, minimumFractionDigits:n}); }
+function interp(x1,y1,x2,y2,x){ return y1 + (y2-y1)*(x-x1)/(x2-x1); }
+function clamp(x,lo,hi){ return Math.max(lo, Math.min(hi,x)); }
+
+function getPaperInputs(){
+  if(unitMode==='imp'){
+    return {weight:val('imp_weight'), speed:val('current_speed') || val('imp_speed'), beam:val('imp_beam'), beta:val('imp_beta'), lcg:val('imp_lcg'), vcg:val('imp_vcg'), f:val('imp_f'), eps:val('imp_eps')};
+  }
+  return {weight:val('si_mass')*LB_PER_KG, speed:val('current_speed') || val('si_speed'), beam:val('si_beam')*FT_PER_M, beta:val('si_beta'), lcg:val('si_lcg')*FT_PER_M, vcg:val('si_vcg')*FT_PER_M, f:val('si_f')*FT_PER_M, eps:val('si_eps')};
+}
+
+function newtonCL0(CLbeta,beta){
+  let cl0=Math.max(CLbeta,1e-6);
+  for(let i=0;i<60;i++){
+    const f=cl0-0.0065*beta*Math.pow(cl0,0.6)-CLbeta;
+    const df=1-0.0065*beta*0.6*Math.pow(cl0,-0.4);
+    const next=cl0-f/df;
+    if(!isFinite(next)||next<=0) break;
+    if(Math.abs(next-cl0)<1e-12) return next;
+    cl0=next;
+  }
+  return cl0;
+}
+
+function bisect(fn,lo,hi,it=100){
+  let a=lo,b=hi,fa=fn(a),fb=fn(b);
+  if(!isFinite(fa)||!isFinite(fb)||fa*fb>0) return NaN;
+  for(let i=0;i<it;i++){
+    const m=0.5*(a+b), fm=fn(m);
+    if(!isFinite(fm)) return NaN;
+    if(Math.abs(fm)<1e-12) return m;
+    if(fa*fm<=0){ b=m; fb=fm; } else { a=m; fa=fm; }
+  }
+  return 0.5*(a+b);
+}
+
+function solveLambda(CL0,tauDeg,cv){
+  const tau11=Math.pow(tauDeg,1.1);
+  const target=CL0/tau11;
+  const fn=lam=>0.012*Math.sqrt(lam)+0.0055*Math.pow(lam,2.5)/(cv*cv)-target;
+  return bisect(fn,0.05,20);
+}
+
+function schoenherrCf(re){
+  let cf=0.003;
+  for(let i=0;i<40;i++){
+    const denom=Math.log10(re*cf);
+    if(!isFinite(denom)||denom<=0) return NaN;
+    const next=Math.pow(0.242/denom,2);
+    if(Math.abs(next-cf)<1e-10) return next;
+    cf=next;
+  }
+  return cf;
+}
+
+function cpEq(cv,lambda){
+  return 0.75 - 1/(5.21*(cv*cv)/(lambda*lambda)+2.39);
+}
+
+function vmRatioEq(tauDeg,lambda){
+  const tauR=rad(tauDeg);
+  return Math.sqrt(clamp(1 - (0.0120*Math.pow(tauDeg,1.1))/(lambda*Math.cos(tauR)), 0.70, 1.0));
+}
+
+function computeColumn(tauDeg, inp){
+  const {weight,speed,beam,beta,lcg,vcg,f,eps}=inp;
+  const dCf=val('rough');
+  const V=speed*knotToFps;
+  const q=0.5*rho*V*V;
+  const cv=V/Math.sqrt(g*beam);
+  const CLbeta=weight/(q*beam*beam);
+  const CL0=newtonCL0(CLbeta,beta);
+
+  const row1=Math.pow(tauDeg,1.1);
+  const row2=CLbeta;
+  const row3=CL0/row1;
+  const row4=solveLambda(CL0,tauDeg,cv);
+  const row5ratio=vmRatioEq(tauDeg,row4);
+  const row5=V*row5ratio;
+  const row6=row5*row4*beam/nu;
+  const row7=schoenherrCf(row6);
+  const row8=dCf;
+  const row9=row7+row8;
+
+  const betaR=rad(beta), tauR=rad(tauDeg), epsR=rad(eps);
+
+  const row10=rho*row5*row5*row4*beam*beam*row9/(2*Math.cos(betaR));
+  const row11=Math.tan(tauR);
+  const row12=Math.sin(tauR);
+  const row13=Math.cos(tauR);
+  const row14=weight*row11;
+  const row15=row10/row13;
+  const row16=row14+row15;
+  const row17=cpEq(cv,row4);
+  const row18=row17*row4*beam;
+  const row19=lcg-row18;
+  const row20=(beam/4)*Math.tan(betaR);
+  const row21=vcg-row20;
+  const row22=Math.sin(tauR+epsR);
+  const row23=1-row12*row22;
+  const row24=row23*(row19/row13);
+  const row25=f*row12;
+  const row26=row24-row25;
+  const N=weight/row13;
+  const row27=N*row26;
+  const row28=row21-f;
+  const row29=row10*row28;
+  const row30=row27+row29;
+
+  return {tauDeg,V,cv,CL0,row5ratio,row1,row2,row3,row4,row5,row6,row7,row8,row9,row10,row11,row12,row13,row14,row15,row16,row17,row18,row19,row20,row21,row22,row23,row24,row25,row26,row27,row28,row29,row30};
+}
+
+function solveEquilibrium(cols){
+  for(let i=0;i<cols.length-1;i++){
+    const a=cols[i], b=cols[i+1];
+    if(a.row30===0) return {taue:a.tauDeg,left:a,right:b};
+    if(a.row30*b.row30<=0) return {taue:interp(a.row30,a.tauDeg,b.row30,b.tauDeg,0), left:a, right:b};
+  }
+  return null;
+}
+
+function solveAutoTrim(inp){
+  const sweep = makeTauSweep(0.5, 15.0, 0.25);
+  const cols = sweep.map(t=>computeColumn(t, inp)).filter(c=>isFinite(c.row30) && isFinite(c.row16));
+  const eq = solveEquilibrium(cols);
+  if(!eq) return null;
+  const q1 = computeColumn(eq.taue, inp);
+  return {p1:eq.left, q1:q1, r1:eq.right, taue:eq.taue};
+}
+
+function postBlock(lambdae, beam, betaDeg, taue, CLbeta){
+  const beta=rad(betaDeg), tau=rad(taue);
+  const delta=(beam*Math.tan(beta))/(2*Math.PI*Math.tan(tau));
+  const Lk=lambdae*beam + delta;
+  const Lc=lambdae*beam - delta;
+  const draft=Lk*Math.sin(tau);
+  const porpMetric=Math.sqrt(CLbeta/2);
+  const stability = porpoisingStatus(taue);
+  return {Lk,Lc,draft,porpMetric,stability};
+}
+
+
+function makeTauSweep(minTau=0.5, maxTau=15.0, step=0.25){
+  const out=[];
+  for(let t=minTau; t<=maxTau+1e-9; t+=step){
+    out.push(Number(t.toFixed(3)));
+  }
+  return out;
+}
+
+function computeDetailedForSpeed(speedKnots, baseInp, efficiency){
+  const inp={...baseInp, speed:speedKnots};
+  const auto=solveAutoTrim(inp);
+  if(!auto) return null;
+  const left=auto.p1, right=auto.r1, taue=auto.taue;
+  const drag=interp(left.tauDeg,left.row16,right.tauDeg,right.row16,taue);
+  const lambdae=interp(left.tauDeg,left.row4,right.tauDeg,right.row4,taue);
+  const cp=interp(left.tauDeg,left.row17,right.tauDeg,right.row17,taue);
+  const vratio=interp(left.tauDeg,left.row5ratio,right.tauDeg,right.row5ratio,taue);
+  const row30e=interp(left.tauDeg,left.row30,right.tauDeg,right.row30,taue);
+  const ehp=drag*left.V/550.0;
+  const bhp=efficiency>0 ? ehp/efficiency : NaN;
+  const maxPower=isFinite(bhp) ? bhp/mcrMargin() : NaN;
+  const post=postBlock(lambdae, inp.beam, inp.beta, taue, left.row2);
+  return {speed:speedKnots, taue, drag, ehp, bhp, mcr80:bhp, maxPower, lambdae, cp, vratio, row30e, post, p1:left.tauDeg, q1:taue, r1:right.tauDeg};
+}
+
+function computeFinalForSpeed(speedKnots, baseInp){
+  return computeDetailedForSpeed(speedKnots, baseInp, val('efficiency'));
+}
+
+function graphSpeedLimit(baseInp){
+  const selected = isFinite(baseInp.speed) ? Math.max(0.1, baseInp.speed) : 1;
+  const a = val('range_start');
+  const b = val('range_end');
+  const rangeMax = Math.max(isFinite(a)?a:1, isFinite(b)?b:selected);
+  // No fixed 40-knot cap: the graph extends to the selected speed or entered range, whichever is larger.
+  return Math.max(1, Math.ceil(selected), Math.ceil(rangeMax));
+}
+
+function buildSpeedCurve(baseInp, efficiency){
+  const points=[];
+  const maxSpeed = graphSpeedLimit(baseInp);
+  for(let sp=1; sp<=maxSpeed; sp++){
+    const r=computeDetailedForSpeed(sp, baseInp, efficiency);
+    if(r && isFinite(r.ehp)) points.push(r);
+  }
+  [baseInp.speed, val('range_start'), val('range_end')].forEach(sp=>{
+    if(isFinite(sp) && sp>0 && sp<=maxSpeed && !points.some(p=>Math.abs(p.speed-sp)<1e-9)){
+      const r=computeDetailedForSpeed(sp, baseInp, efficiency);
+      if(r && isFinite(r.ehp)) points.push(r);
+    }
+  });
+  points.sort((a,b)=>a.speed-b.speed);
+  return points;
+}
+
+function setMetric(id,value,digits=3){ document.getElementById(id).textContent=fmt(value,digits); }
+function forceDisplay(lb){ return unitMode==='si' ? lb*N_PER_LB : lb; }
+function lengthDisplay(ft){ return unitMode==='si' ? ft*M_PER_FT : ft; }
+function forceUnit(){ return unitMode==='si' ? 'N' : 'lb'; }
+function lengthUnit(){ return unitMode==='si' ? 'm' : 'ft'; }
+function porpoisingStatus(taue){ return taue < 4.5 ? 'No porpoising indicated' : 'Porpoising check required'; }
+function porpoisingClass(taue){ return taue < 4.5 ? 'ok' : 'warn'; }
+function updateDisplayUnits(){
+  document.getElementById('u-drag').textContent = forceUnit();
+  document.getElementById('u-lk').textContent = lengthUnit();
+  document.getElementById('u-lc').textContent = lengthUnit();
+  document.getElementById('u-draft').textContent = lengthUnit();
+}
+
+function clearResults(){
+  ['m-taue','m-drag','m-ehp','m-bhp','m-maxpower','m-lambdae','m-lk','m-lc','m-draft','m-porpmetric','m-vratio','m-cp','m-r30','m-sizing-speed','m-sizing-total','m-reqhp']
+    .forEach(id=>document.getElementById(id).textContent='—');
+  document.getElementById('m-stability').textContent='—';
+}
+
+function niceNumber(range, round){
+  const exponent = Math.floor(Math.log10(range || 1));
+  const fraction = range / Math.pow(10, exponent);
+  let niceFraction;
+  if(round){
+    if(fraction < 1.5) niceFraction = 1;
+    else if(fraction < 3) niceFraction = 2;
+    else if(fraction < 7) niceFraction = 5;
+    else niceFraction = 10;
+  } else {
+    if(fraction <= 1) niceFraction = 1;
+    else if(fraction <= 2) niceFraction = 2;
+    else if(fraction <= 5) niceFraction = 5;
+    else niceFraction = 10;
+  }
+  return niceFraction * Math.pow(10, exponent);
+}
+
+function tickValues(min,max,target=6){
+  if(!isFinite(min)||!isFinite(max)||min===max) return [min||0];
+  const range = niceNumber(max-min, false);
+  const step = niceNumber(range/(target-1), true);
+  const tickMin = Math.floor(min/step)*step;
+  const tickMax = Math.ceil(max/step)*step;
+  const ticks=[];
+  for(let v=tickMin; v<=tickMax+0.5*step; v+=step) ticks.push(Math.abs(v)<1e-9?0:v);
+  return ticks;
+}
+
+function plot(svgId,xs,ys,solvedX,color){
+  color = color || '#2563eb';
+  const svg=document.getElementById(svgId), W=svg.clientWidth||560, H=svg.clientHeight||290, padL=70, padR=36, padT=52, padB=64;
+  if(!xs.length || !ys.length){ svg.innerHTML=''; return; }
+
+  const xmin=Math.min(...xs), xmax=Math.max(...xs);
+  let ymin=Math.min(...ys), ymax=Math.max(...ys);
+  if(ymin>0) ymin=0;
+  if(ymax===ymin) ymax=ymin+1;
+  const yTicks=tickValues(ymin,ymax,6);
+  ymin=Math.min(ymin, yTicks[0]);
+  ymax=Math.max(ymax, yTicks[yTicks.length-1]);
+
+  const mapx=x=>padL+(x-xmin)/(xmax-xmin||1)*(W-padL-padR);
+  const mapy=y=>H-padB-(y-ymin)/(ymax-ymin||1)*(H-padT-padB);
+
+  let out=`<rect x="0" y="0" width="${W}" height="${H}" fill="white"/>`;
+
+  if(svgId === 'chart3' || svgId === 'chart4'){
+    const vD = 10;
+    const vP = 25;
+    const xD = mapx(vD);
+    const xP = mapx(vP);
+    out += `<rect x="${padL}" y="${padT}" width="${Math.max(0,xD-padL)}" height="${H-padT-padB}" fill="#dcfce7" opacity="0.45"/>`;
+    out += `<rect x="${xD}" y="${padT}" width="${Math.max(0,xP-xD)}" height="${H-padT-padB}" fill="#ffedd5" opacity="0.55"/>`;
+    out += `<rect x="${xP}" y="${padT}" width="${Math.max(0,W-padR-xP)}" height="${H-padT-padB}" fill="#dbeafe" opacity="0.50"/>`;
+    out += `<line x1="${xD}" y1="${padT}" x2="${xD}" y2="${H-padB}" stroke="#111827" stroke-dasharray="7 6" stroke-width="1.5"/>`;
+    out += `<line x1="${xP}" y1="${padT}" x2="${xP}" y2="${H-padB}" stroke="#111827" stroke-dasharray="7 6" stroke-width="1.5"/>`;
+    out += `<text x="${(padL+xD)/2}" y="${padT+24}" text-anchor="middle" font-size="13" font-weight="800" fill="#15803d">Displacement</text>`;
+    out += `<text x="${(xD+xP)/2}" y="${padT+24}" text-anchor="middle" font-size="13" font-weight="800" fill="#c2410c">Transition</text>`;
+    out += `<text x="${(xP+W-padR)/2}" y="${padT+24}" text-anchor="middle" font-size="13" font-weight="800" fill="#1d4ed8">Planing</text>`;
+    out += `<text x="${xD}" y="${H-padB+36}" text-anchor="middle" font-size="12" font-weight="700" fill="#111827">VD</text>`;
+    out += `<text x="${xP}" y="${H-padB+36}" text-anchor="middle" font-size="12" font-weight="700" fill="#111827">VP</text>`;
+  }
+
+  yTicks.forEach(t=>{
+    const y=mapy(t);
+    out+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#e5e7eb"/>`;
+    out+=`<line x1="${padL-5}" y1="${y}" x2="${padL}" y2="${y}" stroke="#111827"/>`;
+    out+=`<text x="${padL-9}" y="${y+4}" text-anchor="end" font-size="11" fill="#374151">${fmt(t, t>=100?0:1)}</text>`;
+  });
+
+  const xTicks=[];
+  const xStep = niceNumber((xmax-xmin)/8, true);
+  const xStart = Math.ceil(xmin/xStep)*xStep;
+  for(let t=xStart; t<=xmax+1e-9; t+=xStep) if(t>=xmin-1e-9 && t<=xmax+1e-9) xTicks.push(Number(t.toFixed(6)));
+  if(!xTicks.includes(xmin)) xTicks.unshift(xmin);
+  if(!xTicks.includes(xmax)) xTicks.push(xmax);
+  xTicks.forEach(t=>{
+    const x=mapx(t);
+    out+=`<line x1="${x}" y1="${padT}" x2="${x}" y2="${H-padB}" stroke="#f1f5f9"/>`;
+    out+=`<line x1="${x}" y1="${H-padB}" x2="${x}" y2="${H-padB+5}" stroke="#111827"/>`;
+    out+=`<text x="${x}" y="${H-padB+20}" text-anchor="middle" font-size="11" fill="#374151">${fmt(t,0)}</text>`;
+  });
+
+  out += `
+    <defs>
+      <marker id="arrow-${svgId}" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L9,3 z" fill="#111827"/>
+      </marker>
+    </defs>
+    <line x1="${padL}" y1="${H-padB}" x2="${W-padR+8}" y2="${H-padB}" stroke="#111827" stroke-width="2" marker-end="url(#arrow-${svgId})"/>
+    <line x1="${padL}" y1="${H-padB}" x2="${padL}" y2="${padT-8}" stroke="#111827" stroke-width="2" marker-end="url(#arrow-${svgId})"/>
+  `;
+
+  out+=`<polyline fill="none" stroke="${color}" stroke-width="3" points="${xs.map((x,i)=>`${mapx(x)},${mapy(ys[i])}`).join(' ')}"/>`;
+  xs.forEach((x,i)=>{ out+=`<circle cx="${mapx(x)}" cy="${mapy(ys[i])}" r="3.5" fill="${color}"/>`; });
+
+  if((svgId === 'chart3' || svgId === 'chart4') && isFinite(solvedX)){
+    let nearestIndex = 0;
+    let best = Infinity;
+    xs.forEach((x,i)=>{ const diff = Math.abs(x - solvedX); if(diff < best){ best = diff; nearestIndex = i; } });
+    const sx = xs[nearestIndex], sy = ys[nearestIndex], px = mapx(sx), py = mapy(sy);
+    out += `<line x1="${px}" y1="${padT}" x2="${px}" y2="${H-padB}" stroke="#111827" stroke-dasharray="6 5" stroke-width="1.3"/>`;
+    out += `<circle cx="${px}" cy="${py}" r="6" fill="#ef4444" stroke="#111827" stroke-width="1.5"/>`;
+    const labelX = Math.min(W-padR-130, Math.max(padL+8, px+10));
+    const labelY = Math.max(padT+36, py-18);
+    out += `<rect x="${labelX}" y="${labelY-24}" width="128" height="44" rx="8" fill="white" stroke="#111827" opacity="0.96"/>`;
+    out += `<text x="${labelX+8}" y="${labelY-7}" font-size="12" font-weight="800" fill="#111827">Speed: ${fmt(sx,1)} kn</text>`;
+    const pointLabel = svgId === 'chart4' ? 'Max Power' : 'EHP';
+    out += `<text x="${labelX+8}" y="${labelY+10}" font-size="12" font-weight="800" fill="#111827">${pointLabel}: ${fmt(sy,1)}</text>`;
+  }
+
+  if(svgId === 'chart3' || svgId === 'chart4'){
+    out += `<text x="${(padL+W-padR)/2}" y="${H-12}" text-anchor="middle" font-size="13" font-weight="800" fill="#111827">Speed (knots)</text>`;
+    const yAxisLabel = svgId === 'chart4' ? 'Maximum required power (hp)' : 'EHP (hp)';
+    out += `<text x="18" y="${(padT+H-padB)/2}" text-anchor="middle" font-size="13" font-weight="800" fill="#111827" transform="rotate(-90 18 ${(padT+H-padB)/2})">${yAxisLabel}</text>`;
+  }
+
+  svg.innerHTML=out;
+}
+
+
+function plotMultiSeries(svgId, xs, series, markerX, yLabel){
+  const svg=document.getElementById(svgId); if(!svg) return;
+  const W=svg.clientWidth||svg.getBoundingClientRect().width||1080, H=svg.clientHeight||420;
+  const padL=80, padR=46, padT=74, padB=74;
+  if(!xs.length || !series.length){ svg.innerHTML=''; return; }
+  const allY=series.flatMap(s=>s.values).filter(Number.isFinite);
+  const xmin=Math.min(...xs), xmax=Math.max(...xs);
+  let ymin=Math.min(...allY), ymax=Math.max(...allY);
+  if(!isFinite(ymin)||!isFinite(ymax)){ svg.innerHTML=''; return; }
+  if(ymin>0) ymin=0; if(ymax===ymin) ymax=ymin+1;
+  const yTicks=tickValues(ymin,ymax,6); ymin=Math.min(ymin,yTicks[0]); ymax=Math.max(ymax,yTicks[yTicks.length-1]);
+  const mapx=x=>padL+(x-xmin)/(xmax-xmin||1)*(W-padL-padR);
+  const mapy=y=>H-padB-(y-ymin)/(ymax-ymin||1)*(H-padT-padB);
+  let out=`<rect x="0" y="0" width="${W}" height="${H}" fill="white"/>`;
+  const vD=10, vT=25, xD=mapx(vD), xT=mapx(vT);
+  out += `<rect x="${padL}" y="${padT}" width="${Math.max(0,xD-padL)}" height="${H-padT-padB}" fill="#dcfce7" opacity="0.45"/>`;
+  out += `<rect x="${xD}" y="${padT}" width="${Math.max(0,xT-xD)}" height="${H-padT-padB}" fill="#ffedd5" opacity="0.55"/>`;
+  out += `<rect x="${xT}" y="${padT}" width="${Math.max(0,W-padR-xT)}" height="${H-padT-padB}" fill="#dbeafe" opacity="0.50"/>`;
+  out += `<line x1="${xD}" y1="${padT}" x2="${xD}" y2="${H-padB}" stroke="#111827" stroke-dasharray="7 6" stroke-width="1.3"/>`;
+  out += `<line x1="${xT}" y1="${padT}" x2="${xT}" y2="${H-padB}" stroke="#111827" stroke-dasharray="7 6" stroke-width="1.3"/>`;
+  out += `<text x="${Math.max(padL+70,(padL+xD)/2)}" y="${padT+26}" text-anchor="middle" font-size="14" font-weight="800" fill="#15803d">Displacement</text>`;
+  out += `<text x="${(xD+xT)/2}" y="${padT+26}" text-anchor="middle" font-size="14" font-weight="800" fill="#c2410c">Transition</text>`;
+  out += `<text x="${(xT+W-padR)/2}" y="${padT+26}" text-anchor="middle" font-size="14" font-weight="800" fill="#1d4ed8">Planing</text>`;
+  yTicks.forEach(t=>{ const y=mapy(t); out+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#e5e7eb"/>`; out+=`<text x="${padL-10}" y="${y+4}" text-anchor="end" font-size="12" fill="#111827">${fmt(t, t>=100?0:1)}</text>`; });
+  const xStep=niceNumber((xmax-xmin)/8,true), xStart=Math.ceil(xmin/xStep)*xStep;
+  for(let t=xStart;t<=xmax+1e-9;t+=xStep){ const x=mapx(t); out+=`<line x1="${x}" y1="${padT}" x2="${x}" y2="${H-padB}" stroke="#f1f5f9"/>`; out+=`<text x="${x}" y="${H-padB+22}" text-anchor="middle" font-size="12" fill="#111827">${fmt(t,0)}</text>`; }
+  out += `<defs><marker id="arrow-${svgId}" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#111827"/></marker></defs>`;
+  out += `<line x1="${padL}" y1="${H-padB}" x2="${W-padR+8}" y2="${H-padB}" stroke="#111827" stroke-width="2" marker-end="url(#arrow-${svgId})"/>`;
+  out += `<line x1="${padL}" y1="${H-padB}" x2="${padL}" y2="${padT-8}" stroke="#111827" stroke-width="2" marker-end="url(#arrow-${svgId})"/>`;
+  series.forEach(s=>{ const pts=xs.map((x,i)=>`${mapx(x)},${mapy(s.values[i])}`).join(' '); out+=`<polyline fill="none" stroke="${s.color}" stroke-width="3.2" points="${pts}"/>`; xs.forEach((x,i)=>{ out+=`<circle cx="${mapx(x)}" cy="${mapy(s.values[i])}" r="2.8" fill="${s.color}"/>`; }); });
+  let lx=padL+8, ly=padT-32;
+  series.forEach(s=>{ out+=`<line x1="${lx}" y1="${ly}" x2="${lx+22}" y2="${ly}" stroke="${s.color}" stroke-width="4"/>`; out+=`<text x="${lx+30}" y="${ly+4}" font-size="13" font-weight="800" fill="#111827">${s.label}</text>`; lx+=95; });
+  if(isFinite(markerX)){ let nearIdx=0,best=Infinity; xs.forEach((x,i)=>{ const d=Math.abs(x-markerX); if(d<best){best=d;nearIdx=i;} }); const sx=xs[nearIdx], px=mapx(sx); out+=`<line x1="${px}" y1="${padT}" x2="${px}" y2="${H-padB}" stroke="#ef4444" stroke-dasharray="6 5" stroke-width="1.3"/>`; }
+  out += `<text x="${(padL+W-padR)/2}" y="${H-18}" text-anchor="middle" font-size="14" font-weight="800">Speed (knots)</text>`;
+  out += `<text x="20" y="${(padT+H-padB)/2}" text-anchor="middle" font-size="14" font-weight="800" transform="rotate(-90 20 ${(padT+H-padB)/2})">${yLabel}</text>`;
+  svg.innerHTML=out;
+}
+
+function speedRangeValues(){
+  let a=val('range_start'), b=val('range_end');
+  const currentInp=getPaperInputs();
+  const selected = isFinite(currentInp.speed) ? Math.max(0.1, currentInp.speed) : NaN;
+  if(!isFinite(a)) a=1;
+  if(!isFinite(b)) b=isFinite(selected) ? selected : a;
+  a=Math.max(0.1,a); b=Math.max(0.1,b);
+  let start=Math.min(a,b), end=Math.max(a,b);
+  // Include the currently selected speed automatically, even when it is outside the typed range.
+  if(isFinite(selected)){ start=Math.min(start, selected); end=Math.max(end, selected); }
+  const vals=[];
+  const add=v=>{ if(v>=start-1e-9 && v<=end+1e-9 && !vals.some(x=>Math.abs(x-v)<1e-9)) vals.push(Number(v.toFixed(3))); };
+  add(start);
+  for(let s=Math.ceil(start); s<=Math.floor(end); s++) add(s);
+  add(end);
+  if(isFinite(selected)) add(selected);
+  vals.sort((x,y)=>x-y);
+  return vals;
+}
+
+function buildRangeResultsTable(baseInp, efficiency){
+  const head=document.getElementById('rangeHead');
+  const body=document.querySelector('#rangeTbl tbody');
+  const dUnit=forceUnit(), lUnit=lengthUnit();
+  const headers=['Speed kn','P1 deg','Q1/τe deg','R1 deg',`D ${dUnit}`,'EHP hp','BHP hp','Max power hp','λe',`Lk ${lUnit}`,`Lc ${lUnit}`,`Draft ${lUnit}`,'Porp. metric','Porpoising status','Vm/V','Cp','Row 30'];
+  head.innerHTML=headers.map(h=>`<th>${h}</th>`).join('');
+  const speeds=speedRangeValues();
+  const rows=[];
+  speeds.forEach(sp=>{
+    const r=computeDetailedForSpeed(sp, baseInp, efficiency);
+    if(!r){ rows.push(`<tr><td>${fmt(sp,1)}</td><td colspan="16" style="text-align:left">No trim solution found</td></tr>`); return; }
+    rows.push(`<tr>
+      <td>${fmt(r.speed,1)}</td>
+      <td>${fmt(r.p1,2)}</td>
+      <td>${fmt(r.taue,3)}</td>
+      <td>${fmt(r.r1,2)}</td>
+      <td>${fmt(forceDisplay(r.drag), unitMode==='si'?0:0)}</td>
+      <td>${fmt(r.ehp,1)}</td>
+      <td>${fmt(r.bhp,1)}</td>
+      <td>${fmt(r.maxPower,1)}</td>
+      <td>${fmt(r.lambdae,3)}</td>
+      <td>${fmt(lengthDisplay(r.post.Lk), unitMode==='si'?2:1)}</td>
+      <td>${fmt(lengthDisplay(r.post.Lc), unitMode==='si'?2:1)}</td>
+      <td>${fmt(lengthDisplay(r.post.draft), unitMode==='si'?2:2)}</td>
+      <td>${fmt(r.post.porpMetric,3)}</td>
+      <td style="text-align:left" class="${porpoisingClass(r.taue)}">${r.post.stability}</td>
+      <td>${fmt(r.vratio,3)}</td>
+      <td>${fmt(r.cp,3)}</td>
+      <td>${fmt(r.row30e,1)}</td>
+    </tr>`);
+  });
+  body.innerHTML=rows.join('');
+}
+
+let lastCSV="";
+function actualRecalc(){
+  updateDisplayUnits();
+  const inp=getPaperInputs(), efficiency=val('efficiency');
+  const auto=solveAutoTrim(inp);
+
+  const rows=[["1","τ^1.1","row1"],["2","CLβ","row2"],["3","CL0 / τ^1.1","row3"],["4","λ from equation","row4"],["5","Vm from equation","row5"],["6","Re","row6"],["7","Cf","row7"],["8","ΔCf","row8"],["9","Cf + ΔCf","row9"],["10","Df","row10"],["11","tanτ","row11"],["12","sinτ","row12"],["13","cosτ","row13"],["14","Δ tanτ","row14"],["15","Df / cosτ","row15"],["16","D","row16"],["17","Cp from equation","row17"],["18","Cp λ b","row18"],["19","c","row19"],["20","(b/4) tanβ","row20"],["21","a","row21"],["22","sin(τ+ε)","row22"],["23","1 − sinτ sin(τ+ε)","row23"],["24","(23)(c/cosτ)","row24"],["25","f sinτ","row25"],["26","(24) − (25)","row26"],["27","N(26)","row27"],["28","a − f","row28"],["29","Df(a − f)","row29"],["30","(27) + (29)","row30"]];
+
+  if(!auto){
+    document.getElementById('head1').textContent='—';
+    document.getElementById('head2').textContent='—';
+    document.getElementById('head3').textContent='—';
+    document.querySelector('#tbl tbody').innerHTML='';
+    clearResults();
+    const speedCurve=buildSpeedCurve(inp, efficiency);
+    plot('chart3', speedCurve.map(p=>p.speed), speedCurve.map(p=>p.ehp), inp.speed, '#7c3aed');
+    plot('chart4', speedCurve.map(p=>p.speed), speedCurve.map(p=>p.maxPower), inp.speed, '#7c3aed');
+  plotMultiSeries('chart5', speedCurve.map(p=>p.speed), [{label:'Trim', values:speedCurve.map(p=>p.taue), color:'#3b82f6'}, {label:'lambda', values:speedCurve.map(p=>p.lambdae), color:'#10b981'}, {label:'Cp', values:speedCurve.map(p=>p.cp), color:'#f59e0b'}, {label:'Vm/V', values:speedCurve.map(p=>p.vratio), color:'#ef4444'}], inp.speed, 'Savitsky values');
+    buildRangeResultsTable(inp, efficiency);
+    updateEngineRecommendation(inp, efficiency);
+    document.getElementById('status').innerHTML='<span class="warn">No automatic trim bracket found between 0.5° and 15°. Check the input values.</span>';
+    return;
+  }
+
+  const cols=[auto.p1, auto.q1, auto.r1];
+  document.getElementById('head1').textContent=fmt(auto.p1.tauDeg,2);
+  document.getElementById('head2').textContent=fmt(auto.taue,3);
+  document.getElementById('head3').textContent=fmt(auto.r1.tauDeg,2);
+
+  document.querySelector('#tbl tbody').innerHTML=rows.map(([r,l,k])=>`<tr><td>${r}</td><td>${l}</td><td>${k==="row6"?cols[0][k].toExponential(3):fmt(cols[0][k],k==="row27"||k==="row29"||k==="row30"?0:4)}</td><td>${k==="row6"?cols[1][k].toExponential(3):fmt(cols[1][k],k==="row27"||k==="row29"||k==="row30"?0:4)}</td><td>${k==="row6"?cols[2][k].toExponential(3):fmt(cols[2][k],k==="row27"||k==="row29"||k==="row30"?0:4)}</td></tr>`).join('');
+
+  const left=auto.p1, right=auto.r1, taue=auto.taue;
+  const drag=interp(left.tauDeg,left.row16,right.tauDeg,right.row16,taue);
+  const lambdae=interp(left.tauDeg,left.row4,right.tauDeg,right.row4,taue);
+  const cp=interp(left.tauDeg,left.row17,right.tauDeg,right.row17,taue);
+  const vratio=interp(left.tauDeg,left.row5ratio,right.tauDeg,right.row5ratio,taue);
+  const row30e=interp(left.tauDeg,left.row30,right.tauDeg,right.row30,taue);
+  const ehp=drag*left.V/550.0;
+  const bhp=efficiency>0 ? ehp/efficiency : NaN;
+  const post=postBlock(lambdae, inp.beam, inp.beta, taue, left.row2);
+
+  setMetric('m-taue',taue,3);
+  setMetric('m-drag',forceDisplay(drag),0);
+  setMetric('m-ehp',ehp,1);
+  setMetric('m-bhp',bhp,1);
+  setMetric('m-maxpower',bhp/mcrMargin(),1);
+  setMetric('m-lambdae',lambdae,3);
+  setMetric('m-lk',lengthDisplay(post.Lk),unitMode==='si'?2:1);
+  setMetric('m-lc',lengthDisplay(post.Lc),unitMode==='si'?2:1);
+  setMetric('m-draft',lengthDisplay(post.draft),2);
+  setMetric('m-porpmetric',post.porpMetric,3);
+  document.getElementById('m-stability').innerHTML=`<span class="${porpoisingClass(taue)}">${post.stability}</span>`;
+  setMetric('m-vratio',vratio,3);
+  setMetric('m-cp',cp,3);
+  setMetric('m-r30',row30e,1);
+  document.getElementById('status').innerHTML=`<span class="ok">Automatic trim solved. Selected speed ${fmt(inp.speed,1)} kn falls between P1 = ${fmt(auto.p1.tauDeg,2)}° and R1 = ${fmt(auto.r1.tauDeg,2)}°; interpolated Q1/τe = ${fmt(taue,3)}°.</span>`;
+
+  const speedCurve=buildSpeedCurve(inp, efficiency);
+  plot('chart3', speedCurve.map(p=>p.speed), speedCurve.map(p=>p.ehp), inp.speed, '#7c3aed');
+  plot('chart4', speedCurve.map(p=>p.speed), speedCurve.map(p=>p.maxPower), inp.speed, '#7c3aed');
+  plotMultiSeries('chart5', speedCurve.map(p=>p.speed), [{label:'Trim', values:speedCurve.map(p=>p.taue), color:'#3b82f6'}, {label:'lambda', values:speedCurve.map(p=>p.lambdae), color:'#10b981'}, {label:'Cp', values:speedCurve.map(p=>p.cp), color:'#f59e0b'}, {label:'Vm/V', values:speedCurve.map(p=>p.vratio), color:'#ef4444'}], inp.speed, 'Savitsky values');
+  buildRangeResultsTable(inp, efficiency);
+    updateEngineRecommendation(inp, efficiency);
+
+  const csv=[["row","quantity",`P1_tau_${fmt(auto.p1.tauDeg,3)}`,`Q1_tau_${fmt(auto.taue,3)}`,`R1_tau_${fmt(auto.r1.tauDeg,3)}`]];
+  rows.forEach(([r,l,k])=>csv.push([r,l,cols[0][k],cols[1][k],cols[2][k]]));
+  csv.push([]);
+  csv.push(["P1_tau_deg",auto.p1.tauDeg],["Q1_equilibrium_tau_deg",taue],["R1_tau_deg",auto.r1.tauDeg],[`drag_${forceUnit()}`,forceDisplay(drag)],["ehp_hp",ehp],["efficiency",efficiency],["bhp_hp",bhp],["maximum_required_power_hp",bhp/mcrMargin()],["lambda_e",lambdae],["cp_e",cp],["vm_v",vratio],[`Lk_${lengthUnit()}`,lengthDisplay(post.Lk)],[`Lc_${lengthUnit()}`,lengthDisplay(post.Lc)],[`draft_${lengthUnit()}`,lengthDisplay(post.draft)],["porpoising_metric",post.porpMetric],["porpoising_status",post.stability]);
+  csv.push([]);
+  csv.push(["speed_knots","ehp_hp","bhp_hp","maximum_required_power_hp","taue_deg","P1_tau_deg","R1_tau_deg",`drag_${forceUnit()}`]);
+  speedCurve.forEach(p=>csv.push([p.speed,p.ehp,p.bhp,p.maxPower,p.taue,p.p1,p.r1,forceDisplay(p.drag)]));
+  csv.push([]);
+  csv.push(["Requested speed range table"]);
+  csv.push(["speed_knots","P1_tau_deg","Q1_tau_deg","R1_tau_deg",`drag_${forceUnit()}`,"ehp_hp","bhp_hp","maximum_required_power_hp","lambda_e",`Lk_${lengthUnit()}`,`Lc_${lengthUnit()}`,`draft_${lengthUnit()}`,"porpoising_metric","porpoising_status","Vm_V","Cp","row30"]);
+  speedRangeValues().forEach(sp=>{
+    const r=computeDetailedForSpeed(sp, inp, efficiency);
+    if(r) csv.push([r.speed,r.p1,r.taue,r.r1,forceDisplay(r.drag),r.ehp,r.bhp,r.maxPower,r.lambdae,lengthDisplay(r.post.Lk),lengthDisplay(r.post.Lc),lengthDisplay(r.post.draft),r.post.porpMetric,r.post.stability,r.vratio,r.cp,r.row30e]);
+  });
+  lastCSV=csv.map(r=>r.join(",")).join("\n");
+}
+function num(x, digits=3){ return isFinite(x) ? Number(Number(x).toFixed(digits)) : null; }
+function excelHeaderStyle(row){
+  row.eachCell(cell => {
+    cell.font = {name:'Calibri', size:11, bold:true, color:{argb:'FFFFFFFF'}};
+    cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF2563EB'}};
+    cell.alignment = {vertical:'middle', horizontal:'center', wrapText:true};
+    cell.border = {top:{style:'thin', color:{argb:'FFD8DEE8'}}, left:{style:'thin', color:{argb:'FFD8DEE8'}}, bottom:{style:'thin', color:{argb:'FFD8DEE8'}}, right:{style:'thin', color:{argb:'FFD8DEE8'}}};
+  });
+}
+function excelTitleStyle(row){
+  row.font = {name:'Calibri', size:15, bold:true};
+  row.alignment = {vertical:'middle'};
+}
+function excelSectionStyle(row){
+  row.font = {name:'Calibri', size:13, bold:true, color:{argb:'FF111827'}};
+  row.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFEFF6FF'}};
+}
+function styleSheet(ws){
+  ws.views = [{state:'frozen', ySplit:1}];
+  ws.eachRow(row => {
+    row.eachCell(cell => {
+      cell.font = cell.font || {name:'Calibri', size:11};
+      cell.alignment = cell.alignment || {vertical:'middle', wrapText:false};
+      cell.border = cell.border || {top:{style:'thin', color:{argb:'FFE5E7EB'}}, left:{style:'thin', color:{argb:'FFE5E7EB'}}, bottom:{style:'thin', color:{argb:'FFE5E7EB'}}, right:{style:'thin', color:{argb:'FFE5E7EB'}}};
+    });
+  });
+  ws.columns.forEach((col, i) => {
+    let max = 10;
+    col.eachCell({includeEmpty:true}, c => {
+      const v = c.value == null ? '' : String(c.value);
+      max = Math.max(max, Math.min(v.length + 2, 34));
+    });
+    col.width = i === 0 ? Math.max(max, 18) : Math.max(max, 12);
+  });
+}
+function addKeyValue(ws, label, value, unit){
+  const row = ws.addRow([label, value, unit || '']);
+  row.getCell(1).font = {name:'Calibri', size:11, bold:true};
+  return row;
+}
+function currentDetailedResult(){
+  const inp=getPaperInputs(), efficiency=val('efficiency');
+  const r=computeDetailedForSpeed(inp.speed, inp, efficiency);
+  return {inp, efficiency, r};
+}
+function speedRangeExportRows(baseInp, efficiency){
+  const rows=[];
+  speedRangeValues().forEach(sp => {
+    const r=computeDetailedForSpeed(sp, baseInp, efficiency);
+    if(r){
+      rows.push([
+        num(r.speed,2), num(r.p1,3), num(r.taue,3), num(r.r1,3), num(forceDisplay(r.drag),0),
+        num(r.ehp,2), num(r.bhp,2), num(r.maxPower,2), num(r.lambdae,4),
+        num(lengthDisplay(r.post.Lk),3), num(lengthDisplay(r.post.Lc),3), num(lengthDisplay(r.post.draft),3),
+        num(r.post.porpMetric,4), r.post.stability, num(r.vratio,4), num(r.cp,4), num(r.row30e,2)
+      ]);
+    } else {
+      rows.push([num(sp,2),'No trim solution found']);
+    }
+  });
+  return rows;
+}
+async function downloadExcel(){
+
+  try {
+    const resStatus = await fetch('/api/status');
+    const dataStatus = await resStatus.json();
+    if (dataStatus && !dataStatus.error) {
+      dbStatus = dataStatus;
+    }
+  } catch (err) {
+    console.error("Error validating payment status before export:", err);
+  }
+
+  const remaining = dbStatus.paid_calculations_remaining || 0;
+  if (remaining === 0) {
+    alert("Please purchase another 2 calculations to export Excel.");
+    openPaymentModal();
+    return;
+  }
+
+  recalc();
+  if(!window.ExcelJS){
+    alert('Excel export library did not load. Please connect to the internet and reload the page, then try Export Excel again.');
+    return;
+  }
+  const {inp, efficiency, r} = currentDetailedResult();
+  if(!r){ alert('No trim solution found. Check inputs before exporting.'); return; }
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'Savitsky Engine Selection Calculator';
+  wb.created = new Date();
+
+  const summary = wb.addWorksheet('Summary');
+  summary.addRow(['Savitsky Planing-Hull Resistance & Propulsion Engine Selection Calculator']);
+  excelTitleStyle(summary.getRow(1));
+  summary.addRow(['Export created', new Date().toLocaleString(), '']);
+  summary.addRow([]);
+  summary.addRow(['Current calculated result']); excelSectionStyle(summary.getRow(4));
+  summary.addRow(['Metric','Value','Unit']); excelHeaderStyle(summary.getRow(5));
+  addKeyValue(summary,'Current speed', num(r.speed,2), 'knots');
+  addKeyValue(summary,'Equilibrium trim tau e', num(r.taue,3), 'deg');
+  addKeyValue(summary,'Total drag D', num(forceDisplay(r.drag),0), forceUnit());
+  addKeyValue(summary,'EHP', num(r.ehp,2), 'hp');
+  addKeyValue(summary,'BHP', num(r.bhp,2), 'hp');
+  addKeyValue(summary,'Maximum required power', num(r.maxPower,2), 'hp');
+  addKeyValue(summary,'Equilibrium mean lambda e', num(r.lambdae,4), 'ratio');
+  addKeyValue(summary,'Wetted keel length Lk', num(lengthDisplay(r.post.Lk),3), lengthUnit());
+  addKeyValue(summary,'Wetted chine length Lc', num(lengthDisplay(r.post.Lc),3), lengthUnit());
+  addKeyValue(summary,'Draft d', num(lengthDisplay(r.post.draft),3), lengthUnit());
+  addKeyValue(summary,'Porpoising metric', num(r.post.porpMetric,4), '');
+  addKeyValue(summary,'Porpoising status', r.post.stability, '');
+  addKeyValue(summary,'Vm/V', num(r.vratio,4), '');
+  addKeyValue(summary,'Cp', num(r.cp,4), '');
+  addKeyValue(summary,'Row 30', num(r.row30e,2), '');
+  summary.addRow([]);
+  summary.addRow(['Input summary']); excelSectionStyle(summary.getRow(summary.rowCount));
+  summary.addRow(['Input','Value','Unit']); excelHeaderStyle(summary.getRow(summary.rowCount));
+  addKeyValue(summary, unitMode==='si' ? 'Delta mass-equivalent input' : 'Delta weight', unitMode==='si' ? val('si_mass') : val('imp_weight'), unitMode==='si' ? 'kg' : 'lb');
+  addKeyValue(summary,'Chine breadth b', unitMode==='si' ? val('si_beam') : val('imp_beam'), lengthUnit());
+  addKeyValue(summary,'Average deadrise beta', inp.beta, 'deg');
+  addKeyValue(summary,'LCG from transom', unitMode==='si' ? val('si_lcg') : val('imp_lcg'), lengthUnit());
+  addKeyValue(summary,'VCG', unitMode==='si' ? val('si_vcg') : val('imp_vcg'), lengthUnit());
+  addKeyValue(summary,'f', unitMode==='si' ? val('si_f') : val('imp_f'), lengthUnit());
+  addKeyValue(summary,'Shaft angle epsilon', inp.eps, 'deg');
+  addKeyValue(summary,'Delta Cf roughness allowance', val('rough'), '');
+  addKeyValue(summary,'Propulsive efficiency eta', efficiency, '');
+  addKeyValue(summary,'Number of engines', numEnginesSelected(), '');
+  addKeyValue(summary,'MCR service margin', mcrMargin(), '');
+  styleSheet(summary);
+  summary.mergeCells('A1:C1');
+
+  const range = wb.addWorksheet('Speed Range');
+  const rangeHeaders=['Speed kn','P1 deg','Q1 / tau e deg','R1 deg',`Drag ${forceUnit()}`,'EHP hp','BHP hp','Max power hp','lambda e',`Lk ${lengthUnit()}`,`Lc ${lengthUnit()}`,`Draft ${lengthUnit()}`,'Porp. metric','Porpoising status','Vm/V','Cp','Row 30'];
+  range.addRow(rangeHeaders); excelHeaderStyle(range.getRow(1));
+  speedRangeExportRows(inp, efficiency).forEach(row => range.addRow(row));
+  styleSheet(range);
+  range.autoFilter = {from:'A1', to:'Q1'};
+
+  const table = wb.addWorksheet('Table 1 Rows');
+  const auto=solveAutoTrim(inp);
+  const cols=[auto.p1, auto.q1, auto.r1];
+  const tableRows=[['1','tau^1.1','row1'],['2','CL beta','row2'],['3','CL0 / tau^1.1','row3'],['4','lambda from equation','row4'],['5','Vm from equation','row5'],['6','Re','row6'],['7','Cf','row7'],['8','Delta Cf','row8'],['9','Cf + Delta Cf','row9'],['10','Df','row10'],['11','tan tau','row11'],['12','sin tau','row12'],['13','cos tau','row13'],['14','Delta tan tau','row14'],['15','Df / cos tau','row15'],['16','D','row16'],['17','Cp from equation','row17'],['18','Cp lambda b','row18'],['19','c','row19'],['20','(b/4) tan beta','row20'],['21','a','row21'],['22','sin(tau + epsilon)','row22'],['23','1 - sin tau sin(tau + epsilon)','row23'],['24','(23)(c / cos tau)','row24'],['25','f sin tau','row25'],['26','(24) - (25)','row26'],['27','N(26)','row27'],['28','a - f','row28'],['29','Df(a - f)','row29'],['30','(27) + (29)','row30']];
+  table.addRow(['Row','Quantity',`P1 tau ${num(auto.p1.tauDeg,3)} deg`,`Q1 tau e ${num(auto.taue,3)} deg`,`R1 tau ${num(auto.r1.tauDeg,3)} deg`]); excelHeaderStyle(table.getRow(1));
+  tableRows.forEach(([row, label, key]) => table.addRow([row, label, num(cols[0][key], key==='row6'?0:5), num(cols[1][key], key==='row6'?0:5), num(cols[2][key], key==='row6'?0:5)]));
+  table.addRow([]);
+  table.addRow(['Equilibrium summary']); excelSectionStyle(table.getRow(table.rowCount));
+  table.addRow(['Parameter','Value','Unit']); excelHeaderStyle(table.getRow(table.rowCount));
+  addKeyValue(table,'P1 tau', num(auto.p1.tauDeg,3), 'deg');
+  addKeyValue(table,'Q1 equilibrium tau', num(auto.taue,3), 'deg');
+  addKeyValue(table,'R1 tau', num(auto.r1.tauDeg,3), 'deg');
+  styleSheet(table);
+  table.autoFilter = {from:'A1', to:'E1'};
+
+  const engine = wb.addWorksheet('Engine Selection');
+  const sizing = getEngineSizing(inp, efficiency);
+  engine.addRow(['Engine selection']); excelTitleStyle(engine.getRow(1));
+  engine.addRow(['Parameter','Value','Unit']); excelHeaderStyle(engine.getRow(2));
+  if(sizing){
+    const reqKW = sizing.reqHP * KW_PER_HP;
+    addKeyValue(engine,'Sizing speed', num(sizing.r.speed,2), 'knots');
+    addKeyValue(engine,'Total required installed power', num(sizing.maxPowerHP,2), 'hp');
+    addKeyValue(engine,'Required power per engine', num(sizing.reqHP,2), 'hp');
+    addKeyValue(engine,'Required power per engine', num(reqKW,2), 'kW');
+    addKeyValue(engine,'Number of engines', sizing.nEngines, '');
+    addKeyValue(engine,'MCR service margin', mcrMargin(), '');
+    engine.addRow([]);
+    engine.addRow(['Recommended engines']); excelSectionStyle(engine.getRow(engine.rowCount));
+    engine.addRow(['Match','Manufacturer','Model','Rated HP','Rated kW','RPM','Weight kg','Margin above required']); excelHeaderStyle(engine.getRow(engine.rowCount));
+    const rec=suggestEngines(sizing.reqHP);
+    const engineRows = [];
+    if(rec.best) engineRows.push(['Best', rec.best]);
+    rec.alternatives.forEach((e,i)=>engineRows.push([`Alternative ${i+1}`, e]));
+    engineRows.forEach(([tag,e]) => engine.addRow([tag, e.manufacturer, e.name, e.hp, num(e.hp*KW_PER_HP,0), e.rpm, e.weight, `${num((e.hp-sizing.reqHP)/sizing.reqHP*100,1)}%`]));
+    if(!rec.best) engine.addRow(['No reference engine meets the required per-engine power.']);
+  }
+  styleSheet(engine);
+  engine.mergeCells('A1:H1');
+
+  const curve = wb.addWorksheet('Chart Data');
+  curve.addRow(['Speed kn','EHP hp','Maximum required power hp','Trim tau e deg','lambda e','Cp','Vm/V']); excelHeaderStyle(curve.getRow(1));
+  buildSpeedCurve(inp, efficiency).forEach(p => curve.addRow([num(p.speed,2), num(p.ehp,2), num(p.maxPower,2), num(p.taue,3), num(p.lambdae,4), num(p.cp,4), num(p.vratio,4)]));
+  styleSheet(curve);
+  curve.autoFilter = {from:'A1', to:'G1'};
+
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'savitsky_engine_selection_export.xlsx';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(a.href);
+}
+function downloadCSV(){ downloadExcel(); }
+function loadPaperCase(){ setUnitMode('imp'); document.getElementById('imp_weight').value=60000; document.getElementById('imp_speed').value=40; document.getElementById('current_speed').value=40; document.getElementById('imp_beam').value=14; document.getElementById('imp_beta').value=10; document.getElementById('imp_lcg').value=29; document.getElementById('imp_vcg').value=2.0; document.getElementById('imp_f').value=0.50; document.getElementById('imp_eps').value=4.0; document.getElementById('rough').value=0.0004; recalc(); }
+function loadSICase(){ setUnitMode('si'); document.getElementById('si_mass').value=27215.5; document.getElementById('si_speed').value=40.0; document.getElementById('current_speed').value=40.0; document.getElementById('si_beam').value=4.2672; document.getElementById('si_beta').value=10; document.getElementById('si_lcg').value=8.8392; document.getElementById('si_vcg').value=0.6096; document.getElementById('si_f').value=0.1524; document.getElementById('si_eps').value=4.0; document.getElementById('rough').value=0.0004; recalc(); }
+document.querySelectorAll('input, select').forEach(el => {
+  if (el.id !== 'payment-email-input') {
+    el.addEventListener('input', recalc);
+  }
+});
+window.addEventListener('resize', recalc);
+
+let isInitialLoad = true;
+let isPaymentModalOpen = false;
+let dbStatus = { free_used: false, paid_calculations_remaining: 0, email: null };
+
+async function fetchStatus() {
+  try {
+    const res = await fetch('/api/status');
+    const data = await res.json();
+    if (data && !data.error) {
+      dbStatus = data;
+      checkFreemiumStatus();
+    }
+  } catch (e) {
+    console.error("Failed to load status:", e);
+  }
+}
+
+function checkFreemiumStatus() {
+  const remaining = dbStatus.paid_calculations_remaining || 0;
+  const isFreeUsed = dbStatus.free_used === true || dbStatus.free_used === 1;
+  const banner = document.getElementById('freemium-banner');
+  const msg = document.getElementById('freemium-message');
+  const payBtn = document.getElementById('pay-btn');
+
+  if (remaining > 0) {
+    if (banner) {
+      banner.className = 'notice info animated-sticky-banner';
+      banner.style.backgroundColor = '#d1fae5';
+      banner.style.borderColor = '#34d399';
+      banner.style.color = '#065f46';
+      msg.textContent = `✅ Payment Successful. Remaining Paid Calculations: ${remaining}`;
+      payBtn.style.display = 'none';
+    }
+    return 'paid_active';
+  } else if (isFreeUsed) {
+    if (banner) {
+      banner.className = 'notice warn animated-sticky-banner';
+      banner.style.backgroundColor = '#fef3c7';
+      banner.style.borderColor = '#fcd34d';
+      banner.style.color = '#92400e';
+      msg.textContent = `Remaining Calculations: 0. Purchase again to continue.`;
+      payBtn.style.display = 'inline-block';
+      payBtn.textContent = 'Buy Now';
+    }
+    return 'blocked';
+  } else {
+    if (banner) {
+      banner.className = 'notice info animated-sticky-banner';
+      banner.style.backgroundColor = '#eef6ff';
+      banner.style.borderColor = '#cfe2ff';
+      banner.style.color = '#123766';
+      msg.textContent = 'You have 1 free use of this calculator.';
+      payBtn.style.display = 'inline-block';
+      payBtn.textContent = 'Buy Now';
+    }
+    return 'free_available';
+  }
+}
+
+function validateModalEmail() {
+  const emailVal = document.getElementById('payment-email-input').value.trim();
+  const continueBtn = document.getElementById('payment-continue-btn');
+  const re = /^[^s@]+@[^s@]+\.[^\s@]+$/;
+  const isValid = re.test(emailVal);
+  if (continueBtn) {
+    continueBtn.disabled = !isValid;
+  }
+}
+
+async function submitEmailLead() {
+  const emailVal = document.getElementById('payment-email-input').value.trim();
+  const continueBtn = document.getElementById('payment-continue-btn');
+  if (continueBtn) {
+    continueBtn.disabled = true;
+    continueBtn.textContent = 'Generating QR...';
+  }
+  try {
+    const res = await fetch('/api/status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'store_email', email: emailVal })
+    });
+    const data = await res.json();
+    if (data && !data.error) {
+      dbStatus = data;
+    }
+  } catch (err) {
+    console.warn("[Silent Lead] Failed to record email lead metadata:", err);
+  }
+
+  // Hide email form, show pay button and payment info
+  document.getElementById('email-capture-container').style.display = 'none';
+  document.getElementById('payment-initial-info').style.display = 'block';
+  document.getElementById('pay-now-btn').style.display = 'block';
+  
+  // Automatically trigger QR code generation
+  startCheckout();
+}
+
+function openPaymentModal() {
+  isPaymentModalOpen = true;
+  const modal = document.getElementById('payment-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+  
+  const emailCapture = document.getElementById('email-capture-container');
+  const payBtn = document.getElementById('pay-now-btn');
+  const initialInfo = document.getElementById('payment-initial-info');
+  const qrContainer = document.getElementById('qr-container');
+  
+  if (dbStatus.email) {
+    if (emailCapture) emailCapture.style.display = 'none';
+    if (payBtn) payBtn.style.display = 'block';
+    if (initialInfo) initialInfo.style.display = 'block';
+    if (qrContainer) qrContainer.style.display = 'none';
+    startCheckout();
+  } else {
+    if (emailCapture) {
+      emailCapture.style.display = 'block';
+      const emailInput = document.getElementById('payment-email-input');
+      const continueBtn = document.getElementById('payment-continue-btn');
+      if (emailInput) emailInput.value = '';
+      if (continueBtn) {
+        continueBtn.disabled = true;
+        continueBtn.textContent = 'Continue';
+      }
+    }
+    if (payBtn) payBtn.style.display = 'none';
+    if (initialInfo) initialInfo.style.display = 'none';
+    if (qrContainer) qrContainer.style.display = 'none';
+  }
+}
+
+let paymentPollInterval = null;
+
+function closePaymentModal() {
+  isPaymentModalOpen = false;
+  const modal = document.getElementById('payment-modal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+  if (paymentPollInterval) {
+    clearInterval(paymentPollInterval);
+    paymentPollInterval = null;
+  }
+}
+
+async function startCheckout() {
+  const payBtn = document.getElementById('pay-now-btn');
+  const originalText = payBtn ? payBtn.textContent : '';
+  if (payBtn) {
+    payBtn.disabled = true;
+    payBtn.textContent = 'Generating QR...';
+  }
+
+  try {
+    const response = await fetch('/api/create-razorpay-qr', { method: 'POST' });
+    const data = await response.json();
+    if (!response.ok || data.error) {
+      alert('Error initiating Razorpay QR code: ' + (data.error || 'Unknown error'));
+      if (payBtn) {
+        payBtn.disabled = false;
+        payBtn.textContent = originalText;
+      }
+      return;
+    }
+
+    // Display QR Code
+    const qrImage = document.getElementById('qr-image');
+    if (qrImage) {
+      qrImage.src = data.image_url;
+    }
+    
+    // Hide initial info & pay button
+    const initialInfo = document.getElementById('payment-initial-info');
+    if (initialInfo) initialInfo.style.display = 'none';
+    if (payBtn) payBtn.style.display = 'none';
+
+    // Show QR Container
+    const qrContainer = document.getElementById('qr-container');
+    if (qrContainer) qrContainer.style.display = 'block';
+
+    // Start polling status
+    startPaymentStatusPolling();
+  } catch (err) {
+    console.error(err);
+    alert('Failed to connect to QR API endpoint. Check server configuration.');
+    if (payBtn) {
+      payBtn.disabled = false;
+      payBtn.textContent = originalText;
+    }
+  }
+}
+
+function startPaymentStatusPolling() {
+  if (paymentPollInterval) clearInterval(paymentPollInterval);
+  
+  paymentPollInterval = setInterval(async () => {
+    try {
+      const response = await fetch('/api/razorpay/payment-status');
+      const data = await response.json();
+      
+      if (data && data.paid_access) {
+        clearInterval(paymentPollInterval);
+        paymentPollInterval = null;
+        
+        await fetchStatus();
+        closePaymentModal();
+        alert("Payment successful. Calculator unlocked.");
+      }
+    } catch (err) {
+      console.error("Error polling payment status:", err);
+    }
+  }, 5000); // Poll every 5 seconds
+}
+
+function simulatePaymentSuccess() {
+  dbStatus.paid_calculations_remaining = 2;
+  closePaymentModal();
+  checkFreemiumStatus();
+  actualRecalc();
+}
+
+loadSICase();
+isInitialLoad = false;
+fetchStatus();
+
+
+async function recalc() {
+  if (isInitialLoad) {
+    actualRecalc();
+    return;
+  }
+
+  // Enforce D1 backend validation prior to calculation running
+  try {
+    const response = await fetch('/api/status');
+    const data = await response.json();
+    if (data && !data.error) {
+      dbStatus = data;
+    }
+  } catch (e) {
+    console.error("Failed to refresh status before calculation:", e);
+  }
+
+  const status = checkFreemiumStatus();
+  if (status === 'blocked') {
+    if (!isPaymentModalOpen) {
+      isPaymentModalOpen = true;
+      setTimeout(() => {
+        openPaymentModal();
+      }, 1500);
+    }
+    return;
+  }
+
+  // If paid calculations are active, decrement count on D1 first
+  if (status === 'paid_active') {
+    try {
+      const response = await fetch('/api/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'consume_calculation' })
+      });
+      const data = await response.json();
+      if (!response.ok || data.error) {
+        alert("Remaining calculations spent. Please purchase calculations to continue.");
+        dbStatus.paid_calculations_remaining = 0;
+        checkFreemiumStatus();
+        openPaymentModal();
+        return;
+      }
+      dbStatus = data;
+      checkFreemiumStatus();
+    } catch (e) {
+      console.error(e);
+      alert("Failed to confirm calculation quota with server.");
+      return;
+    }
+  }
+
+  // Run calculation math
+  actualRecalc();
+
+  // If this was the first free calculation, mark it consumed on D1
+  if (status === 'free_available') {
+    try {
+      const response = await fetch('/api/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'consume_free' })
+      });
+      const data = await response.json();
+      if (data && !data.error) {
+        dbStatus = data;
+        checkFreemiumStatus();
+      }
+    } catch(e) {
+      console.error("Failed to consume free calculator trial:", e);
+    }
+  }
+}
+
+</script>
+</body>
+</html>
