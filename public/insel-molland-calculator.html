@@ -1,0 +1,1891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Insel & Molland Catamaran Interference Resistance Calculator</title>
+<style>
+:root{
+  --bg:#f7f8fb; --card:#ffffff; --line:#d8dee8; --text:#111827; --muted:#6b7280;
+  --accent:#2563eb; --ok:#15803d; --warn:#b45309; --info:#0369a1;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
+.wrap{max-width:1620px;margin:0 auto;padding:22px}
+h1{margin:0 0 8px;font-size:30px}
+.lead{margin:0 0 18px;color:var(--muted);max-width:1400px;line-height:1.5}
+.grid{display:grid;gap:18px}
+.main{grid-template-columns:440px 1fr}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.pad{padding:18px}
+.section{font-size:17px;font-weight:800;margin:0 0 14px}
+.field{margin-bottom:12px}
+label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:12px;font-size:14px}
+select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:12px;font-size:14px}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.trio{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+button{padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;font-weight:800;cursor:pointer;font-size:13px}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.notice{padding:12px 14px;border-radius:14px;background:#eef6ff;border:1px solid #cfe2ff;color:#123766;font-size:13px;line-height:1.45}
+.notice.warn{background:#fef3c7;border-color:#fcd34d;color:#92400e}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.metric{border:1px solid var(--line);border-radius:16px;padding:14px}
+.metric .k{font-size:12px;color:var(--muted);margin-bottom:4px}
+.metric .v{font-size:25px;font-weight:900}
+.metric .n{font-size:12px;color:var(--muted);margin-top:4px}
+.status{font-weight:800}
+.ok{color:var(--ok)} .warn{color:var(--warn)} .info{color:var(--info)}
+.tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.tabbtn{padding:8px 12px;font-size:12px}
+.tabbtn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tabpanel{display:none}
+.tabpanel.active{display:block}
+.formula{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#f8fafc;border:1px solid var(--line);padding:12px;border-radius:12px;line-height:1.55;font-size:12px;white-space:pre-wrap;overflow-x:auto}
+.table-wrap{max-height:540px;overflow:auto;border:1px solid var(--line);border-radius:14px}
+.range-table-wrap{max-height:460px;overflow:auto;border:1px solid var(--line);border-radius:14px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{padding:8px;border-top:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+svg{width:100%;height:360px;display:block;background:#fff;border-radius:12px}
+.chartbox svg{height:420px}
+.chartbox{border:1px solid var(--line);border-radius:16px;padding:10px;margin-bottom:12px}
+.chart-title{font-size:14px;font-weight:800;margin:0 0 8px}
+.small{font-size:12px;color:var(--muted);line-height:1.45}
+.results-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:12px}
+.result-box{border:1px solid var(--line);border-radius:12px;padding:12px}
+.result-box .label{font-size:11px;color:var(--muted);font-weight:700;margin-bottom:4px}
+.result-box .value{font-size:18px;font-weight:900}
+.result-box .unit{font-size:11px;color:var(--muted)}
+.engine-best{border:2px solid var(--ok);background:#f0fdf4;border-radius:14px;padding:14px;margin-bottom:12px}
+.engine-best .tag{font-size:11px;font-weight:800;color:var(--ok);letter-spacing:0.5px;margin-bottom:4px}
+.engine-best .name{font-size:18px;font-weight:900;margin-bottom:4px}
+.engine-alt-table th, .engine-alt-table td{font-size:12px}
+#payment-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.75);
+  z-index: 99999;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+</style>
+
+<!-- Excel export libraries -->
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <h1>Insel & Molland Catamaran Interference Resistance Calculator</h1>
+  <p class="lead">
+    Resistance, EHP, BHP, and propulsion-engine matching for catamaran hulls using an Insel & Molland-style interference structure
+  </p>
+
+  <!-- Freemium Status Banner -->
+  <div id="freemium-banner" class="notice info" style="margin-bottom:18px; font-weight:800; font-size:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+    <span id="freemium-message">You have 1 free use of this calculator.</span>
+    <button id="pay-btn" onclick="openPaymentModal()" style="padding:6px 12px; margin:0; background:var(--accent); color:#fff; border-color:var(--accent); font-size:12px;">Unlock Unlimited</button>
+  </div>
+
+  <!-- Secure Payment Simulation Modal -->
+  <div id="payment-modal">
+    <div style="background:#fff; color:#111; max-width:480px; width:100%; border-radius:18px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.3); border:1px solid #d8dee8;">
+      <h3 style="margin-top:0; font-size:20px; font-weight:800; color:#111827;">Unlock Insel & Molland Calculator</h3>
+      <p style="font-size:13.5px; color:#4b5563; line-height:1.5; margin-bottom:18px;">
+        Get unlimited lifetime access to advanced catamaran resistance calculations, engine recommendations, and Excel reports.
+      </p>
+      <div style="background:#f3f4f6; border:1px solid #e5e7eb; border-radius:12px; padding:16px; margin-bottom:18px;">
+        <div style="display:flex; justify-content:space-between; font-weight:800; font-size:15px; margin-bottom:6px; color:#111827;">
+          <span>Lifetime Unlimited Pass</span>
+          <span style="color:#2563eb;">₹10 INR</span>
+        </div>
+        <div style="font-size:11px; color:#6b7280; line-height:1.4;">One-time payment. Secure checkout powered by Razorpay.</div>
+      </div>
+      
+      <div style="font-size:11.5px; color:#4b5563; margin-bottom:20px; padding:10px; border-left:3px solid #2563eb; background:#f0f7ff; border-radius:0 8px 8px 0; line-height:1.45;">
+        <strong>Notice (Razorpay Edge Flow):</strong> 
+        Payments are verified securely on the server via signature matching.
+        <br/><br/>
+        To complete setup in production:
+        <br/>
+        1. Configure your keys: <code>RAZORPAY_KEY_ID</code> and <code>RAZORPAY_KEY_SECRET</code>.
+        <br/>
+        2. Set up Webhook in Razorpay Dashboard pointing to <code>/api/razorpay/webhook</code> with secret.
+      </div>
+
+      <div style="display:flex; gap:12px;">
+        <button class="primary" onclick="startCheckout()" style="flex:1; background:#2563eb; color:#fff; border-color:#2563eb; padding:10px 14px; border-radius:12px; font-weight:800; cursor:pointer;">Pay Now (₹10)</button>
+        <button onclick="closePaymentModal()" style="flex:1; padding:10px 14px; border:1px solid #d8dee8; border-radius:12px; font-weight:800; background:#fff; cursor:pointer;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid main">
+    <!-- INPUT PANEL -->
+    <div class="card pad">
+      <h2 class="section">Inputs</h2>
+      <div class="tabs">
+        <button class="tabbtn" id="tab_imp_btn" onclick="setUnitMode('imp')">Imperial</button>
+        <button class="tabbtn active" id="tab_si_btn" onclick="setUnitMode('si')">SI</button>
+      </div>
+
+      <!-- IMPERIAL UNITS TAB -->
+      <div id="tab_imp" class="tabpanel">
+        <h3 class="section" style="font-size:13px;margin:12px 0 8px">Hull Dimensions</h3>
+        <div class="field"><label>Length Overall (ft)</label><input id="imp_loa" type="number" value="100" step="0.1"></div>
+        <div class="field"><label>Length Waterline (ft)</label><input id="imp_lwl" type="number" value="95" step="0.1"></div>
+        <div class="field"><label>Beam of demihull (ft)</label><input id="imp_beam" type="number" value="8" step="0.1"></div>
+        <div class="field"><label>Draft (ft)</label><input id="imp_draft" type="number" value="3.5" step="0.1"></div>
+        <div class="field"><label>Displacement (LT)</label><input id="imp_disp" type="number" value="150" step="1"></div>
+        <h3 class="section" style="font-size:13px;margin:12px 0 8px">Coefficients</h3>
+        <div class="duo">
+          <div class="field"><label>Block coeff. (CB)</label><input id="imp_cb" type="number" value="0.43" min="0.1" max="0.9" step="0.01"></div>
+          <div class="field"><label>Prismatic coeff. (CP)</label><input id="imp_cp" type="number" value="0.59" min="0.1" max="0.9" step="0.01"></div>
+        </div>
+        <div class="duo">
+          <div class="field"><label>Midship coeff. (CM)</label><input id="imp_cm" type="number" value="0.73" min="0.5" max="1.0" step="0.01"></div>
+          <div class="field"><label>Waterplane coeff. (CW)</label><input id="imp_cw" type="number" value="0.8" min="0.3" max="1.0" step="0.01"></div>
+        </div>
+        <h3 class="section" style="font-size:13px;margin:12px 0 8px">Catamaran Geometry</h3>
+        <div class="field"><label>Demihull spacing (ft)</label><input id="imp_spacing" type="number" value="24" step="0.1"></div>
+        <div class="field"><label>Wetted surface area (sq ft) [auto]</label><input id="imp_wsa" type="number" value="0" step="0.1"></div>
+        <div class="notice" style="margin-bottom:12px;font-size:12px">Leave WSA as 0 for automatic calculation via Insel & Molland formula</div>
+      </div>
+
+      <!-- SI UNITS TAB -->
+      <div id="tab_si" class="tabpanel active">
+        <h3 class="section" style="font-size:13px;margin:12px 0 8px">Hull Dimensions</h3>
+        <div class="field"><label>Length Overall (m)</label><input id="si_loa" type="number" value="10.29" step="0.01"></div>
+        <div class="field"><label>Length Waterline (m)</label><input id="si_lwl" type="number" value="10" step="0.01"></div>
+        <div class="field"><label>Beam of demihull (m)</label><input id="si_beam" type="number" value="2" step="0.01"></div>
+        <div class="field"><label>Draft (m)</label><input id="si_draft" type="number" value="1" step="0.01"></div>
+        <div class="field"><label>Displacement (t)</label><input id="si_disp" type="number" value="5" step="0.1"></div>
+        <h3 class="section" style="font-size:13px;margin:12px 0 8px">Coefficients</h3>
+        <div class="duo">
+          <div class="field"><label>Block coeff. (CB)</label><input id="si_cb" type="number" value="0.43" min="0.1" max="0.9" step="0.01"></div>
+          <div class="field"><label>Prismatic coeff. (CP)</label><input id="si_cp" type="number" value="0.59" min="0.1" max="0.9" step="0.01"></div>
+        </div>
+        <div class="duo">
+          <div class="field"><label>Midship coeff. (CM)</label><input id="si_cm" type="number" value="0.73" min="0.5" max="1.0" step="0.01"></div>
+          <div class="field"><label>Waterplane coeff. (CW)</label><input id="si_cw" type="number" value="0.80" min="0.3" max="1.0" step="0.01"></div>
+        </div>
+        <h3 class="section" style="font-size:13px;margin:12px 0 8px">Catamaran Geometry</h3>
+        <div class="field"><label>Demihull spacing (m)</label><input id="si_spacing" type="number" value="2.2" step="0.01"></div>
+        <div class="field"><label>Wetted surface area (m²) [auto]</label><input id="si_wsa" type="number" value="0" step="0.1"></div>
+        <div class="notice" style="margin-bottom:12px;font-size:12px">Leave WSA as 0 for automatic calculation via Insel & Molland formula</div>
+      </div>
+
+      <h3 class="section" style="font-size:13px;margin:12px 0 8px">Environmental & Calculation</h3>
+      <div class="field">
+        <label>Water type</label>
+        <select id="water_type">
+          <option value="salt">Saltwater (ρ = 1025 kg/m³)</option>
+          <option value="fresh">Freshwater (ρ = 1000 kg/m³)</option>
+        </select>
+      </div>
+      <div class="duo">
+        <div class="field">
+          <label>Form factor (1+k)</label>
+          <input id="form_factor" type="number" value="1.10" min="1.0" max="1.6" step="0.01">
+        </div>
+        <div class="field">
+          <label>Roughness allowance ΔCF</label>
+          <input id="rough_cf" type="number" value="0.0004" min="0" max="0.003" step="0.0001">
+        </div>
+      </div>
+      <div class="field">
+        <label>Propulsive coefficient (ηP)</label>
+        <input id="prop_coeff" type="number" value="0.70" min="0.4" max="0.95" step="0.01">
+      </div>
+      <div class="field">
+        <label>Transmission efficiency</label>
+        <input id="trans_eff" type="number" value="0.9" min="0.1" max="1.0" step="0.01">
+      </div>
+      <div class="duo">
+        <div class="field">
+          <label>Number of engines</label>
+          <input id="num_engines" type="number" value="2" min="1" max="4" step="1">
+        </div>
+        <div class="field">
+          <label>MCR service margin</label>
+          <input id="mcr_margin" type="number" value="0.80" min="0.5" max="1.0" step="0.01">
+        </div>
+      </div>
+      <div class="field">
+        <label>Speed range (knots)</label>
+        <div class="duo">
+          <input id="range_start" type="number" value="1" min="0.1" step="0.1" placeholder="Start">
+          <input id="range_end" type="number" value="24" min="0.1" step="0.1" placeholder="End">
+        </div>
+      </div>
+      <div class="field">
+        <label>Current speed (knots)</label>
+        <input id="current_speed" type="number" value="12" step="0.5" placeholder="For analysis">
+      </div>
+
+      <div class="toolbar">
+        <button class="primary" onclick="recalc()">Calculate</button>
+        <button onclick="loadDemoCase()">Load demo</button>
+        <button onclick="downloadExcel()">Export Excel</button>
+      </div>
+    </div>
+
+    <!-- RESULTS PANEL -->
+    <div class="grid" style="gap:18px">
+      <div class="card pad">
+        <h2 class="section">Final calculated result</h2>
+        <div class="metrics">
+          <div class="metric"><div class="k">Total resistance RT</div><div id="m-rt" class="v">—</div><div id="u-rt" class="n">kN</div></div>
+          <div class="metric"><div class="k">Frictional resistance RF</div><div id="m-rf" class="v">—</div><div id="u-rf" class="n">kN</div></div>
+          <div class="metric"><div class="k">Residual resistance RR</div><div id="m-rr" class="v">—</div><div id="u-rr" class="n">kN</div></div>
+          <div class="metric"><div class="k">Interference resistance Ri</div><div id="m-ri" class="v">—</div><div class="n">kN</div></div>
+
+          <div class="metric"><div class="k">EHP = RT × V</div><div id="m-ehp" class="v">—</div><div class="n">kW</div></div>
+          <div class="metric"><div class="k">DHP = EHP / ηP</div><div id="m-dhp" class="v">—</div><div class="n">kW</div></div>
+          <div class="metric"><div class="k">BHP = DHP / ηT</div><div id="m-bhp" class="v">—</div><div class="n">kW</div></div>
+          <div class="metric"><div class="k">Maximum required power</div><div id="m-maxpower" class="v">—</div><div class="n">kW = BHP / margin</div></div>
+
+          <div class="metric"><div class="k">Froude Number Fn</div><div id="m-fn" class="v">—</div><div class="n">V / √(gLWL)</div></div>
+          <div class="metric"><div class="k">Reynolds Number Re</div><div id="m-re" class="v">—</div><div class="n">×10⁶</div></div>
+          <div class="metric"><div class="k">Wetted surface area</div><div id="m-wsa-top" class="v">—</div><div class="n">m²</div></div>
+          <div class="metric"><div class="k">Spacing ratio S/L</div><div id="m-sl-top" class="v">—</div><div class="n">ratio</div></div>
+
+          <div class="metric"><div class="k">CF</div><div id="m-cf" class="v">—</div><div class="n">×10⁻³</div></div>
+          <div class="metric"><div class="k">CR</div><div id="m-cr" class="v">—</div><div class="n">×10⁻³</div></div>
+          <div class="metric"><div class="k">CRi</div><div id="m-cri" class="v">—</div><div class="n">×10⁻³</div></div>
+          <div class="metric"><div class="k">CT</div><div id="m-ct" class="v">—</div><div class="n">×10⁻³</div></div>
+        </div>
+        <div style="margin-top:12px" class="small">Status: <span id="status" class="status">—</span></div>
+      </div>
+
+      <div class="card pad">
+        <h2 class="section">Recommended Propulsion Engine(s)</h2>
+        <div class="notice" style="margin-bottom:12px">
+          Engine matching now uses the highest required power found inside the selected speed range, not only the current speed. The sizing power is calculated as BHP ÷ MCR service margin, split evenly across the selected number of engines, then matched against the reference marine diesel engine database. Figures are approximate — always verify against current manufacturer data sheets and classification-society requirements before final selection.
+        </div>
+        <div class="results-grid" style="margin-bottom:12px">
+          <div class="result-box">
+            <div class="label">Sizing speed in range</div>
+            <div class="value" id="m-sizing-speed">—</div>
+            <div class="unit">knots</div>
+          </div>
+          <div class="result-box">
+            <div class="label">Sizing total required power</div>
+            <div class="value" id="m-sizing-total">—</div>
+            <div class="unit">kW</div>
+          </div>
+          <div class="result-box">
+            <div class="label">Required power per engine</div>
+            <div class="value" id="m-reqkw">—</div>
+            <div class="unit">kW</div>
+          </div>
+          <div class="result-box">
+            <div class="label">Required power per engine</div>
+            <div class="value" id="m-reqhp">—</div>
+            <div class="unit">HP</div>
+          </div>
+        </div>
+        <div id="engineRecoBox"></div>
+      </div>
+
+      <div class="card pad">
+        <h2 class="section">Hull & Hydrostatic Properties</h2>
+        <div class="results-grid">
+          <div class="result-box">
+            <div class="label">Waterline length</div>
+            <div class="value" id="m-lwl">—</div>
+            <div class="unit" id="u-lwl">m</div>
+          </div>
+          <div class="result-box">
+            <div class="label">Beam (demihull)</div>
+            <div class="value" id="m-beam">—</div>
+            <div class="unit" id="u-beam">m</div>
+          </div>
+          <div class="result-box">
+            <div class="label">Draft</div>
+            <div class="value" id="m-draft">—</div>
+            <div class="unit" id="u-draft">m</div>
+          </div>
+          <div class="result-box">
+            <div class="label">Displacement</div>
+            <div class="value" id="m-disp">—</div>
+            <div class="unit" id="u-disp">t</div>
+          </div>
+          <div class="result-box">
+            <div class="label">Wetted surface</div>
+            <div class="value" id="m-wsa">—</div>
+            <div class="unit" id="u-wsa">m²</div>
+          </div>
+          <div class="result-box">
+            <div class="label">Hull spacing</div>
+            <div class="value" id="m-spacing">—</div>
+            <div class="unit" id="u-spacing">m</div>
+          </div>
+          <div class="result-box">
+            <div class="label">Spacing ratio (S/L)</div>
+            <div class="value" id="m-spacingratio">—</div>
+            <div class="unit">ratio</div>
+          </div>
+          <div class="result-box">
+            <div class="label">Displacement/Δ</div>
+            <div class="value" id="m-dispvol">—</div>
+            <div class="unit">m³</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card pad">
+        <h2 class="section">Charts</h2>
+        <div class="chartbox">
+          <div class="chart-title">Speed vs EHP with displacement, transition, and high-speed catamaran regions</div>
+          <svg id="chart1"></svg>
+          <div class="small">Green = displacement region, orange = transition region, blue = high-speed catamaran region. The red marker labels the EHP corresponding to the currently selected speed.</div>
+        </div>
+        <div class="chartbox">
+          <div class="chart-title">Maximum required power versus speed</div>
+          <svg id="chart2"></svg>
+          <div class="small">Maximum required power = BHP / margin. Green = displacement region, orange = transition region, blue = high-speed catamaran region. The curve extends to the selected speed/range entered.</div>
+        </div>
+        <div class="chartbox">
+          <div class="chart-title">Resistance Coefficients vs Speed</div>
+          <svg id="chart3"></svg>
+          <div class="small">Frictional (CF), residual (CR), interference (CRi), and total (CT) resistance coefficients. Values are plotted as ×10⁻³.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPEED RANGE TABLE -->
+  <div class="card pad" style="margin-top:18px">
+    <h2 class="section">Speed Range Performance Table</h2>
+    <div class="small" style="margin-bottom:10px">Detailed resistance and power calculations across the requested speed range.</div>
+    <div class="range-table-wrap">
+      <table id="rangeTbl">
+        <thead><tr id="rangeHead"></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- METHODOLOGY -->
+  <div class="card pad" style="margin-top:18px">
+    <h2 class="section">Insel & Molland Method Overview</h2>
+    <div class="formula">FRICTIONAL RESISTANCE (ITTC 1957):
+Re = V × LWL / ν
+CF = 0.075 / (log₁₀(Re) − 2)²
+RF = 0.5 × ρ × V² × WSA × (1+k) × CF
+
+FROUDE NUMBER:
+Fn = V / √(g × LWL)
+
+RESIDUAL RESISTANCE:
+The Insel & Molland method does not use one universal closed-form equation.
+The residual resistance coefficient must be obtained from the published Insel &
+Molland regression equations/coefficient tables as a function of:
+Fn, L/B, B/T, CB, CP, and S/L.
+
+CR = f(Fn, L/B, B/T, CB, CP, S/L)
+RR = 0.5 × ρ × V² × WSA × CR
+
+CATAMARAN INTERFERENCE:
+Do not use Ri = Φ × RR.
+The catamaran interference is represented as an additional coefficient:
+
+CRi = f(Fn, S/L, L/B, B/T, CB, CP)
+Ri = 0.5 × ρ × V² × WSA × CRi
+
+TOTAL RESISTANCE COEFFICIENT:
+CT = (1+k)CF + CR + CRi + ΔCF
+
+TOTAL RESISTANCE:
+RT = 0.5 × ρ × V² × WSA × CT
+
+POWER CALCULATIONS:
+EHP = RT × V / 1000      (kW)
+DHP = EHP / ηP
+BHP = DHP / ηT
+Maximum required power = BHP / MCR service margin
+
+ENGINE SELECTION (reference only):
+Required MCR per engine = max(BHP / margin across selected speed range) / number of engines
+Matched against a reference engine database (rated HP, RPM, weight).
+Best match = smallest database engine with rated HP ≥ required HP per engine at the speed-range sizing point.
+
+NOTE:
+This version is structured correctly for the Insel & Molland method. The functions
+inselMollandCR() and inselMollandCRi() are isolated so the exact published
+regression coefficients can be inserted directly. The current fallback equations are
+clearly marked as provisional and should not be used for final design validation.
+The engine database is illustrative/reference only — verify against current
+manufacturer data sheets before specifying an engine.</div>
+  </div>
+</div>
+
+<script>
+let unitMode = 'si';
+const g = 9.81, nu = 1.19e-6, rhoSalt = 1025, rhoFresh = 1000;
+const FT_PER_M = 3.280839895, LB_PER_KG = 2.20462262185, KN_PER_LBF = 0.00444822;
+const M_PER_FT = 0.3048, KG_PER_LT = 1016.047, T_PER_LT = 1.01605;
+const KW_PER_HP = 0.745699872;
+
+// Reference marine diesel engine database (approximate, illustrative — verify with manufacturer datasheets)
+const ENGINE_DB = [
+  {manufacturer:'Yanmar', name:'3JH40', hp:39, rpm:3800, weight:134, type:'Diesel inboard'},
+  {manufacturer:'Yanmar', name:'4JH45', hp:44, rpm:3000, weight:218, type:'Diesel inboard'},
+  {manufacturer:'Volvo Penta', name:'D2-50', hp:50, rpm:3000, weight:186, type:'Diesel inboard'},
+  {manufacturer:'Yanmar', name:'4LV170', hp:170, rpm:3300, weight:365, type:'Diesel inboard'},
+  {manufacturer:'Volvo Penta', name:'D3-220', hp:220, rpm:3500, weight:357, type:'Diesel inboard'},
+  {manufacturer:'Cummins', name:'QSB 6.7', hp:220, rpm:2600, weight:580, type:'Diesel inboard'},
+  {manufacturer:'Volvo Penta', name:'D4-225', hp:225, rpm:3500, weight:410, type:'Diesel inboard'},
+  {manufacturer:'Perkins', name:'Sabre M225C', hp:225, rpm:3000, weight:481, type:'Diesel inboard'},
+  {manufacturer:'Cummins', name:'QSB 5.9', hp:300, rpm:2800, weight:522, type:'Diesel inboard'},
+  {manufacturer:'Perkins', name:'M300C', hp:300, rpm:2800, weight:590, type:'Diesel inboard'},
+  {manufacturer:'Volvo Penta', name:'D6-370', hp:370, rpm:3500, weight:540, type:'Diesel inboard'},
+  {manufacturer:'Yanmar', name:'8LV370', hp:370, rpm:3500, weight:562, type:'Diesel inboard'},
+  {manufacturer:'Volvo Penta', name:'D6-400', hp:400, rpm:3500, weight:562, type:'Diesel inboard'},
+  {manufacturer:'Yanmar', name:'6LY440', hp:440, rpm:3300, weight:595, type:'Diesel inboard'},
+  {manufacturer:'Volvo Penta', name:'D8-440', hp:440, rpm:2500, weight:770, type:'Diesel inboard'},
+  {manufacturer:'Cummins', name:'QSC 8.3', hp:450, rpm:2600, weight:717, type:'Diesel inboard'},
+  {manufacturer:'John Deere', name:'6090', hp:500, rpm:2100, weight:1015, type:'Diesel inboard'},
+  {manufacturer:'Cummins', name:'QSL9', hp:530, rpm:2100, weight:884, type:'Diesel inboard'},
+  {manufacturer:'Volvo Penta', name:'D11-625', hp:625, rpm:2300, weight:1080, type:'Diesel inboard'},
+  {manufacturer:'Scania', name:'DI13 074M', hp:700, rpm:2300, weight:1090, type:'Diesel inboard'},
+  {manufacturer:'Cummins', name:'QSM11', hp:715, rpm:2300, weight:1117, type:'Diesel inboard'},
+  {manufacturer:'Caterpillar', name:'C12', hp:705, rpm:2300, weight:1166, type:'Diesel inboard'},
+  {manufacturer:'MAN', name:'i6-730', hp:730, rpm:2300, weight:1180, type:'Diesel inboard'},
+  {manufacturer:'Volvo Penta', name:'D13-900', hp:900, rpm:2300, weight:1350, type:'Diesel inboard'},
+  {manufacturer:'MAN', name:'V8-1000', hp:1000, rpm:2300, weight:1450, type:'Diesel inboard'},
+  {manufacturer:'Cummins', name:'QSK19', hp:1015, rpm:1900, weight:1996, type:'Diesel inboard'},
+  {manufacturer:'Caterpillar', name:'C18', hp:1015, rpm:2100, weight:2150, type:'Diesel inboard'},
+  {manufacturer:'MTU', name:'8V2000 M72', hp:1480, rpm:2450, weight:2200, type:'Diesel inboard'},
+  {manufacturer:'Caterpillar', name:'C32', hp:1625, rpm:2300, weight:3084, type:'Diesel inboard'},
+  {manufacturer:'MAN', name:'V12-1800', hp:1800, rpm:2300, weight:2580, type:'Diesel inboard'},
+  {manufacturer:'MTU', name:'12V2000 M94', hp:2000, rpm:2450, weight:2860, type:'Diesel inboard'}
+].sort((a,b)=>a.hp-b.hp);
+
+function setUnitMode(mode){ 
+  unitMode = mode; 
+  document.getElementById('tab_imp').classList.toggle('active', mode==='imp'); 
+  document.getElementById('tab_si').classList.toggle('active', mode==='si'); 
+  document.getElementById('tab_imp_btn').classList.toggle('active', mode==='imp'); 
+  document.getElementById('tab_si_btn').classList.toggle('active', mode==='si'); 
+  recalc(); 
+}
+
+function val(id){ return parseFloat(document.getElementById(id).value) || 0; }
+function fmt(x, n=3){ if(!isFinite(x)) return "—"; return Number(x).toLocaleString(undefined, {maximumFractionDigits: n, minimumFractionDigits: n}); }
+function fmtSci(x, n=2){ if(!isFinite(x)) return "—"; return x.toExponential(n); }
+function mcrMargin(){ const m = val('mcr_margin'); return (isFinite(m) && m > 0) ? m : 0.80; }
+function numEnginesSelected(){ const n = Math.round(val('num_engines')); return (isFinite(n) && n > 0) ? n : 2; }
+
+function getInputs(){
+  if(unitMode === 'imp'){
+    return {
+      loa: val('imp_loa') * M_PER_FT,
+      lwl: val('imp_lwl') * M_PER_FT,
+      beam: val('imp_beam') * M_PER_FT,
+      draft: val('imp_draft') * M_PER_FT,
+      disp: val('imp_disp') * KG_PER_LT / 1000,
+      cb: val('imp_cb'),
+      cp: val('imp_cp'),
+      cm: val('imp_cm'),
+      cw: val('imp_cw'),
+      spacing: val('imp_spacing') * M_PER_FT,
+      wsa: val('imp_wsa') * M_PER_FT * M_PER_FT
+    };
+  }
+  return {
+    loa: val('si_loa'),
+    lwl: val('si_lwl'),
+    beam: val('si_beam'),
+    draft: val('si_draft'),
+    disp: val('si_disp'),
+    cb: val('si_cb'),
+    cp: val('si_cp'),
+    cm: val('si_cm'),
+    cw: val('si_cw'),
+    spacing: val('si_spacing'),
+    wsa: val('si_wsa')
+  };
+}
+
+function calcWSA(lwl, beam, draft, cb){
+  // Approximate TOTAL wetted surface area for both demihulls.
+  // For accurate Insel & Molland work, enter measured/calculated WSA directly.
+  const oneDemihull = lwl * (2 * draft + beam) * Math.sqrt(Math.max(cb, 0.01));
+  return 2 * oneDemihull;
+}
+
+function getRho(){
+  return document.getElementById('water_type').value === 'salt' ? rhoSalt : rhoFresh;
+}
+
+function calcFn(v, lwl){
+  return v / Math.sqrt(g * lwl);
+}
+
+function calcRe(v, lwl){
+  return (v * lwl) / nu;
+}
+
+function calcCf(re){
+  // ITTC 1957 friction line
+  const denominator = Math.pow(Math.log10(re) - 2, 2);
+  return 0.075 / denominator;
+}
+
+function inselMollandCR(fn, L_B, B_T, cb, cp, S_L, dispVol, lwl){
+  /*
+    IMPORTANT:
+    Replace this block with the exact published Insel & Molland residual-resistance
+    regression equations/coefficient tables.
+
+    Required dependencies are already passed into this function:
+    Fn, L/B, B/T, CB, CP, S/L, displacement volume and LWL.
+
+    This fallback is only a smooth provisional curve so the calculator runs.
+    It is NOT the published Insel & Molland regression.
+  */
+  const slenderness = Math.max(L_B, 1);
+  const volRatio = Math.max(dispVol / Math.pow(lwl, 3), 1e-8);
+  const hump = Math.exp(-Math.pow((fn - 0.45) / 0.18, 2));
+  const highSpeed = Math.pow(Math.max(fn, 0.01), 2.2);
+  const geom = Math.pow(10 / slenderness, 0.8) * Math.pow(Math.max(B_T, 0.1) / 2, 0.15) * Math.pow(Math.max(cb, 0.1) / 0.45, 0.5) * Math.pow(Math.max(cp, 0.1) / 0.65, 0.3);
+  return Math.max(0, (0.0012 * hump + 0.00035 * highSpeed) * geom * Math.pow(volRatio / 0.0025, 0.15));
+}
+
+function inselMollandCRi(fn, S_L, L_B, B_T, cb, cp){
+  /*
+    IMPORTANT:
+    Replace this block with the exact published Insel & Molland catamaran
+    interference regression/coefficient tables.
+
+    This returns CRi, an ADDITIONAL interference coefficient.
+    Do not calculate interference as Ri = phi * RR.
+
+    This fallback is provisional only and is shaped so interference is strongest
+    near the normal wave-interference hump and decreases as spacing increases.
+  */
+  const spacing = Math.max(S_L, 0.05);
+  const hump = Math.exp(-Math.pow((fn - 0.40) / 0.16, 2));
+  const spacingEffect = Math.exp(-3.0 * spacing);
+  const slenderEffect = Math.pow(10 / Math.max(L_B, 1), 0.35);
+  const fullnessEffect = Math.pow(Math.max(cb, 0.1) / 0.45, 0.4) * Math.pow(Math.max(cp, 0.1) / 0.65, 0.2);
+  return Math.max(0, 0.00075 * hump * spacingEffect * slenderEffect * fullnessEffect);
+}
+
+function calcResistance(v, inp){
+  if(v < 0.1) return null;
+  
+  const rho = getRho();
+  const lwl = inp.lwl;
+  const beam = inp.beam;
+  const draft = inp.draft;
+  const disp = inp.disp * 1000; // tonnes to kg
+  const wsa = inp.wsa > 0.1 ? inp.wsa : calcWSA(lwl, beam, draft, inp.cb);
+  const spacing = inp.spacing;
+  const formFactor = val('form_factor');
+  const roughCf = val('rough_cf');
+  
+  const dispVol = disp / rho;
+  const fn = calcFn(v, lwl);
+  const re = calcRe(v, lwl);
+  const L_B = lwl / beam;
+  const B_T = beam / draft;
+  const spacingRatio = spacing / lwl;
+  
+  const cf = calcCf(re);
+  const cr = inselMollandCR(fn, L_B, B_T, inp.cb, inp.cp, spacingRatio, dispVol, lwl);
+  const cri = inselMollandCRi(fn, spacingRatio, L_B, B_T, inp.cb, inp.cp);
+  const ct = formFactor * cf + cr + cri + roughCf;
+  
+  const qS = 0.5 * rho * v * v * wsa;
+  const rf = qS * formFactor * cf;
+  const rr = qS * cr;
+  const ri = qS * cri;
+  const rt = qS * ct;
+  
+  const propCoeff = val('prop_coeff');
+  const transEff = val('trans_eff');
+  const ehp = rt * v / 1000;
+  const dhp = ehp / propCoeff;
+  const bhp = dhp / transEff;
+  
+  return {
+    v, fn, re, cf, cr, cri, ct,
+    rf, rr, ri, rt,
+    wsa, dispVol,
+    formFactor, roughCf, spacingRatio, L_B, B_T,
+    ehp, dhp, bhp
+  };
+}
+
+function updateDisplayUnits(){
+  const rfUnit = unitMode === 'si' ? 'kN' : 'kN';
+  const rrUnit = unitMode === 'si' ? 'kN' : 'kN';
+  const rtUnit = unitMode === 'si' ? 'kN' : 'kN';
+  document.getElementById('u-rf').textContent = rfUnit;
+  document.getElementById('u-rr').textContent = rrUnit;
+  document.getElementById('u-rt').textContent = rtUnit;
+  document.getElementById('u-lwl').textContent = unitMode === 'si' ? 'm' : 'm';
+  document.getElementById('u-beam').textContent = unitMode === 'si' ? 'm' : 'm';
+  document.getElementById('u-draft').textContent = unitMode === 'si' ? 'm' : 'm';
+  document.getElementById('u-disp').textContent = unitMode === 'si' ? 't' : 't';
+  document.getElementById('u-wsa').textContent = unitMode === 'si' ? 'm²' : 'm²';
+  document.getElementById('u-spacing').textContent = unitMode === 'si' ? 'm' : 'm';
+}
+
+function buildSpeedRange(inp){
+  const a = val('range_start') * 0.51444;
+  const b = val('range_end') * 0.51444;
+  const start = Math.max(0.1, Math.min(a, b));
+  const end = Math.max(0.1, Math.max(a, b));
+  const current = val('current_speed') * 0.51444;
+  
+  const speeds = [];
+  const step = Math.max(0.05, (end - start) / 25);
+  for(let v = start; v <= end + 1e-6; v += step){
+    speeds.push(Math.max(0.1, Number(v.toFixed(3))));
+  }
+  if(!speeds.some(s => Math.abs(s - end) < 0.01)) speeds.push(Number(end.toFixed(3)));
+  if(isFinite(current) && current > 0 && !speeds.some(s => Math.abs(s - current) < 0.01)) speeds.push(Number(current.toFixed(3)));
+  return [...new Set(speeds)].sort((a,b) => a - b);
+}
+
+function buildEngineSizingRange(inp){
+  // Engine selection is based only on the user-entered speed range.
+  // The current-speed marker is intentionally excluded from this sizing range.
+  const a = val('range_start') * 0.51444;
+  const b = val('range_end') * 0.51444;
+  const start = Math.max(0.1, Math.min(a, b));
+  const end = Math.max(0.1, Math.max(a, b));
+  const speeds = [];
+  const step = Math.max(0.05, (end - start) / 25);
+  for(let v = start; v <= end + 1e-6; v += step){
+    speeds.push(Math.max(0.1, Number(v.toFixed(3))));
+  }
+  if(!speeds.some(s => Math.abs(s - end) < 0.01)) speeds.push(Number(end.toFixed(3)));
+  return [...new Set(speeds)].sort((a,b) => a - b);
+}
+
+function getEngineSizingResult(inp){
+  const margin = mcrMargin();
+  const engineResults = buildEngineSizingRange(inp).map(v => calcResistance(v, inp)).filter(r => r);
+  if(!engineResults.length) return null;
+  return engineResults.reduce((best, r) => (r.bhp / margin > best.bhp / margin ? r : best), engineResults[0]);
+}
+
+function niceNumber(range, round){
+  const exp = Math.floor(Math.log10(range || 1));
+  const frac = range / Math.pow(10, exp);
+  let nice;
+  if(round){
+    if(frac < 1.5) nice = 1;
+    else if(frac < 3) nice = 2;
+    else if(frac < 7) nice = 5;
+    else nice = 10;
+  } else {
+    if(frac <= 1) nice = 1;
+    else if(frac <= 2) nice = 2;
+    else if(frac <= 5) nice = 5;
+    else nice = 10;
+  }
+  return nice * Math.pow(10, exp);
+}
+
+function tickValues(min, max, target=6){
+  if(!isFinite(min) || !isFinite(max) || min === max) return [min || 0];
+  const range = niceNumber(max - min, false);
+  const step = niceNumber(range / (target - 1), true);
+  const tickMin = Math.floor(min / step) * step;
+  const tickMax = Math.ceil(max / step) * step;
+  const ticks = [];
+  for(let v = tickMin; v <= tickMax + 0.5 * step; v += step) ticks.push(Math.abs(v) < 1e-9 ? 0 : v);
+  return ticks;
+}
+
+function plotRegion(svgId, xs, ys, markerX, yLabel, pointLabel){
+  const svg = document.getElementById(svgId);
+  const W = svg.clientWidth || 1080, H = svg.clientHeight || 420;
+  const padL = 80, padR = 46, padT = 74, padB = 74;
+  if(!xs.length || !ys.length){ svg.innerHTML = ''; return; }
+
+  const xmin = Math.min(...xs), xmax = Math.max(...xs);
+  let ymin = Math.min(...ys), ymax = Math.max(...ys);
+  if(ymin > 0) ymin = 0;
+  if(ymax === ymin) ymax = ymin + 1;
+  const yTicks = tickValues(ymin, ymax, 6);
+  ymin = Math.min(ymin, yTicks[0]);
+  ymax = Math.max(ymax, yTicks[yTicks.length - 1]);
+
+  const mapx = x => padL + (x - xmin) / (xmax - xmin || 1) * (W - padL - padR);
+  const mapy = y => H - padB - (y - ymin) / (ymax - ymin || 1) * (H - padT - padB);
+
+  const vD = 10, vT = 25;
+  const xD = mapx(vD), xT = mapx(vT);
+  let out = `<rect x="0" y="0" width="${W}" height="${H}" fill="white"/>`;
+  out += `<rect x="${padL}" y="${padT}" width="${Math.max(0,xD-padL)}" height="${H-padT-padB}" fill="#dcfce7" opacity="0.45"/>`;
+  out += `<rect x="${xD}" y="${padT}" width="${Math.max(0,xT-xD)}" height="${H-padT-padB}" fill="#ffedd5" opacity="0.55"/>`;
+  out += `<rect x="${xT}" y="${padT}" width="${Math.max(0,W-padR-xT)}" height="${H-padT-padB}" fill="#dbeafe" opacity="0.50"/>`;
+  out += `<line x1="${xD}" y1="${padT}" x2="${xD}" y2="${H-padB}" stroke="#111827" stroke-dasharray="7 6" stroke-width="1.3"/>`;
+  out += `<line x1="${xT}" y1="${padT}" x2="${xT}" y2="${H-padB}" stroke="#111827" stroke-dasharray="7 6" stroke-width="1.3"/>`;
+  out += `<text x="${Math.max(padL+70,(padL+xD)/2)}" y="${padT+26}" text-anchor="middle" font-size="14" font-weight="800" fill="#15803d">Displacement</text>`;
+  out += `<text x="${(xD+xT)/2}" y="${padT+26}" text-anchor="middle" font-size="14" font-weight="800" fill="#c2410c">Transition</text>`;
+  out += `<text x="${(xT+W-padR)/2}" y="${padT+26}" text-anchor="middle" font-size="14" font-weight="800" fill="#1d4ed8">High-speed</text>`;
+  out += `<text x="${xD}" y="${H-padB+38}" text-anchor="middle" font-size="12" font-weight="800">VD</text>`;
+  out += `<text x="${xT}" y="${H-padB+38}" text-anchor="middle" font-size="12" font-weight="800">VT</text>`;
+
+  yTicks.forEach(t => {
+    const y = mapy(t);
+    out += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#e5e7eb"/>`;
+    out += `<text x="${padL-10}" y="${y+4}" text-anchor="end" font-size="12" fill="#111827">${fmt(t, t>=100?0:1)}</text>`;
+  });
+  const xStep = niceNumber((xmax - xmin) / 8, true);
+  const xStart = Math.ceil(xmin / xStep) * xStep;
+  for(let t=xStart; t<=xmax+1e-9; t+=xStep){
+    const x = mapx(t);
+    out += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${H-padB}" stroke="#f1f5f9"/>`;
+    out += `<text x="${x}" y="${H-padB+22}" text-anchor="middle" font-size="12" fill="#111827">${fmt(t,0)}</text>`;
+  }
+
+  out += `<defs><marker id="arrow-${svgId}" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#111827"/></marker></defs>`;
+  out += `<line x1="${padL}" y1="${H-padB}" x2="${W-padR+8}" y2="${H-padB}" stroke="#111827" stroke-width="2" marker-end="url(#arrow-${svgId})"/>`;
+  out += `<line x1="${padL}" y1="${H-padB}" x2="${padL}" y2="${padT-8}" stroke="#111827" stroke-width="2" marker-end="url(#arrow-${svgId})"/>`;
+
+  out += `<polyline fill="none" stroke="#7c3aed" stroke-width="3.5" points="${xs.map((x,i)=>`${mapx(x)},${mapy(ys[i])}`).join(' ')}"/>`;
+  xs.forEach((x,i)=>{ out += `<circle cx="${mapx(x)}" cy="${mapy(ys[i])}" r="3.5" fill="#7c3aed"/>`; });
+
+  if(isFinite(markerX)){
+    let nearIdx=0, best=Infinity;
+    xs.forEach((x,i)=>{ const d=Math.abs(x-markerX); if(d<best){ best=d; nearIdx=i; }});
+    const sx=xs[nearIdx], sy=ys[nearIdx], px=mapx(sx), py=mapy(sy);
+    out += `<line x1="${px}" y1="${padT}" x2="${px}" y2="${H-padB}" stroke="#111827" stroke-dasharray="6 5" stroke-width="1.3"/>`;
+    out += `<circle cx="${px}" cy="${py}" r="7" fill="#ef4444" stroke="#111827" stroke-width="1.5"/>`;
+    const labelX = Math.min(W-padR-150, Math.max(padL+8, px+12));
+    const labelY = Math.max(padT+48, py-18);
+    out += `<rect x="${labelX}" y="${labelY-30}" width="145" height="52" rx="8" fill="white" stroke="#111827" opacity="0.96"/>`;
+    out += `<text x="${labelX+9}" y="${labelY-11}" font-size="13" font-weight="800" fill="#111827">Speed: ${fmt(sx,1)} kn</text>`;
+    out += `<text x="${labelX+9}" y="${labelY+8}" font-size="13" font-weight="800" fill="#111827">${pointLabel}: ${fmt(sy,1)}</text>`;
+  }
+
+  out += `<text x="${(padL+W-padR)/2}" y="${H-18}" text-anchor="middle" font-size="14" font-weight="800">Speed (knots)</text>`;
+  out += `<text x="20" y="${(padT+H-padB)/2}" text-anchor="middle" font-size="14" font-weight="800" transform="rotate(-90 20 ${(padT+H-padB)/2})">${yLabel}</text>`;
+  svg.innerHTML = out;
+}
+
+function plotMultiSeries(svgId, xs, series, markerX, yLabel){
+  const svg = document.getElementById(svgId);
+  if(!svg) return;
+  const W = svg.clientWidth || svg.getBoundingClientRect().width || 1080;
+  const H = svg.clientHeight || svg.getBoundingClientRect().height || 420;
+  const padL = 80, padR = 46, padT = 74, padB = 74;
+  if(!xs.length || !series.length){ svg.innerHTML = ''; return; }
+
+  const allY = series.flatMap(s => s.values).filter(Number.isFinite);
+  const xmin = Math.min(...xs), xmax = Math.max(...xs);
+  let ymin = Math.min(...allY), ymax = Math.max(...allY);
+  if(!isFinite(ymin) || !isFinite(ymax)){ svg.innerHTML = ''; return; }
+  if(ymin > 0) ymin = 0;
+  if(ymax === ymin) ymax = ymin + 1;
+
+  const yTicks = tickValues(ymin, ymax, 6);
+  ymin = Math.min(ymin, yTicks[0]);
+  ymax = Math.max(ymax, yTicks[yTicks.length - 1]);
+
+  const mapx = x => padL + (x - xmin) / (xmax - xmin || 1) * (W - padL - padR);
+  const mapy = y => H - padB - (y - ymin) / (ymax - ymin || 1) * (H - padT - padB);
+
+  let out = `<rect x="0" y="0" width="${W}" height="${H}" fill="white"/>`;
+
+  yTicks.forEach(t => {
+    const y = mapy(t);
+    out += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#e5e7eb"/>`;
+    out += `<text x="${padL-10}" y="${y+4}" text-anchor="end" font-size="12" fill="#111827">${fmt(t, t>=100?0:1)}</text>`;
+  });
+
+  const xStep = niceNumber((xmax - xmin) / 8, true);
+  const xStart = Math.ceil(xmin / xStep) * xStep;
+  for(let t=xStart; t<=xmax+1e-9; t+=xStep){
+    const x = mapx(t);
+    out += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${H-padB}" stroke="#f1f5f9"/>`;
+    out += `<text x="${x}" y="${H-padB+22}" text-anchor="middle" font-size="12" fill="#111827">${fmt(t,0)}</text>`;
+  }
+
+  out += `<defs><marker id="arrow-${svgId}" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#111827"/></marker></defs>`;
+  out += `<line x1="${padL}" y1="${H-padB}" x2="${W-padR+8}" y2="${H-padB}" stroke="#111827" stroke-width="2" marker-end="url(#arrow-${svgId})"/>`;
+  out += `<line x1="${padL}" y1="${H-padB}" x2="${padL}" y2="${padT-8}" stroke="#111827" stroke-width="2" marker-end="url(#arrow-${svgId})"/>`;
+
+  series.forEach(s => {
+    const pts = xs.map((x,i) => `${mapx(x)},${mapy(s.values[i])}`).join(' ');
+    out += `<polyline fill="none" stroke="${s.color}" stroke-width="3.2" points="${pts}"/>`;
+    xs.forEach((x,i) => { out += `<circle cx="${mapx(x)}" cy="${mapy(s.values[i])}" r="2.8" fill="${s.color}"/>`; });
+  });
+
+  // Legend
+  let lx = padL + 8;
+  const ly = padT - 32;
+  series.forEach(s => {
+    out += `<line x1="${lx}" y1="${ly}" x2="${lx+22}" y2="${ly}" stroke="${s.color}" stroke-width="4"/>`;
+    out += `<text x="${lx+30}" y="${ly+4}" font-size="13" font-weight="800" fill="#111827">${s.label}</text>`;
+    lx += 80;
+  });
+
+  if(isFinite(markerX)){
+    let nearIdx=0, best=Infinity;
+    xs.forEach((x,i)=>{ const d=Math.abs(x-markerX); if(d<best){ best=d; nearIdx=i; }});
+    const sx=xs[nearIdx], px=mapx(sx);
+    out += `<line x1="${px}" y1="${padT}" x2="${px}" y2="${H-padB}" stroke="#ef4444" stroke-dasharray="6 5" stroke-width="1.3"/>`;
+    const labelX = Math.min(W-padR-170, Math.max(padL+8, px+12));
+    const labelY = padT + 48;
+    out += `<rect x="${labelX}" y="${labelY-30}" width="165" height="82" rx="8" fill="white" stroke="#111827" opacity="0.96"/>`;
+    out += `<text x="${labelX+9}" y="${labelY-11}" font-size="13" font-weight="800" fill="#111827">Speed: ${fmt(sx,1)} kn</text>`;
+    series.forEach((s, idx) => {
+      out += `<text x="${labelX+9}" y="${labelY+8+idx*16}" font-size="12" font-weight="800" fill="${s.color}">${s.label}: ${fmt(s.values[nearIdx],3)}</text>`;
+    });
+  }
+
+  out += `<text x="${(padL+W-padR)/2}" y="${H-18}" text-anchor="middle" font-size="14" font-weight="800">Speed (knots)</text>`;
+  out += `<text x="20" y="${(padT+H-padB)/2}" text-anchor="middle" font-size="14" font-weight="800" transform="rotate(-90 20 ${(padT+H-padB)/2})">${yLabel}</text>`;
+  svg.innerHTML = out;
+}
+
+// ===== Engine recommendation =====
+function suggestEngines(requiredHP){
+  if(!isFinite(requiredHP) || requiredHP <= 0) return {best:null, alternatives:[], oversized:false};
+  const candidates = ENGINE_DB.filter(e => e.hp >= requiredHP).sort((a,b)=>a.hp-b.hp);
+  if(candidates.length === 0) return {best:null, alternatives:[], oversized:true};
+  return {best:candidates[0], alternatives:candidates.slice(1,4), oversized:false};
+}
+
+function buildEngineRecommendation(maxPowerKW, nEngines, sizingResult){
+  const box = document.getElementById('engineRecoBox');
+  if(!box) return;
+
+  if(!isFinite(maxPowerKW) || maxPowerKW <= 0){
+    document.getElementById('m-sizing-speed').textContent = '—';
+    document.getElementById('m-sizing-total').textContent = '—';
+    document.getElementById('m-reqkw').textContent = '—';
+    document.getElementById('m-reqhp').textContent = '—';
+    box.innerHTML = '<div class="small">Enter valid inputs to generate a recommendation.</div>';
+    return;
+  }
+
+  const sizingSpeedKn = sizingResult ? sizingResult.v / 0.51444 : NaN;
+  document.getElementById('m-sizing-speed').textContent = isFinite(sizingSpeedKn) ? fmt(sizingSpeedKn, 1) : '—';
+  document.getElementById('m-sizing-total').textContent = fmt(maxPowerKW, 0);
+
+  const reqKWPerEngine = maxPowerKW / nEngines;
+  const reqHPPerEngine = reqKWPerEngine / KW_PER_HP;
+  document.getElementById('m-reqkw').textContent = fmt(reqKWPerEngine, 0);
+  document.getElementById('m-reqhp').textContent = fmt(reqHPPerEngine, 0);
+
+  const result = suggestEngines(reqHPPerEngine);
+
+  if(result.oversized){
+    const largest = ENGINE_DB[ENGINE_DB.length - 1];
+    box.innerHTML = `<div class="notice warn">No single reference engine meets the required ${fmt(reqHPPerEngine,0)} HP per engine at the speed-range sizing point (${fmt(sizingSpeedKn,1)} kn). Consider a larger custom-rated unit, additional engines, or a multi-input gearbox arrangement. Largest reference engine: <strong>${largest.manufacturer} ${largest.name}</strong> (${largest.hp} HP / ${fmt(largest.hp*KW_PER_HP,0)} kW).</div>`;
+    return;
+  }
+
+  const b = result.best;
+  const surplus = (b.hp - reqHPPerEngine) / reqHPPerEngine * 100;
+  let html = `
+    <div class="engine-best">
+      <div class="tag">BEST MATCH PER ENGINE — SIZED FROM SPEED RANGE</div>
+      <div class="name">${b.manufacturer} ${b.name}</div>
+      <div class="small">Sizing point: <strong>${fmt(sizingSpeedKn,1)} kn</strong>; total required installed power: <strong>${fmt(maxPowerKW,0)} kW</strong>; ${nEngines} engine(s).</div>
+      <div class="small">Rated power: <strong>${b.hp} HP</strong> (${fmt(b.hp*KW_PER_HP,0)} kW) at ${b.rpm} rpm · Weight ${b.weight} kg · ${b.type}</div>
+      <div class="small">Margin above required power per engine: <strong>${fmt(surplus,1)}%</strong></div>
+    </div>`;
+
+  if(result.alternatives.length){
+    html += `<div class="small" style="margin-bottom:6px;font-weight:700">Also suitable:</div>
+    <div class="table-wrap" style="max-height:220px">
+      <table class="engine-alt-table">
+        <thead><tr><th>Engine</th><th>HP</th><th>kW</th><th>RPM</th><th>Weight (kg)</th><th>Margin</th></tr></thead>
+        <tbody>${result.alternatives.map(a=>{
+          const m = (a.hp - reqHPPerEngine)/reqHPPerEngine*100;
+          return `<tr><td style="text-align:left">${a.manufacturer} ${a.name}</td><td>${a.hp}</td><td>${fmt(a.hp*KW_PER_HP,0)}</td><td>${a.rpm}</td><td>${a.weight}</td><td>${fmt(m,1)}%</td></tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>`;
+  }
+  box.innerHTML = html;
+}
+
+let lastCSV = "";
+
+function actualRecalc(){
+  updateDisplayUnits();
+  const inp = getInputs();
+  const currentSpeedKnots = val('current_speed');
+  const currentSpeedMs = currentSpeedKnots * 0.51444;
+  
+  const res = calcResistance(currentSpeedMs, inp);
+  
+  if(!res){
+    document.getElementById('status').innerHTML = '<span class="warn">Invalid inputs</span>';
+    return;
+  }
+
+  const margin = mcrMargin();
+  const nEngines = numEnginesSelected();
+  const currentMaxPowerKW = res.bhp / margin;
+  
+  // Display main results for the current selected speed.
+  document.getElementById('m-fn').textContent = fmt(res.fn, 2);
+  document.getElementById('m-re').textContent = fmt(res.re / 1e6, 2);
+  document.getElementById('m-rf').textContent = fmt(res.rf / 1000, 2);
+  document.getElementById('m-rr').textContent = fmt(res.rr / 1000, 2);
+  document.getElementById('m-rt').textContent = fmt(res.rt / 1000, 2);
+  document.getElementById('m-cri').textContent = fmt(res.cri * 1000, 3);
+  document.getElementById('m-ri').textContent = fmt(res.ri / 1000, 2);
+  document.getElementById('m-ehp').textContent = fmt(res.ehp, 1);
+  document.getElementById('m-dhp').textContent = fmt(res.dhp, 1);
+  document.getElementById('m-bhp').textContent = fmt(res.bhp, 1);
+  document.getElementById('m-maxpower').textContent = fmt(currentMaxPowerKW, 1);
+  document.getElementById('m-cf').textContent = fmt(res.cf * 1000, 2);
+  document.getElementById('m-cr').textContent = fmt(res.cr * 1000, 2);
+  document.getElementById('m-ct').textContent = fmt(res.ct * 1000, 2);
+  
+  // Display hull properties.
+  document.getElementById('m-lwl').textContent = fmt(inp.lwl, 2);
+  document.getElementById('m-beam').textContent = fmt(inp.beam, 2);
+  document.getElementById('m-draft').textContent = fmt(inp.draft, 2);
+  document.getElementById('m-disp').textContent = fmt(inp.disp, 1);
+  document.getElementById('m-wsa').textContent = fmt(res.wsa, 1);
+  document.getElementById('m-wsa-top').textContent = fmt(res.wsa, 1);
+  document.getElementById('m-spacing').textContent = fmt(inp.spacing, 2);
+  document.getElementById('m-spacingratio').textContent = fmt(res.spacingRatio, 3);
+  document.getElementById('m-sl-top').textContent = fmt(res.spacingRatio, 3);
+  document.getElementById('m-dispvol').textContent = fmt(res.dispVol, 2);
+  
+  // Build speed range table and charts.
+  const speeds = buildSpeedRange(inp);
+  const results = speeds.map(v => calcResistance(v, inp)).filter(r => r);
+  buildRangeTable(results, inp);
+  
+  // Engine selection is now based on the highest required power in the entered speed range.
+  const engineSizingRes = getEngineSizingResult(inp) || res;
+  const engineSizingPowerKW = engineSizingRes.bhp / margin;
+  buildEngineRecommendation(engineSizingPowerKW, nEngines, engineSizingRes);
+
+  const sizingSpeedKnots = engineSizingRes ? engineSizingRes.v / 0.51444 : NaN;
+  document.getElementById('status').innerHTML = `<span class="warn">Calculated current speed ${fmt(currentSpeedKnots, 1)} kn (${fmt(currentSpeedMs, 2)} m/s). Engine selection is sized from the maximum required power within the speed range: ${fmt(sizingSpeedKnots,1)} kn / ${fmt(engineSizingPowerKW,0)} kW. Provisional CR/CRi functions are active until exact Insel & Molland coefficients are inserted.</span>`;
+
+  const speedsKn = results.map(r => r.v / 0.51444);
+  const ehpVals = results.map(r => r.ehp);
+  const maxPowerVals = results.map(r => r.bhp / margin);
+  const cfVals = results.map(r => r.cf * 1000);
+  const crVals = results.map(r => r.cr * 1000);
+  const criVals = results.map(r => r.cri * 1000);
+  const ctVals = results.map(r => r.ct * 1000);
+  
+  plotRegion('chart1', speedsKn, ehpVals, currentSpeedKnots, 'EHP (kW)', 'EHP');
+  plotRegion('chart2', speedsKn, maxPowerVals, currentSpeedKnots, 'Maximum required power (kW)', 'Max Power');
+  plotMultiSeries('chart3', speedsKn, [
+    {label:'CF', values:cfVals, color:'#3b82f6'},
+    {label:'CR', values:crVals, color:'#10b981'},
+    {label:'CRi', values:criVals, color:'#f59e0b'},
+    {label:'CT', values:ctVals, color:'#ef4444'}
+  ], currentSpeedKnots, 'Resistance coefficient (×10⁻³)');
+  
+  // Build CSV
+  const csv = [["Speed_kn", "Speed_ms", "Fn", "Re_E6", "RF_kN", "RR_kN", "Ri_kN", "RT_kN", "EHP_kW", "DHP_kW", "BHP_kW", "MaxPower_kW", "CF_E3", "CR_E3", "CT_E3", "CRi_E3"]];
+  results.forEach(r => {
+    csv.push([
+      fmt(r.v / 0.51444, 2),
+      fmt(r.v, 3),
+      fmt(r.fn, 3),
+      fmt(r.re / 1e6, 2),
+      fmt(r.rf / 1000, 2),
+      fmt(r.rr / 1000, 2),
+      fmt(r.ri / 1000, 2),
+      fmt(r.rt / 1000, 2),
+      fmt(r.ehp, 2),
+      fmt(r.dhp, 2),
+      fmt(r.bhp, 2),
+      fmt(r.bhp / margin, 2),
+      fmt(r.cf * 1000, 3),
+      fmt(r.cr * 1000, 3),
+      fmt(r.ct * 1000, 3),
+      fmt(r.cri * 1000, 3)
+    ]);
+  });
+  lastCSV = csv.map(r => r.join(",")).join("\n");
+}
+
+function buildRangeTable(results, inp){
+  const head = document.getElementById('rangeHead');
+  const body = document.querySelector('#rangeTbl tbody');
+  const margin = mcrMargin();
+  const headers = ['Speed (kn)', 'Speed (m/s)', 'Fn', 'Re (×10⁶)', 'RF (kN)', 'RR (kN)', 'Ri (kN)', 'RT (kN)', 'EHP (kW)', 'DHP (kW)', 'BHP (kW)', 'Max Power (kW)', 'CF (×10⁻³)', 'CR (×10⁻³)', 'CT (×10⁻³)', 'CRi (×10⁻³)'];
+  head.innerHTML = headers.map(h => `<th>${h}</th>`).join('');
+  
+  const rows = results.map(r => `<tr>
+    <td>${fmt(r.v / 0.51444, 1)}</td>
+    <td>${fmt(r.v, 2)}</td>
+    <td>${fmt(r.fn, 3)}</td>
+    <td>${fmt(r.re / 1e6, 2)}</td>
+    <td>${fmt(r.rf / 1000, 2)}</td>
+    <td>${fmt(r.rr / 1000, 2)}</td>
+    <td>${fmt(r.ri / 1000, 2)}</td>
+    <td>${fmt(r.rt / 1000, 2)}</td>
+    <td>${fmt(r.ehp, 1)}</td>
+    <td>${fmt(r.dhp, 1)}</td>
+    <td>${fmt(r.bhp, 1)}</td>
+    <td>${fmt(r.bhp / margin, 1)}</td>
+    <td>${fmt(r.cf * 1000, 2)}</td>
+    <td>${fmt(r.cr * 1000, 2)}</td>
+    <td>${fmt(r.ct * 1000, 2)}</td>
+    <td>${fmt(r.cri * 1000, 3)}</td>
+  </tr>`).join('');
+  
+  body.innerHTML = rows;
+}
+
+function escapeXml(value){
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+function colName(n){
+  let s = '';
+  n += 1;
+  while(n > 0){
+    const m = (n - 1) % 26;
+    s = String.fromCharCode(65 + m) + s;
+    n = Math.floor((n - 1) / 26);
+  }
+  return s;
+}
+
+function excelCell(value, r, c, styleId=0){
+  const ref = `${colName(c)}${r}`;
+  const style = styleId ? ` s="${styleId}"` : '';
+  if(typeof value === 'number' && isFinite(value)){
+    return `<c r="${ref}"${style}><v>${value}</v></c>`;
+  }
+  if(value === null || value === undefined || value === ''){
+    return `<c r="${ref}"${style}/>`;
+  }
+  return `<c r="${ref}" t="inlineStr"${style}><is><t>${escapeXml(value)}</t></is></c>`;
+}
+
+function sheetXml(rows, columnCount, titleStyleRows=[], headerStyleRows=[]){
+  const maxCols = Math.max(columnCount, ...rows.map(r => r.length));
+  const lastRef = `${colName(Math.max(maxCols - 1, 0))}${Math.max(rows.length, 1)}`;
+  const titleSet = new Set(titleStyleRows);
+  const headerSet = new Set(headerStyleRows);
+  const cols = Array.from({length:maxCols}, (_,i)=>{
+    const width = i === 0 ? 22 : (i < 5 ? 18 : 15);
+    return `<col min="${i+1}" max="${i+1}" width="${width}" customWidth="1"/>`;
+  }).join('');
+  const sheetRows = rows.map((row, i) => {
+    const r = i + 1;
+    const style = titleSet.has(r) ? 2 : (headerSet.has(r) ? 1 : 0);
+    const h = titleSet.has(r) ? ' ht="24" customHeight="1"' : '';
+    return `<row r="${r}"${h}>${row.map((v,c)=>excelCell(v,r,c,style)).join('')}</row>`;
+  }).join('');
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <dimension ref="A1:${lastRef}"/>
+  <sheetViews><sheetView workbookViewId="0"/></sheetViews>
+  <sheetFormatPr defaultRowHeight="15"/>
+  <cols>${cols}</cols>
+  <sheetData>${sheetRows}</sheetData>
+  <pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.3" footer="0.3"/>
+</worksheet>`;
+}
+
+function chartsSheetXml(){
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <dimension ref="A1:N68"/>
+  <sheetViews><sheetView workbookViewId="0"/></sheetViews>
+  <sheetFormatPr defaultRowHeight="18"/>
+  <cols><col min="1" max="14" width="16" customWidth="1"/></cols>
+  <sheetData>
+    <row r="1"><c r="A1" t="inlineStr" s="2"><is><t>Charts exported from calculator</t></is></c></row>
+    <row r="2"><c r="A2" t="inlineStr" s="1"><is><t>Speed vs EHP</t></is></c></row>
+    <row r="24"><c r="A24" t="inlineStr" s="1"><is><t>Maximum required power versus speed</t></is></c></row>
+    <row r="46"><c r="A46" t="inlineStr" s="1"><is><t>Resistance coefficients vs speed</t></is></c></row>
+  </sheetData>
+  <drawing r:id="rId1"/>
+  <pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.3" footer="0.3"/>
+</worksheet>`;
+}
+
+function currentResultRows(inp, res){
+  return [
+    ['Insel & Molland Catamaran Interference Resistance Calculator'],
+    ['Export created', new Date().toLocaleString()],
+    [],
+    ['Current calculated result'],
+    ['Metric','Value','Unit'],
+    ['Current speed', val('current_speed'), 'knots'],
+    ['Total resistance RT', +(res.rt/1000).toFixed(4), 'kN'],
+    ['Frictional resistance RF', +(res.rf/1000).toFixed(4), 'kN'],
+    ['Residual resistance RR', +(res.rr/1000).toFixed(4), 'kN'],
+    ['Interference resistance Ri', +(res.ri/1000).toFixed(4), 'kN'],
+    ['EHP', +res.ehp.toFixed(4), 'kW'],
+    ['DHP', +res.dhp.toFixed(4), 'kW'],
+    ['BHP', +res.bhp.toFixed(4), 'kW'],
+    ['Maximum required power', +(res.bhp/mcrMargin()).toFixed(4), 'kW'],
+    ['Froude number Fn', +res.fn.toFixed(5), ''],
+    ['Reynolds number Re', +res.re.toFixed(0), ''],
+    ['CF', +res.cf.toFixed(8), ''],
+    ['CR', +res.cr.toFixed(8), ''],
+    ['CRi', +res.cri.toFixed(8), ''],
+    ['CT', +res.ct.toFixed(8), ''],
+    [],
+    ['Input summary'],
+    ['Input','Value','Unit'],
+    ['LOA', +inp.loa.toFixed(4), 'm'],
+    ['LWL', +inp.lwl.toFixed(4), 'm'],
+    ['Beam of demihull', +inp.beam.toFixed(4), 'm'],
+    ['Draft', +inp.draft.toFixed(4), 'm'],
+    ['Displacement', +inp.disp.toFixed(4), 't'],
+    ['Block coefficient CB', +inp.cb.toFixed(4), ''],
+    ['Prismatic coefficient CP', +inp.cp.toFixed(4), ''],
+    ['Midship coefficient CM', +inp.cm.toFixed(4), ''],
+    ['Waterplane coefficient CW', +inp.cw.toFixed(4), ''],
+    ['Demihull spacing', +inp.spacing.toFixed(4), 'm'],
+    ['Wetted surface area', +res.wsa.toFixed(4), 'm²'],
+    ['Spacing ratio S/L', +res.spacingRatio.toFixed(5), ''],
+    ['Displacement volume', +res.dispVol.toFixed(5), 'm³'],
+    ['Form factor (1+k)', +res.formFactor.toFixed(4), ''],
+    ['Roughness allowance ΔCF', +res.roughCf.toFixed(6), ''],
+    ['Propulsive coefficient ηP', +val('prop_coeff').toFixed(4), ''],
+    ['Transmission efficiency ηT', +val('trans_eff').toFixed(4), ''],
+    ['Number of engines', numEnginesSelected(), ''],
+    ['MCR service margin', mcrMargin(), ''],
+    [],
+    ['Speed range performance table'],
+    ['Speed (kn)','Speed (m/s)','Fn','Re (×10⁶)','RF (kN)','RR (kN)','Ri (kN)','RT (kN)','EHP (kW)','DHP (kW)','BHP (kW)','Max Power (kW)','CF (×10⁻³)','CR (×10⁻³)','CT (×10⁻³)','CRi (×10⁻³)']
+  ];
+}
+
+function performanceRows(results){
+  const margin = mcrMargin();
+  return results.map(r => [
+    +(r.v / 0.51444).toFixed(3),
+    +r.v.toFixed(4),
+    +r.fn.toFixed(5),
+    +(r.re / 1e6).toFixed(4),
+    +(r.rf / 1000).toFixed(4),
+    +(r.rr / 1000).toFixed(4),
+    +(r.ri / 1000).toFixed(4),
+    +(r.rt / 1000).toFixed(4),
+    +r.ehp.toFixed(4),
+    +r.dhp.toFixed(4),
+    +r.bhp.toFixed(4),
+    +(r.bhp / margin).toFixed(4),
+    +(r.cf * 1000).toFixed(5),
+    +(r.cr * 1000).toFixed(5),
+    +(r.ct * 1000).toFixed(5),
+    +(r.cri * 1000).toFixed(5)
+  ]);
+}
+
+function engineRecommendationRows(maxPowerKW, nEngines, margin, sizingResult){
+  const reqKWPerEngine = maxPowerKW / nEngines;
+  const reqHPPerEngine = reqKWPerEngine / KW_PER_HP;
+  const sizingSpeedKn = sizingResult ? sizingResult.v / 0.51444 : NaN;
+  const result = suggestEngines(reqHPPerEngine);
+  const rows = [
+    [],
+    ['Recommended propulsion engine(s) — sized from maximum required power in selected speed range; verify with manufacturer'],
+    ['Parameter','Value','Unit'],
+    ['Sizing speed', isFinite(sizingSpeedKn) ? +sizingSpeedKn.toFixed(2) : '', 'knots'],
+    ['Sizing total required installed power', +maxPowerKW.toFixed(2), 'kW'],
+    ['Number of engines', nEngines, ''],
+    ['MCR service margin', margin, ''],
+    ['Required power per engine', +reqKWPerEngine.toFixed(2), 'kW'],
+    ['Required power per engine', +reqHPPerEngine.toFixed(1), 'HP']
+  ];
+  if(result.best){
+    const b = result.best;
+    rows.push(['Best match engine', `${b.manufacturer} ${b.name}`, '']);
+    rows.push(['Best match rated power', b.hp, 'HP']);
+    rows.push(['Best match rated power', +(b.hp*KW_PER_HP).toFixed(0), 'kW']);
+    rows.push(['Best match RPM', b.rpm, 'rpm']);
+    rows.push(['Best match weight', b.weight, 'kg']);
+    result.alternatives.forEach((a,i)=>{
+      rows.push([`Alternative ${i+1}`, `${a.manufacturer} ${a.name}`, `${a.hp} HP / ${a.rpm} rpm / ${a.weight} kg`]);
+    });
+  } else {
+    rows.push(['Result', 'No reference engine meets the required power per engine — consider a larger custom unit or additional engines', '']);
+  }
+  return rows;
+}
+
+function excelRange(sheetName, colIndex, firstRow, lastRow){
+  const col = colName(colIndex);
+  const safeSheet = sheetName.replace(/'/g, "''");
+  return `'${safeSheet}'!$${col}$${firstRow}:$${col}$${lastRow}`;
+}
+
+function numCacheXml(values){
+  const pts = values.map((v,i)=>`<c:pt idx="${i}"><c:v>${isFinite(v) ? v : 0}</c:v></c:pt>`).join('');
+  return `<c:numCache><c:formatCode>General</c:formatCode><c:ptCount val="${values.length}"/>${pts}</c:numCache>`;
+}
+
+function chartTitleXml(title){
+  return `<c:title><c:tx><c:rich><a:bodyPr/><a:lstStyle/><a:p><a:r><a:rPr lang="en-US" sz="1200" b="1"/><a:t>${escapeXml(title)}</a:t></a:r></a:p></c:rich></c:tx><c:layout/><c:overlay val="0"/></c:title>`;
+}
+
+function chartSeriesXml(def, idx, speedValues, firstDataRow, lastDataRow){
+  const color = (def.color || '2563EB').replace('#','').toUpperCase();
+  const catRange = excelRange('Results', 0, firstDataRow, lastDataRow);
+  const valRange = excelRange('Results', def.colIndex, firstDataRow, lastDataRow);
+  return `<c:ser>
+    <c:idx val="${idx}"/><c:order val="${idx}"/>
+    <c:tx><c:v>${escapeXml(def.label)}</c:v></c:tx>
+    <c:spPr><a:ln w="25400"><a:solidFill><a:srgbClr val="${color}"/></a:solidFill></a:ln></c:spPr>
+    <c:marker><c:symbol val="circle"/><c:size val="5"/><c:spPr><a:solidFill><a:srgbClr val="${color}"/></a:solidFill><a:ln><a:solidFill><a:srgbClr val="${color}"/></a:solidFill></a:ln></c:spPr></c:marker>
+    <c:cat><c:numRef><c:f>${escapeXml(catRange)}</c:f>${numCacheXml(speedValues)}</c:numRef></c:cat>
+    <c:val><c:numRef><c:f>${escapeXml(valRange)}</c:f>${numCacheXml(def.values)}</c:numRef></c:val>
+    <c:smooth val="0"/>
+  </c:ser>`;
+}
+
+function chartXml(title, yAxisTitle, seriesDefs, speedValues, firstDataRow, lastDataRow, chartIndex){
+  const catAx = 500000 + chartIndex * 10 + 1;
+  const valAx = 500000 + chartIndex * 10 + 2;
+  const seriesXml = seriesDefs.map((s,i)=>chartSeriesXml(s, i, speedValues, firstDataRow, lastDataRow)).join('');
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <c:date1904 val="0"/>
+  <c:lang val="en-US"/>
+  <c:roundedCorners val="0"/>
+  <c:chart>
+    ${chartTitleXml(title)}
+    <c:autoTitleDeleted val="0"/>
+    <c:plotArea>
+      <c:layout/>
+      <c:lineChart>
+        <c:grouping val="standard"/>
+        <c:varyColors val="0"/>
+        ${seriesXml}
+        <c:axId val="${catAx}"/>
+        <c:axId val="${valAx}"/>
+      </c:lineChart>
+      <c:catAx>
+        <c:axId val="${catAx}"/>
+        <c:scaling><c:orientation val="minMax"/></c:scaling>
+        <c:delete val="0"/>
+        <c:axPos val="b"/>
+        <c:title><c:tx><c:rich><a:bodyPr/><a:lstStyle/><a:p><a:r><a:rPr lang="en-US" sz="1000" b="1"/><a:t>Speed (knots)</a:t></a:r></a:p></c:rich></c:tx><c:overlay val="0"/></c:title>
+        <c:numFmt formatCode="General" sourceLinked="1"/>
+        <c:majorTickMark val="out"/>
+        <c:minorTickMark val="none"/>
+        <c:tickLblPos val="nextTo"/>
+        <c:crossAx val="${valAx}"/>
+        <c:crosses val="autoZero"/>
+        <c:auto val="1"/>
+        <c:lblAlgn val="ctr"/>
+        <c:lblOffset val="100"/>
+      </c:catAx>
+      <c:valAx>
+        <c:axId val="${valAx}"/>
+        <c:scaling><c:orientation val="minMax"/></c:scaling>
+        <c:delete val="0"/>
+        <c:axPos val="l"/>
+        <c:majorGridlines/>
+        <c:title><c:tx><c:rich><a:bodyPr rot="-5400000"/><a:lstStyle/><a:p><a:r><a:rPr lang="en-US" sz="1000" b="1"/><a:t>${escapeXml(yAxisTitle)}</a:t></a:r></a:p></c:rich></c:tx><c:overlay val="0"/></c:title>
+        <c:numFmt formatCode="General" sourceLinked="1"/>
+        <c:majorTickMark val="out"/>
+        <c:minorTickMark val="none"/>
+        <c:tickLblPos val="nextTo"/>
+        <c:crossAx val="${catAx}"/>
+        <c:crosses val="autoZero"/>
+        <c:crossBetween val="between"/>
+      </c:valAx>
+    </c:plotArea>
+    <c:legend><c:legendPos val="b"/><c:layout/><c:overlay val="0"/></c:legend>
+    <c:plotVisOnly val="1"/>
+    <c:dispBlanksAs val="gap"/>
+  </c:chart>
+  <c:spPr><a:solidFill><a:srgbClr val="FFFFFF"/></a:solidFill><a:ln><a:noFill/></a:ln></c:spPr>
+</c:chartSpace>`;
+}
+
+function drawingXml(){
+  const widthEmu = 9144000;   // 10 inches
+  const heightEmu = 4389120;  // 4.8 inches
+  const anchor = (idx, rowFrom, title) => `
+  <xdr:oneCellAnchor>
+    <xdr:from><xdr:col>0</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${rowFrom}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from>
+    <xdr:ext cx="${widthEmu}" cy="${heightEmu}"/>
+    <xdr:graphicFrame macro="">
+      <xdr:nvGraphicFramePr><xdr:cNvPr id="${idx}" name="${escapeXml(title)}"/><xdr:cNvGraphicFramePr/></xdr:nvGraphicFramePr>
+      <xdr:xfrm><a:off x="0" y="0"/><a:ext cx="${widthEmu}" cy="${heightEmu}"/></xdr:xfrm>
+      <a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/chart"><c:chart r:id="rId${idx}"/></a:graphicData></a:graphic>
+    </xdr:graphicFrame>
+    <xdr:clientData/>
+  </xdr:oneCellAnchor>`;
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+${anchor(1, 3, 'Speed vs EHP')}
+${anchor(2, 25, 'Maximum required power versus speed')}
+${anchor(3, 47, 'Resistance coefficients vs speed')}
+</xdr:wsDr>`;
+}
+
+function workbookXml(){
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets>
+    <sheet name="Results" sheetId="1" r:id="rId1"/>
+    <sheet name="Charts" sheetId="2" r:id="rId2"/>
+  </sheets>
+</workbook>`;
+}
+
+function stylesXml(){
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <fonts count="3"><font><sz val="11"/><name val="Calibri"/></font><font><b/><color rgb="FFFFFFFF"/><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="16"/><name val="Calibri"/></font></fonts>
+  <fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF2563EB"/><bgColor indexed="64"/></patternFill></fill></fills>
+  <borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>
+  <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+  <cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs>
+  <cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
+</styleSheet>`;
+}
+
+function relsXml(){
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>`;
+}
+
+function workbookRelsXml(){
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/>
+  <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`;
+}
+
+function sheet2RelsXml(){
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing1.xml"/>
+</Relationships>`;
+}
+
+function drawingRelsXml(){
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" Target="../charts/chart1.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" Target="../charts/chart2.xml"/>
+  <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" Target="../charts/chart3.xml"/>
+</Relationships>`;
+}
+
+function contentTypesXml(){
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+  <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+  <Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+  <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+  <Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>
+  <Override PartName="/xl/charts/chart1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/>
+  <Override PartName="/xl/charts/chart2.xml" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/>
+  <Override PartName="/xl/charts/chart3.xml" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/>
+</Types>`;
+}
+
+function crc32(bytes){
+  if(!crc32.table){
+    crc32.table = new Uint32Array(256);
+    for(let i=0;i<256;i++){
+      let c = i;
+      for(let j=0;j<8;j++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      crc32.table[i] = c >>> 0;
+    }
+  }
+  let crc = 0xFFFFFFFF;
+  for(let i=0;i<bytes.length;i++) crc = crc32.table[(crc ^ bytes[i]) & 0xFF] ^ (crc >>> 8);
+  return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+
+function textBytes(s){ return new TextEncoder().encode(s); }
+function u16(n){ return [n & 255, (n >>> 8) & 255]; }
+function u32(n){ return [n & 255, (n >>> 8) & 255, (n >>> 16) & 255, (n >>> 24) & 255]; }
+function concatBytes(parts){
+  const total = parts.reduce((sum,p)=>sum+p.length,0);
+  const out = new Uint8Array(total);
+  let offset = 0;
+  for(const p of parts){ out.set(p, offset); offset += p.length; }
+  return out;
+}
+
+function createZip(files){
+  const localParts = [];
+  const centralParts = [];
+  let offset = 0;
+  const now = new Date();
+  const dosTime = (now.getHours() << 11) | (now.getMinutes() << 5) | Math.floor(now.getSeconds() / 2);
+  const dosDate = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+  for(const file of files){
+    const nameBytes = textBytes(file.name);
+    const data = file.data instanceof Uint8Array ? file.data : textBytes(file.data);
+    const crc = crc32(data);
+    const localHeader = new Uint8Array([
+      ...u32(0x04034b50), ...u16(20), ...u16(0), ...u16(0), ...u16(dosTime), ...u16(dosDate),
+      ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(nameBytes.length), ...u16(0)
+    ]);
+    localParts.push(localHeader, nameBytes, data);
+    const centralHeader = new Uint8Array([
+      ...u32(0x02014b50), ...u16(20), ...u16(20), ...u16(0), ...u16(0), ...u16(dosTime), ...u16(dosDate),
+      ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(nameBytes.length), ...u16(0), ...u16(0),
+      ...u16(0), ...u16(0), ...u32(0), ...u32(offset)
+    ]);
+    centralParts.push(centralHeader, nameBytes);
+    offset += localHeader.length + nameBytes.length + data.length;
+  }
+  const centralStart = offset;
+  const central = concatBytes(centralParts);
+  const eocd = new Uint8Array([
+    ...u32(0x06054b50), ...u16(0), ...u16(0), ...u16(files.length), ...u16(files.length),
+    ...u32(central.length), ...u32(centralStart), ...u16(0)
+  ]);
+  return concatBytes([...localParts, central, eocd]);
+}
+
+async function chartElementToPngDataUrl(chartId){
+  const svg = document.getElementById(chartId);
+  const chartBox = svg ? svg.closest('.chartbox') : null;
+
+  // Preferred method requested: html2canvas captures exactly what is visible in the page.
+  if(window.html2canvas && chartBox){
+    const canvas = await html2canvas(chartBox, {
+      backgroundColor: '#ffffff',
+      scale: 2,
+      useCORS: true,
+      logging: false
+    });
+    return canvas.toDataURL('image/png');
+  }
+
+  // Fallback for offline/browser restrictions: export the SVG itself.
+  if(!svg) throw new Error('Chart not found: ' + chartId);
+  const width = Math.ceil(svg.clientWidth || svg.getBoundingClientRect().width || 1080);
+  const height = Math.ceil(svg.clientHeight || svg.getBoundingClientRect().height || 420);
+  const clone = svg.cloneNode(true);
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  clone.setAttribute('width', width);
+  clone.setAttribute('height', height);
+  clone.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  const svgText = new XMLSerializer().serializeToString(clone);
+  const blob = new Blob([svgText], {type:'image/svg+xml;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  try{
+    const img = await new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = reject;
+      image.src = url;
+    });
+    const canvas = document.createElement('canvas');
+    canvas.width = width * 2;
+    canvas.height = height * 2;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/png');
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+function addRowsToWorksheet(ws, rows){
+  rows.forEach(row => ws.addRow(row));
+}
+
+function styleWorksheet(ws){
+  ws.eachRow((row, rowNumber) => {
+    row.eachCell(cell => {
+      cell.font = {name:'Calibri', size:11};
+      cell.alignment = {vertical:'middle'};
+    });
+    const first = String(row.getCell(1).value || '');
+    const isTitle = rowNumber === 1 || first.startsWith('Current calculated') || first.startsWith('Input summary') || first.startsWith('Speed range') || first.startsWith('Recommended propulsion');
+    if(isTitle){
+      row.font = {name:'Calibri', size:14, bold:true};
+    }
+    const isHeader = ['Metric','Input','Speed (kn)','Parameter'].includes(first);
+    if(isHeader){
+      row.eachCell(cell => {
+        cell.font = {name:'Calibri', size:11, bold:true, color:{argb:'FFFFFFFF'}};
+        cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF2563EB'}};
+        cell.alignment = {vertical:'middle', horizontal:'center'};
+      });
+    }
+  });
+  ws.columns.forEach((col, idx) => {
+    let maxLen = 10;
+    col.eachCell({includeEmpty:true}, cell => {
+      const text = cell.value == null ? '' : String(cell.value);
+      maxLen = Math.max(maxLen, Math.min(text.length + 2, 28));
+    });
+    col.width = idx === 0 ? Math.max(maxLen, 24) : Math.max(maxLen, 12);
+  });
+}
+
+async function downloadExcel(){
+  recalc();
+
+  if(!window.ExcelJS){
+    alert('Excel export library did not load. Please connect to the internet and reload the page, then try Export Excel again.');
+    return;
+  }
+
+  const inp = getInputs();
+  const currentSpeedMs = val('current_speed') * 0.51444;
+  const res = calcResistance(currentSpeedMs, inp);
+  if(!res) return;
+
+  const margin = mcrMargin();
+  const nEngines = numEnginesSelected();
+  const results = buildSpeedRange(inp).map(v => calcResistance(v, inp)).filter(r => r);
+
+  // Engine selection is based on the highest required power in the selected speed range.
+  const sizingResult = results.reduce((best, r) => {
+    if(!best) return r;
+    return (r.bhp / margin) > (best.bhp / margin) ? r : best;
+  }, null) || res;
+  const sizingMaxPowerKW = sizingResult.bhp / margin;
+
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'Insel & Molland Calculator';
+  wb.created = new Date();
+
+  // Do not freeze panes here. Freezing 43 rows can make Excel appear unable
+  // to scroll on smaller screens because the frozen pane consumes the visible window.
+  const resultsWs = wb.addWorksheet('Results');
+
+  const rows = currentResultRows(inp, res)
+    .concat(performanceRows(results))
+    .concat(engineRecommendationRows(sizingMaxPowerKW, nEngines, margin));
+
+  addRowsToWorksheet(resultsWs, rows);
+  styleWorksheet(resultsWs);
+
+  // Add a small note to clarify engine sizing speed.
+  resultsWs.addRow([]);
+  resultsWs.addRow(['Engine sizing basis', 'Maximum required power within selected speed range', '']);
+  resultsWs.addRow(['Sizing speed', +(sizingResult.v / 0.51444).toFixed(2), 'knots']);
+  resultsWs.addRow(['Sizing maximum required power', +sizingMaxPowerKW.toFixed(2), 'kW total']);
+  styleWorksheet(resultsWs);
+
+  const chartsWs = wb.addWorksheet('Charts');
+  chartsWs.views = [{showGridLines:true}];
+  chartsWs.columns = Array.from({length:10}, () => ({width:18}));
+  chartsWs.getCell('A1').value = 'Charts exported from calculator';
+  chartsWs.getCell('A1').font = {bold:true, size:16};
+
+  const chartDefs = [
+    ['chart1', 'Speed vs EHP', 'A3'],
+    ['chart2', 'Maximum required power versus speed', 'A30'],
+    ['chart3', 'Resistance coefficients vs speed', 'A57']
+  ];
+
+  for(const [chartId, title, cell] of chartDefs){
+    chartsWs.getCell(cell).value = title;
+    chartsWs.getCell(cell).font = {bold:true, size:13};
+    const dataUrl = await chartElementToPngDataUrl(chartId);
+    const imageId = wb.addImage({base64:dataUrl, extension:'png'});
+    const startRow = chartsWs.getCell(cell).row + 1;
+    chartsWs.addImage(imageId, {
+      tl: {col:0, row:startRow},
+      ext: {width:1100, height:440}
+    });
+  }
+
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'catamaran_insel_molland_with_charts.xlsx';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(a.href);
+}
+
+function downloadCSV(){
+  // Kept for backward compatibility. The export now creates an .xlsx workbook with charts.
+  downloadExcel();
+}
+
+function loadDemoCase(){
+  // Demo case requested by user: SI values are the primary/default case.
+  const demoSI = {
+    loa: 10.29,
+    lwl: 10.00,
+    beam: 2.00,
+    draft: 1.00,
+    disp: 5.00,
+    cb: 0.43,
+    cp: 0.59,
+    cm: 0.73,
+    cw: 0.80,
+    spacing: 2.20,
+    wsa: 0
+  };
+
+  // Populate SI fields.
+  document.getElementById('si_loa').value = demoSI.loa;
+  document.getElementById('si_lwl').value = demoSI.lwl;
+  document.getElementById('si_beam').value = demoSI.beam;
+  document.getElementById('si_draft').value = demoSI.draft;
+  document.getElementById('si_disp').value = demoSI.disp;
+  document.getElementById('si_cb').value = demoSI.cb;
+  document.getElementById('si_cp').value = demoSI.cp;
+  document.getElementById('si_cm').value = demoSI.cm;
+  document.getElementById('si_cw').value = demoSI.cw;
+  document.getElementById('si_spacing').value = demoSI.spacing;
+  document.getElementById('si_wsa').value = demoSI.wsa;
+
+  // Also populate the Imperial tab with equivalent values, in case the user switches units.
+  document.getElementById('imp_loa').value = (demoSI.loa * FT_PER_M).toFixed(2);
+  document.getElementById('imp_lwl').value = (demoSI.lwl * FT_PER_M).toFixed(2);
+  document.getElementById('imp_beam').value = (demoSI.beam * FT_PER_M).toFixed(2);
+  document.getElementById('imp_draft').value = (demoSI.draft * FT_PER_M).toFixed(2);
+  document.getElementById('imp_disp').value = (demoSI.disp / T_PER_LT).toFixed(2);
+  document.getElementById('imp_cb').value = demoSI.cb;
+  document.getElementById('imp_cp').value = demoSI.cp;
+  document.getElementById('imp_cm').value = demoSI.cm;
+  document.getElementById('imp_cw').value = demoSI.cw;
+  document.getElementById('imp_spacing').value = (demoSI.spacing * FT_PER_M).toFixed(2);
+  document.getElementById('imp_wsa').value = 0;
+
+  document.getElementById('water_type').value = 'salt';
+  document.getElementById('form_factor').value = 1.10;
+  document.getElementById('rough_cf').value = 0.0004;
+  document.getElementById('prop_coeff').value = 0.70;
+  document.getElementById('trans_eff').value = 0.90;
+  document.getElementById('num_engines').value = 2;
+  document.getElementById('mcr_margin').value = 0.80;
+  document.getElementById('current_speed').value = 12;
+  document.getElementById('range_start').value = 1;
+  document.getElementById('range_end').value = 24;
+
+  setUnitMode('si');
+}
+
+document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', recalc));
+window.addEventListener('resize', recalc);
+
+let isInitialLoad = true;
+let dbStatus = { free_use_consumed: false, paid_access: false };
+
+async function fetchStatus() {
+  try {
+    const res = await fetch('/api/status');
+    const data = await res.json();
+    if (data && !data.error) {
+      dbStatus = data;
+      checkFreemiumStatus();
+    }
+  } catch (e) {
+    console.error("Failed to load status:", e);
+  }
+}
+
+function checkFreemiumStatus() {
+  const isUnlocked = dbStatus.paid_access;
+  const hasUsedFree = dbStatus.free_use_consumed;
+  const banner = document.getElementById('freemium-banner');
+  const msg = document.getElementById('freemium-message');
+  const payBtn = document.getElementById('pay-btn');
+
+  // Check URL parameters inside the iframe to show payment success/canceled notification
+  const urlParams = new URLSearchParams(window.location.search);
+  const isSuccessRedirect = urlParams.get('success') === 'true';
+
+  if (isUnlocked || isSuccessRedirect) {
+    if (banner) {
+      banner.className = 'notice info';
+      banner.style.backgroundColor = '#d1fae5';
+      banner.style.borderColor = '#34d399';
+      banner.style.color = '#065f46';
+      msg.textContent = 'Payment successful. Calculator unlocked.';
+      payBtn.style.display = 'none';
+    }
+    return 'unlocked';
+  } else if (hasUsedFree) {
+    if (banner) {
+      banner.className = 'notice warn';
+      banner.style.backgroundColor = '#fef3c7';
+      banner.style.borderColor = '#fcd34d';
+      banner.style.color = '#92400e';
+      msg.textContent = 'Your free use is completed. Please pay to continue.';
+      payBtn.style.display = 'inline-block';
+    }
+    return 'blocked';
+  } else {
+    if (banner) {
+      banner.className = 'notice info';
+      banner.style.backgroundColor = '#eef6ff';
+      banner.style.borderColor = '#cfe2ff';
+      banner.style.color = '#123766';
+      msg.textContent = 'You have 1 free use of this calculator.';
+      payBtn.style.display = 'inline-block';
+    }
+    return 'free_available';
+  }
+}
+
+function openPaymentModal() {
+  const modal = document.getElementById('payment-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+}
+
+function closePaymentModal() {
+  const modal = document.getElementById('payment-modal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+async function startCheckout() {
+  const payBtn = document.querySelector('#payment-modal button.primary');
+  const originalText = payBtn ? payBtn.textContent : '';
+  if (payBtn) payBtn.textContent = 'Preparing Order...';
+
+  try {
+    const response = await fetch('/api/create-razorpay-order', { method: 'POST' });
+    const orderData = await response.json();
+    if (!response.ok || orderData.error) {
+      alert('Error initiating Razorpay payment: ' + (orderData.error || 'Unknown error'));
+      if (payBtn) payBtn.textContent = originalText;
+      return;
+    }
+
+    if (payBtn) payBtn.textContent = originalText;
+
+    const options = {
+      "key": orderData.key_id,
+      "amount": orderData.amount,
+      "currency": orderData.currency,
+      "name": "PRIMELISOMETRICS",
+      "description": "Insel & Molland Calculator Access",
+      "order_id": orderData.order_id,
+      "handler": async function (response) {
+        if (payBtn) payBtn.textContent = 'Verifying...';
+        try {
+          const verifyResponse = await fetch('/api/razorpay/verify-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            })
+          });
+          const verifyResult = await verifyResponse.json();
+          if (verifyResult.verified) {
+            dbStatus.paid_access = true;
+            closePaymentModal();
+            checkFreemiumStatus();
+            actualRecalc();
+          } else {
+            alert("Payment signature verification failed: " + (verifyResult.error || 'Invalid credentials'));
+          }
+        } catch (err) {
+          console.error(err);
+          alert("Error verifying payment signature with backend server.");
+        } finally {
+          if (payBtn) payBtn.textContent = originalText;
+        }
+      },
+      "prefill": {
+        "name": "Guest Client",
+        "email": "guest@primelisometrics.com"
+      },
+      "theme": {
+        "color": "#ff1744"
+      }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+  } catch (err) {
+    console.error(err);
+    alert('Failed to connect to Razorpay API endpoints. Check server configuration.');
+    if (payBtn) payBtn.textContent = originalText;
+  }
+}
+
+function simulatePaymentSuccess() {
+  dbStatus.paid_access = true;
+  closePaymentModal();
+  checkFreemiumStatus();
+  actualRecalc();
+}
+
+async function recalc() {
+  if (isInitialLoad) {
+    actualRecalc();
+    return;
+  }
+
+  const status = checkFreemiumStatus();
+  if (status === 'blocked') {
+    openPaymentModal();
+    return;
+  }
+
+  // Run calculation
+  actualRecalc();
+
+  if (status === 'free_available') {
+    try {
+      const response = await fetch('/api/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'consume_free' })
+      });
+      const data = await response.json();
+      if (data && !data.error) {
+        dbStatus = data;
+        checkFreemiumStatus();
+      }
+    } catch(e) {
+      console.error("Failed to update consumed status:", e);
+    }
+  }
+}
+
+// Initial load: load SI demo as primary/default case
+loadDemoCase();
+isInitialLoad = false;
+fetchStatus();
+</script>
+</body>
+</html>

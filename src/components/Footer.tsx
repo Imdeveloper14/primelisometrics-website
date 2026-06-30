@@ -14,9 +14,9 @@ export default function Footer() {
           
           {/* Brand Info */}
           <div className="md:col-span-6 flex flex-col gap-4">
-            <a href="#" className="flex justify-start">
+            <a href="/#home" className="flex justify-start">
               <img 
-                src="images/logo.png" 
+                src="/images/logo.png" 
                 alt="Primelisometrics Logo" 
                 className="w-[210px] sm:w-[260px] md:w-[315px] h-auto object-contain filter drop-shadow-[0_0_8px_rgba(220,20,60,0.1)] mb-2"
                 loading="lazy"
@@ -37,13 +37,18 @@ export default function Footer() {
               <h4 className="text-[10px] font-mono text-accent uppercase tracking-widest font-bold">Navigation</h4>
               <ul className="flex flex-col gap-2">
                 <li>
-                  <a href="#portfolio" className="text-xs text-gray-400 hover:text-white transition-colors uppercase font-mono tracking-wider">
+                  <a href="/#portfolio" className="text-xs text-gray-400 hover:text-white transition-colors uppercase font-mono tracking-wider">
                     Portfolio
                   </a>
                 </li>
                 <li>
-                  <a href="#services" className="text-xs text-gray-400 hover:text-white transition-colors uppercase font-mono tracking-wider">
+                  <a href="/#services" className="text-xs text-gray-400 hover:text-white transition-colors uppercase font-mono tracking-wider">
                     Services
+                  </a>
+                </li>
+                <li>
+                  <a href="/calculator" className="text-xs text-gray-400 hover:text-white transition-colors uppercase font-mono tracking-wider font-bold">
+                    Calculator
                   </a>
                 </li>
               </ul>

@@ -70,6 +70,11 @@ export default function Navbar({ isLoaded = true }: NavbarProps) {
       observer.observe(footer);
     }
 
+    // Set initial active section based on current path
+    if (window.location.pathname.includes('/calculator')) {
+      setActiveSection('calculator');
+    }
+
     return () => {
       window.removeEventListener('scroll', handleScroll);
       if (footer) {
@@ -79,12 +84,13 @@ export default function Navbar({ isLoaded = true }: NavbarProps) {
   }, [isOpen]);
 
   const navLinks = [
-    { href: '#home', label: 'Home', id: 'home' },
-    { href: '#about', label: 'About', id: 'about' },
-    { href: '#services', label: 'Services', id: 'services' },
-    { href: '#portfolio', label: 'Portfolio', id: 'portfolio' },
-    { href: '#workflow', label: 'Workflow', id: 'workflow' },
-    { href: '#contact', label: 'Contact', id: 'contact' },
+    { href: '/#home', label: 'Home', id: 'home' },
+    { href: '/#about', label: 'About', id: 'about' },
+    { href: '/#services', label: 'Services', id: 'services' },
+    { href: '/#portfolio', label: 'Portfolio', id: 'portfolio' },
+    { href: '/#workflow', label: 'Workflow', id: 'workflow' },
+    { href: '/#contact', label: 'Contact', id: 'contact' },
+    { href: '/calculator', label: 'Calculator', id: 'calculator' },
   ];
 
   return (
@@ -104,9 +110,9 @@ export default function Navbar({ isLoaded = true }: NavbarProps) {
     >
       <div className="container mx-auto px-6 flex justify-between items-center">
         {/* Logo */}
-        <a href="#" className="flex items-center">
+        <a href="/#home" className="flex items-center">
           <img 
-            src="images/logo.png" 
+            src="/images/logo.png" 
             alt="Primelisometrics Logo" 
             className="h-16 md:h-[96px] w-auto max-w-[420px] object-contain transition-all duration-300 filter drop-shadow-[0_0_10px_rgba(220,20,60,0.15)]"
           />
@@ -149,7 +155,7 @@ export default function Navbar({ isLoaded = true }: NavbarProps) {
         >
           <div className="mb-10 flex justify-start">
             <img 
-              src="images/logo.png" 
+              src="/images/logo.png" 
               alt="Primelisometrics Logo" 
               className="h-20 w-auto object-contain filter drop-shadow-[0_0_10px_rgba(220,20,60,0.15)]"
             />

@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "royal-feather-b793",
+  "main": "src/worker.ts",
   "compatibility_date": "2026-06-22",
   "observability": {
     "enabled": true
@@ -10,5 +11,16 @@
   },
   "compatibility_flags": [
     "nodejs_compat"
-  ]
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "primelisometrics_db",
+      "database_id": "49bc828e-5a87-4172-9b7a-f782ba705365"
+    }
+  ],
+  "vars": {
+    "RAZORPAY_KEY_ID": "rzp_test_T7k4zUqXfzygfk",
+    "APP_URL": "https://royal-feather-b793.chandrunavalarch.workers.dev"
+  }
 }
