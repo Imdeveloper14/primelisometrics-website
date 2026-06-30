@@ -96,9 +96,12 @@ export const onRequest: PagesFunction<Env> = async (context) => {
               method: 'POST',
               headers: { 
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Referer': env.APP_URL || 'https://royal-feather-b793.chandrunavalarch.workers.dev',
+                'Origin': env.APP_URL || 'https://royal-feather-b793.chandrunavalarch.workers.dev'
               },
               body: JSON.stringify({
+                email: email,
                 customer_email: email,
                 product: 'Insel & Molland Calculator',
                 payment_plan: '2 calculations for ₹10',
