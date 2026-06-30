@@ -75,12 +75,40 @@ svg{width:100%;height:360px;display:block;background:#fff;border-radius:12px}
   justify-content: center;
   backdrop-filter: blur(4px);
 }
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+@keyframes bannerGlow {
+  0% { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06), 0 0 0 0 rgba(37,99,235,0.4); }
+  50% { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05), 0 0 12px 6px rgba(37,99,235,0.6); }
+  100% { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06), 0 0 0 0 rgba(37,99,235,0.4); }
+}
+.animated-sticky-banner {
+  position: sticky;
+  top: 10px;
+  z-index: 9999;
+  animation: bannerGlow 3s infinite ease-in-out;
+  transition: all 0.4s ease;
+}
+.email-input-box {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  font-size: 14px;
+  margin-top: 8px;
+  margin-bottom: 12px;
+}
+.email-input-box:focus {
+  outline: 2px solid var(--accent);
+  border-color: transparent;
+}
 </style>
 
 <!-- Excel export libraries -->
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -90,39 +118,47 @@ svg{width:100%;height:360px;display:block;background:#fff;border-radius:12px}
   </p>
 
   <!-- Freemium Status Banner -->
-  <div id="freemium-banner" class="notice info" style="margin-bottom:18px; font-weight:800; font-size:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+  <div id="freemium-banner" class="notice info animated-sticky-banner" style="margin-bottom:18px; font-weight:800; font-size:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
     <span id="freemium-message">You have 1 free use of this calculator.</span>
-    <button id="pay-btn" onclick="openPaymentModal()" style="padding:6px 12px; margin:0; background:var(--accent); color:#fff; border-color:var(--accent); font-size:12px;">Unlock Unlimited</button>
+    <button id="pay-btn" onclick="openPaymentModal()" style="padding:6px 12px; margin:0; background:var(--accent); color:#fff; border-color:var(--accent); font-size:12px;">Buy Now</button>
   </div>
 
   <!-- Secure Payment Simulation Modal -->
   <div id="payment-modal">
-    <div style="background:#fff; color:#111; max-width:480px; width:100%; border-radius:18px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.3); border:1px solid #d8dee8;">
-      <h3 style="margin-top:0; font-size:20px; font-weight:800; color:#111827;">Unlock Insel & Molland Calculator</h3>
-      <p style="font-size:13.5px; color:#4b5563; line-height:1.5; margin-bottom:18px;">
-        Get unlimited lifetime access to advanced catamaran resistance calculations, engine recommendations, and Excel reports.
+    <div style="background:#fff; color:#111; max-width:480px; width:100%; border-radius:18px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.3); border:1px solid #d8dee8; text-align:center;">
+      <h3 style="margin-top:0; font-size:20px; font-weight:800; color:#111827;">Unlock 2 Calculations</h3>
+      <p id="payment-modal-desc" style="font-size:13.5px; color:#4b5563; line-height:1.5; margin-bottom:18px;">
+        Your free calculation has been used. Purchase 2 additional calculations for ₹10.
       </p>
-      <div style="background:#f3f4f6; border:1px solid #e5e7eb; border-radius:12px; padding:16px; margin-bottom:18px;">
-        <div style="display:flex; justify-content:space-between; font-weight:800; font-size:15px; margin-bottom:6px; color:#111827;">
-          <span>Lifetime Unlimited Pass</span>
-          <span style="color:#2563eb;">₹10 INR</span>
-        </div>
-        <div style="font-size:11px; color:#6b7280; line-height:1.4;">One-time payment. Secure checkout powered by Razorpay.</div>
-      </div>
-      
-      <div style="font-size:11.5px; color:#4b5563; margin-bottom:20px; padding:10px; border-left:3px solid #2563eb; background:#f0f7ff; border-radius:0 8px 8px 0; line-height:1.45;">
-        <strong>Notice (Razorpay Edge Flow):</strong> 
-        Payments are verified securely on the server via signature matching.
-        <br/><br/>
-        To complete setup in production:
-        <br/>
-        1. Configure your keys: <code>RAZORPAY_KEY_ID</code> and <code>RAZORPAY_KEY_SECRET</code>.
-        <br/>
-        2. Set up Webhook in Razorpay Dashboard pointing to <code>/api/razorpay/webhook</code> with secret.
+
+      <!-- Email Capture Stage -->
+      <div id="email-capture-container" style="text-align:left; margin-bottom:18px;">
+        <label for="payment-email-input" style="font-weight:700; color:#374151;">Email Address</label>
+        <input id="payment-email-input" class="email-input-box" type="email" placeholder="you@example.com" oninput="validateModalEmail()" />
+        <button id="payment-continue-btn" class="primary" onclick="submitEmailLead()" style="width:100%; padding:11px; border-radius:12px; font-weight:800; cursor:pointer;" disabled>Continue</button>
       </div>
 
-      <div style="display:flex; gap:12px;">
-        <button class="primary" onclick="startCheckout()" style="flex:1; background:#2563eb; color:#fff; border-color:#2563eb; padding:10px 14px; border-radius:12px; font-weight:800; cursor:pointer;">Pay Now (₹10)</button>
+      <!-- UPI QR Code Container (hidden initially) -->
+      <div id="qr-container" style="display:none; margin:15px 0 20px 0; border:1px dashed #2563eb; border-radius:12px; padding:20px; background:#f0f7ff;">
+        <h4 style="margin:0 0 12px 0; color:#2563eb; font-weight:800; font-size:16px;">Pay ₹10 using UPI QR Code</h4>
+        <img id="qr-image" style="max-width:200px; height:200px; display:block; margin:0 auto 12px auto; border-radius:8px; background:#fff; padding:8px; border:1px solid #e5e7eb;" src="" />
+        <p style="font-size:13px; color:#1f2937; font-weight:700; margin:0 0 8px 0; line-height:1.4;">Scan this QR code and pay ₹10 to unlock the calculator.</p>
+        <div style="display:flex; justify-content:center; align-items:center; gap:8px; color:#4b5563; font-size:12.5px;">
+          <span class="spinner" style="border: 2px solid #e5e7eb; border-top: 2px solid #2563eb; border-radius: 50%; width: 12px; height: 12px; animation: spin 1s linear infinite;"></span>
+          <span id="qr-status-text">Waiting for payment verification...</span>
+        </div>
+      </div>
+
+      <div id="payment-initial-info" style="display:none; background:#f3f4f6; border:1px solid #e5e7eb; border-radius:12px; padding:16px; margin-bottom:18px; text-align:left;">
+        <div style="display:flex; justify-content:space-between; font-weight:800; font-size:15px; margin-bottom:6px; color:#111827;">
+          <span>2 Premium Calculations</span>
+          <span style="color:#2563eb;">₹10 INR</span>
+        </div>
+        <div style="font-size:11px; color:#6b7280; line-height:1.4;">Scan the QR code to pay instantly via any UPI app (GPay, PhonePe, Paytm, BHIM).</div>
+      </div>
+
+      <div style="display:flex; gap:12px; margin-top:12px;">
+        <button id="pay-now-btn" class="primary" onclick="startCheckout()" style="display:none; flex:1; background:#2563eb; color:#fff; border-color:#2563eb; padding:10px 14px; border-radius:12px; font-weight:800; cursor:pointer;">Generate QR Code</button>
         <button onclick="closePaymentModal()" style="flex:1; padding:10px 14px; border:1px solid #d8dee8; border-radius:12px; font-weight:800; background:#fff; cursor:pointer;">Cancel</button>
       </div>
     </div>
@@ -1555,7 +1591,22 @@ function styleWorksheet(ws){
 }
 
 async function downloadExcel(){
-  recalc();
+  try {
+    const resStatus = await fetch('/api/status');
+    const dataStatus = await resStatus.json();
+    if (dataStatus && !dataStatus.error) {
+      dbStatus = dataStatus;
+    }
+  } catch (err) {
+    console.error("Error validating payment status before export:", err);
+  }
+
+  const remaining = dbStatus.paid_calculations_remaining || 0;
+  if (remaining === 0) {
+    alert("Please purchase another 2 calculations to export Excel.");
+    openPaymentModal();
+    return;
+  }
 
   if(!window.ExcelJS){
     alert('Excel export library did not load. Please connect to the internet and reload the page, then try Export Excel again.');
@@ -1696,11 +1747,16 @@ function loadDemoCase(){
   setUnitMode('si');
 }
 
-document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', recalc));
+document.querySelectorAll('input, select').forEach(el => {
+  if (el.id !== 'payment-email-input') {
+    el.addEventListener('input', recalc);
+  }
+});
 window.addEventListener('resize', recalc);
 
 let isInitialLoad = true;
-let dbStatus = { free_use_consumed: false, paid_access: false };
+let isPaymentModalOpen = false;
+let dbStatus = { free_used: false, paid_calculations_remaining: 0, email: null };
 
 async function fetchStatus() {
   try {
@@ -1716,134 +1772,217 @@ async function fetchStatus() {
 }
 
 function checkFreemiumStatus() {
-  const isUnlocked = dbStatus.paid_access;
-  const hasUsedFree = dbStatus.free_use_consumed;
+  const remaining = dbStatus.paid_calculations_remaining || 0;
+  const isFreeUsed = dbStatus.free_used === true || dbStatus.free_used === 1;
   const banner = document.getElementById('freemium-banner');
   const msg = document.getElementById('freemium-message');
   const payBtn = document.getElementById('pay-btn');
 
-  // Check URL parameters inside the iframe to show payment success/canceled notification
-  const urlParams = new URLSearchParams(window.location.search);
-  const isSuccessRedirect = urlParams.get('success') === 'true';
-
-  if (isUnlocked || isSuccessRedirect) {
+  if (remaining > 0) {
     if (banner) {
-      banner.className = 'notice info';
+      banner.className = 'notice info animated-sticky-banner';
       banner.style.backgroundColor = '#d1fae5';
       banner.style.borderColor = '#34d399';
       banner.style.color = '#065f46';
-      msg.textContent = 'Payment successful. Calculator unlocked.';
+      msg.textContent = `✅ Payment Successful. Remaining Paid Calculations: ${remaining}`;
       payBtn.style.display = 'none';
     }
-    return 'unlocked';
-  } else if (hasUsedFree) {
+    return 'paid_active';
+  } else if (isFreeUsed) {
     if (banner) {
-      banner.className = 'notice warn';
+      banner.className = 'notice warn animated-sticky-banner';
       banner.style.backgroundColor = '#fef3c7';
       banner.style.borderColor = '#fcd34d';
       banner.style.color = '#92400e';
-      msg.textContent = 'Your free use is completed. Please pay to continue.';
+      msg.textContent = `Remaining Calculations: 0. Purchase again to continue.`;
       payBtn.style.display = 'inline-block';
+      payBtn.textContent = 'Buy Now';
     }
     return 'blocked';
   } else {
     if (banner) {
-      banner.className = 'notice info';
+      banner.className = 'notice info animated-sticky-banner';
       banner.style.backgroundColor = '#eef6ff';
       banner.style.borderColor = '#cfe2ff';
       banner.style.color = '#123766';
       msg.textContent = 'You have 1 free use of this calculator.';
       payBtn.style.display = 'inline-block';
+      payBtn.textContent = 'Buy Now';
     }
     return 'free_available';
   }
 }
 
+function validateModalEmail() {
+  const emailVal = document.getElementById('payment-email-input').value.trim();
+  const continueBtn = document.getElementById('payment-continue-btn');
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const isValid = re.test(emailVal);
+  if (continueBtn) {
+    continueBtn.disabled = !isValid;
+  }
+}
+
+async function submitEmailLead() {
+  const emailVal = document.getElementById('payment-email-input').value.trim();
+  const continueBtn = document.getElementById('payment-continue-btn');
+  if (continueBtn) {
+    continueBtn.disabled = true;
+    continueBtn.textContent = 'Storing email...';
+  }
+  try {
+    const res = await fetch('/api/status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'store_email', email: emailVal })
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) {
+      alert(data.error || 'Failed to save email lead.');
+      if (continueBtn) {
+        continueBtn.disabled = false;
+        continueBtn.textContent = 'Continue';
+      }
+      return;
+    }
+    dbStatus = data;
+    // Hide email form, show pay button and payment info
+    document.getElementById('email-capture-container').style.display = 'none';
+    document.getElementById('payment-initial-info').style.display = 'block';
+    document.getElementById('pay-now-btn').style.display = 'block';
+    
+    // Automatically trigger QR code generation
+    startCheckout();
+  } catch (err) {
+    console.error(err);
+    alert('Error connecting to lead storage API.');
+    if (continueBtn) {
+      continueBtn.disabled = false;
+      continueBtn.textContent = 'Continue';
+    }
+  }
+}
+
 function openPaymentModal() {
+  isPaymentModalOpen = true;
   const modal = document.getElementById('payment-modal');
   if (modal) {
     modal.style.display = 'flex';
   }
+  
+  const emailCapture = document.getElementById('email-capture-container');
+  const payBtn = document.getElementById('pay-now-btn');
+  const initialInfo = document.getElementById('payment-initial-info');
+  const qrContainer = document.getElementById('qr-container');
+  
+  if (dbStatus.email) {
+    if (emailCapture) emailCapture.style.display = 'none';
+    if (payBtn) payBtn.style.display = 'block';
+    if (initialInfo) initialInfo.style.display = 'block';
+    if (qrContainer) qrContainer.style.display = 'none';
+    startCheckout();
+  } else {
+    if (emailCapture) {
+      emailCapture.style.display = 'block';
+      const emailInput = document.getElementById('payment-email-input');
+      const continueBtn = document.getElementById('payment-continue-btn');
+      if (emailInput) emailInput.value = '';
+      if (continueBtn) {
+        continueBtn.disabled = true;
+        continueBtn.textContent = 'Continue';
+      }
+    }
+    if (payBtn) payBtn.style.display = 'none';
+    if (initialInfo) initialInfo.style.display = 'none';
+    if (qrContainer) qrContainer.style.display = 'none';
+  }
 }
 
+let paymentPollInterval = null;
+
 function closePaymentModal() {
+  isPaymentModalOpen = false;
   const modal = document.getElementById('payment-modal');
   if (modal) {
     modal.style.display = 'none';
   }
-}
-
-async function startCheckout() {
-  const payBtn = document.querySelector('#payment-modal button.primary');
-  const originalText = payBtn ? payBtn.textContent : '';
-  if (payBtn) payBtn.textContent = 'Preparing Order...';
-
-  try {
-    const response = await fetch('/api/create-razorpay-order', { method: 'POST' });
-    const orderData = await response.json();
-    if (!response.ok || orderData.error) {
-      alert('Error initiating Razorpay payment: ' + (orderData.error || 'Unknown error'));
-      if (payBtn) payBtn.textContent = originalText;
-      return;
-    }
-
-    if (payBtn) payBtn.textContent = originalText;
-
-    const options = {
-      "key": orderData.key_id,
-      "amount": orderData.amount,
-      "currency": orderData.currency,
-      "name": "PRIMELISOMETRICS",
-      "description": "Insel & Molland Calculator Access",
-      "order_id": orderData.order_id,
-      "handler": async function (response) {
-        if (payBtn) payBtn.textContent = 'Verifying...';
-        try {
-          const verifyResponse = await fetch('/api/razorpay/verify-payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature
-            })
-          });
-          const verifyResult = await verifyResponse.json();
-          if (verifyResult.verified) {
-            dbStatus.paid_access = true;
-            closePaymentModal();
-            checkFreemiumStatus();
-            actualRecalc();
-          } else {
-            alert("Payment signature verification failed: " + (verifyResult.error || 'Invalid credentials'));
-          }
-        } catch (err) {
-          console.error(err);
-          alert("Error verifying payment signature with backend server.");
-        } finally {
-          if (payBtn) payBtn.textContent = originalText;
-        }
-      },
-      "prefill": {
-        "name": "Guest Client",
-        "email": "guest@primelisometrics.com"
-      },
-      "theme": {
-        "color": "#ff1744"
-      }
-    };
-
-    const rzp = new Razorpay(options);
-    rzp.open();
-  } catch (err) {
-    console.error(err);
-    alert('Failed to connect to Razorpay API endpoints. Check server configuration.');
-    if (payBtn) payBtn.textContent = originalText;
+  if (paymentPollInterval) {
+    clearInterval(paymentPollInterval);
+    paymentPollInterval = null;
   }
 }
 
+async function startCheckout() {
+  const payBtn = document.getElementById('pay-now-btn');
+  const originalText = payBtn ? payBtn.textContent : '';
+  if (payBtn) {
+    payBtn.disabled = true;
+    payBtn.textContent = 'Generating QR...';
+  }
+
+  try {
+    const response = await fetch('/api/create-razorpay-qr', { method: 'POST' });
+    const data = await response.json();
+    if (!response.ok || data.error) {
+      alert('Error initiating Razorpay QR code: ' + (data.error || 'Unknown error'));
+      if (payBtn) {
+        payBtn.disabled = false;
+        payBtn.textContent = originalText;
+      }
+      return;
+    }
+
+    // Display QR Code
+    const qrImage = document.getElementById('qr-image');
+    if (qrImage) {
+      qrImage.src = data.image_url;
+    }
+    
+    // Hide initial info & pay button
+    const initialInfo = document.getElementById('payment-initial-info');
+    if (initialInfo) initialInfo.style.display = 'none';
+    if (payBtn) payBtn.style.display = 'none';
+
+    // Show QR Container
+    const qrContainer = document.getElementById('qr-container');
+    if (qrContainer) qrContainer.style.display = 'block';
+
+    // Start polling status
+    startPaymentStatusPolling();
+  } catch (err) {
+    console.error(err);
+    alert('Failed to connect to QR API endpoint. Check server configuration.');
+    if (payBtn) {
+      payBtn.disabled = false;
+      payBtn.textContent = originalText;
+    }
+  }
+}
+
+function startPaymentStatusPolling() {
+  if (paymentPollInterval) clearInterval(paymentPollInterval);
+  
+  paymentPollInterval = setInterval(async () => {
+    try {
+      const response = await fetch('/api/razorpay/payment-status');
+      const data = await response.json();
+      
+      if (data && data.paid_access) {
+        clearInterval(paymentPollInterval);
+        paymentPollInterval = null;
+        
+        await fetchStatus();
+        closePaymentModal();
+        alert("Payment successful. Calculator unlocked.");
+      }
+    } catch (err) {
+      console.error("Error polling payment status:", err);
+    }
+  }, 5000); // Poll every 5 seconds
+}
+
 function simulatePaymentSuccess() {
-  dbStatus.paid_access = true;
+  dbStatus.paid_calculations_remaining = 2;
   closePaymentModal();
   checkFreemiumStatus();
   actualRecalc();
@@ -1855,15 +1994,57 @@ async function recalc() {
     return;
   }
 
+  // Enforce D1 backend validation prior to calculation running
+  try {
+    const response = await fetch('/api/status');
+    const data = await response.json();
+    if (data && !data.error) {
+      dbStatus = data;
+    }
+  } catch (e) {
+    console.error("Failed to refresh status before calculation:", e);
+  }
+
   const status = checkFreemiumStatus();
   if (status === 'blocked') {
-    openPaymentModal();
+    if (!isPaymentModalOpen) {
+      isPaymentModalOpen = true;
+      setTimeout(() => {
+        openPaymentModal();
+      }, 1500);
+    }
     return;
   }
 
-  // Run calculation
+  // If paid calculations are active, decrement count on D1 first
+  if (status === 'paid_active') {
+    try {
+      const response = await fetch('/api/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'consume_calculation' })
+      });
+      const data = await response.json();
+      if (!response.ok || data.error) {
+        alert("Remaining calculations spent. Please purchase calculations to continue.");
+        dbStatus.paid_calculations_remaining = 0;
+        checkFreemiumStatus();
+        openPaymentModal();
+        return;
+      }
+      dbStatus = data;
+      checkFreemiumStatus();
+    } catch (e) {
+      console.error(e);
+      alert("Failed to confirm calculation quota with server.");
+      return;
+    }
+  }
+
+  // Run calculation math
   actualRecalc();
 
+  // If this was the first free calculation, mark it consumed on D1
   if (status === 'free_available') {
     try {
       const response = await fetch('/api/status', {
@@ -1877,7 +2058,7 @@ async function recalc() {
         checkFreemiumStatus();
       }
     } catch(e) {
-      console.error("Failed to update consumed status:", e);
+      console.error("Failed to consume free calculator trial:", e);
     }
   }
 }

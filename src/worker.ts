@@ -1,7 +1,7 @@
 import { onRequest as statusHandler } from '../functions/api/status';
-import { onRequest as createOrderHandler } from '../functions/api/create-razorpay-order';
-import { onRequest as verifyPaymentHandler } from '../functions/api/razorpay/verify-payment';
+import { onRequest as createQrHandler } from '../functions/api/create-razorpay-qr';
 import { onRequest as webhookHandler } from '../functions/api/razorpay/webhook';
+import { onRequest as paymentStatusHandler } from '../functions/api/razorpay/payment-status';
 
 export interface Env {
   DB: D1Database;
@@ -30,17 +30,20 @@ export default {
     if (path === '/api/status') {
       return statusHandler(context);
     }
-    if (path === '/api/create-razorpay-order') {
-      return createOrderHandler(context);
+    if (path === '/api/create-razorpay-qr') {
+      return createQrHandler(context);
     }
-    if (path === '/api/razorpay/verify-payment') {
-      return verifyPaymentHandler(context);
+    if (path === '/api/razorpay/payment-status') {
+      return paymentStatusHandler(context);
     }
     if (path === '/api/razorpay/webhook') {
       return webhookHandler(context);
     }
 
     // Default: Fallback to serving static assets
-    return env.ASSETS.fetch(request);
+    if (env.ASSETS && typeof env.ASSETS.fetch === 'function') {
+      return env.ASSETS.fetch(request);
+    }
+    return new Response("Not Found", { status: 404 });
   }
 };

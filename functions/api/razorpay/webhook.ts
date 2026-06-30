@@ -59,19 +59,22 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
       const orderId = paymentEntity?.order_id || orderEntity?.id;
       const paymentId = paymentEntity?.id;
+      const qrId = paymentEntity?.qr_code_id || null;
       const sessionId = paymentEntity?.notes?.user_key || orderEntity?.notes?.user_key;
 
       if (sessionId && env.DB) {
-        // Query the current database record to check if already unlocked.
-        // Doing this ensures we avoid duplicate unlock overhead, though UPDATE is idempotent.
         await env.DB.prepare(
           `UPDATE calculator_access 
            SET paid_access = 1, 
+               paid_calculations_remaining = 2,
+               last_payment_id = ?,
+               last_payment_time = CURRENT_TIMESTAMP,
                razorpay_order_id = ?, 
                razorpay_payment_id = ?, 
+               razorpay_qr_id = ?,
                updated_at = CURRENT_TIMESTAMP 
            WHERE user_id = ?`
-        ).bind(orderId || null, paymentId || null, sessionId).run();
+        ).bind(paymentId || null, orderId || null, paymentId || null, qrId, sessionId).run();
       }
     }
 
