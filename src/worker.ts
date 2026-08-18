@@ -40,9 +40,49 @@ export default {
       return webhookHandler(context);
     }
 
-    // Default: Fallback to serving static assets
+    // Default: Fallback to serving static assets with clean URL / HTML fallback
     if (env.ASSETS && typeof env.ASSETS.fetch === 'function') {
-      return env.ASSETS.fetch(request);
+      let assetResponse = await env.ASSETS.fetch(request);
+      
+      // If direct match failed (e.g. 404 for /calculators or /froude-calculator)
+      if (assetResponse.status === 404) {
+        const cleanPath = path.replace(/\/$/, '');
+        if (cleanPath) {
+          // 1. Try path/index.html
+          const indexUrl = new URL(`${cleanPath}/index.html`, request.url);
+          let tryResp = await env.ASSETS.fetch(new Request(indexUrl.toString(), request));
+          if (tryResp.status === 200) return tryResp;
+
+          // 2. Try path.html
+          const htmlUrl = new URL(`${cleanPath}.html`, request.url);
+          tryResp = await env.ASSETS.fetch(new Request(htmlUrl.toString(), request));
+          if (tryResp.status === 200) return tryResp;
+
+          // 3. Fallbacks for direct core calculator files
+          if (cleanPath === '/froude-calculator' || cleanPath === '/william-froude-calculator') {
+            const fcUrl = new URL('/froude-calculator.html', request.url);
+            tryResp = await env.ASSETS.fetch(new Request(fcUrl.toString(), request));
+            if (tryResp.status === 200) return tryResp;
+          }
+          if (cleanPath === '/calculator') {
+            const imUrl = new URL('/insel-molland-calculator.html', request.url);
+            tryResp = await env.ASSETS.fetch(new Request(imUrl.toString(), request));
+            if (tryResp.status === 200) return tryResp;
+          }
+          if (cleanPath === '/savitsky-calculator') {
+            const scUrl = new URL('/savitsky-calculator.html', request.url);
+            tryResp = await env.ASSETS.fetch(new Request(scUrl.toString(), request));
+            if (tryResp.status === 200) return tryResp;
+          }
+          if (cleanPath === '/holtrop-calculator') {
+            const hcUrl = new URL('/holtrop-calc-core.html', request.url);
+            tryResp = await env.ASSETS.fetch(new Request(hcUrl.toString(), request));
+            if (tryResp.status === 200) return tryResp;
+          }
+        }
+      }
+      
+      return assetResponse;
     }
     return new Response("Not Found", { status: 404 });
   }
