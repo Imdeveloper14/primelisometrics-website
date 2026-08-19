@@ -16,8 +16,8 @@ function CalculatorIframe() {
   return (
     <iframe 
       src={iframeSrc} 
-      className="w-full h-full min-h-[75vh] md:min-h-[85vh] border-0"
-      title="William Froude Resistance Calculator"
+      className="w-full h-full min-h-[85vh] md:min-h-[1100px] border-0"
+      title="William Froude Resistance & Powering Calculator"
     />
   );
 }
@@ -37,20 +37,20 @@ export default function FroudeCalculatorPage() {
 
         <div className="container mx-auto px-6 relative z-10 flex-1 flex flex-col">
           {/* Section Header */}
-          <div className="text-center max-w-3xl mx-auto mb-10">
+          <div className="text-center max-w-4xl mx-auto mb-10">
             <h1 
               className="text-2xl sm:text-4xl md:text-5xl font-black tracking-widest uppercase text-white mb-4 drop-shadow-[0_0_15px_rgba(255,23,68,0.3)] font-mono"
             >
-              William Froude Calculator
+              William Froude Resistance &amp; Powering Calculator
             </h1>
-            <div className="h-1 w-20 bg-accent mx-auto mb-4" />
+            <div className="h-1 w-24 bg-accent mx-auto mb-4" />
             <p className="text-xs sm:text-sm text-gray-400 font-mono tracking-wide uppercase">
-              Model-to-Ship Resistance Extrapolation & Power Prediction
+              Auditable Model-to-Ship Resistance Extrapolation &amp; Power Prediction (Froude Separation Principle)
             </p>
           </div>
 
           {/* Calculator Embed Container */}
-          <div className="w-full flex-1 min-h-[75vh] md:min-h-[85vh] rounded-2xl border border-border/80 overflow-hidden bg-white shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+          <div className="w-full flex-1 min-h-[85vh] md:min-h-[1100px] rounded-2xl border border-border/80 overflow-hidden bg-white shadow-[0_0_40px_rgba(0,0,0,0.5)]">
             <Suspense fallback={<div className="w-full h-full bg-white flex items-center justify-center text-gray-500 font-mono">Loading Calculator...</div>}>
               <CalculatorIframe />
             </Suspense>

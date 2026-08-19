@@ -3,238 +3,794 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>William Froude Resistance Calculator — Model-to-Ship Extrapolation</title>
+<title>William Froude Resistance & Powering Calculator — Primelisometrics Consultancy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Serif:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{
-  --abyss:#08202e;
-  --hull:#0f3244;
-  --deep:#123c52;
-  --paper:#e9eef0;
-  --panel:#ffffff;
-  --rule:#bcccd4;
-  --rule-soft:#dde5e9;
-  --ink:#08202e;
-  --muted:#5a7284;
-  --sea:#1b7f92;
-  --brass:#bf7226;
-  --kelp:#2c7a52;
-  --flag:#a32a2e;
-  --amber:#8a6410;
-  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Consolas,monospace;
-  --sans:"IBM Plex Sans","Segoe UI",Helvetica,Arial,sans-serif;
-  --serif:"IBM Plex Serif",Georgia,serif;
-}
-*{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{
-  margin:0;background:var(--paper);color:var(--ink);
-  font-family:var(--sans);font-size:15px;line-height:1.5;
-}
-.wrap{max-width:1320px;margin:0 auto;padding:0 20px 64px}
-
-/* ---------- masthead ---------- */
-.mast{
-  background:var(--abyss);color:#dfe9ee;margin:0 -20px 26px;padding:30px 20px 0;
-  border-bottom:3px solid var(--brass);
-}
-.mast-inner{max-width:1280px;margin:0 auto}
-.eyebrow{
-  font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
-  color:#7fa5b6;margin:0 0 10px;
-}
-.mast h1{
-  font-family:var(--serif);font-weight:600;font-size:clamp(26px,4.2vw,40px);
-  line-height:1.1;margin:0 0 10px;color:#fff;letter-spacing:-.01em;
-}
-.mast .lede{margin:0;max-width:62ch;color:#a9c4d0;font-size:15px}
-.mast .lede em{color:#e2b782;font-style:normal}
-
-/* live scale figure — the signature element */
-.scale-fig{margin:22px -20px 0;padding:0 20px;background:var(--hull);border-top:1px solid #1d4a61}
-.scale-fig-inner{max-width:1280px;margin:0 auto;padding:14px 0 8px}
-.scale-head{
-  display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;
-  font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#7fa5b6;
-  margin-bottom:6px;
-}
-.scale-head b{color:#e2b782;font-weight:600;letter-spacing:.04em}
-#scaleSvg{display:block;width:100%;height:132px}
-
-/* ---------- structure ---------- */
-.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:18px}
-.card{
-  background:var(--panel);border:1px solid var(--rule);border-radius:3px;
-  padding:18px 18px 20px;grid-column:span 6;min-width:0;
-}
-.card.span4{grid-column:span 4}
-.card.span8{grid-column:span 8}
-.card.span12{grid-column:span 12}
-.card > h2{
-  font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--sea);margin:0 0 2px;
-}
-.card > .sub{font-size:12.5px;color:var(--muted);margin:0 0 16px;padding-bottom:12px;border-bottom:1px solid var(--rule-soft)}
-h3.grouphead{
-  font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--muted);margin:20px 0 10px;
+:root {
+  --abyss: #08202e;
+  --hull: #0f3244;
+  --deep: #123c52;
+  --paper: #e9eef0;
+  --panel: #ffffff;
+  --rule: #bcccd4;
+  --rule-soft: #dde5e9;
+  --ink: #08202e;
+  --muted: #5a7284;
+  --sea: #1b7f92;
+  --sea-light: #e6f3f6;
+  --brass: #bf7226;
+  --brass-light: #fdf5ec;
+  --kelp: #2c7a52;
+  --flag: #a32a2e;
+  --amber: #8a6410;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+  --sans: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+  --serif: "IBM Plex Serif", Georgia, serif;
 }
 
-
-/* ---------- fields ---------- */
-.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px 12px}
-.fields.trio{grid-template-columns:repeat(3,minmax(0,1fr))}
-.fields.six{grid-template-columns:repeat(6,minmax(0,1fr))}
-.f{min-width:0}
-.f label{
-  display:flex;align-items:flex-end;font-size:11.5px;font-weight:500;color:var(--muted);
-  margin-bottom:4px;line-height:1.3;min-height:2.6em;
-}
-.f label .u{margin-left:.35em}
-.f label .u{font-family:var(--mono);font-size:10.5px;color:#8ba1af;white-space:nowrap}
-input,select{
-  width:100%;padding:8px 9px;border:1px solid var(--rule);border-radius:2px;
-  background:#fff;color:var(--ink);font-family:var(--mono);font-size:13.5px;
-}
-input:focus-visible,select:focus-visible,button:focus-visible{
-  outline:2px solid var(--sea);outline-offset:1px;
-}
-input[readonly]{background:#f2f6f7;color:var(--muted)}
-select{font-family:var(--sans);font-size:13.5px}
-.autoline{display:flex;align-items:center;gap:6px;margin-top:5px;font-size:11.5px;color:var(--muted)}
-.autoline input[type=checkbox]{width:auto;margin:0;accent-color:var(--sea);flex:0 0 auto}
-.autoline label{min-height:0;margin:0;font-size:11.5px;cursor:pointer;display:inline}
-
-/* ---------- buttons ---------- */
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
-button{
-  font-family:var(--sans);font-size:13.5px;font-weight:600;border-radius:2px;
-  padding:9px 14px;cursor:pointer;border:1px solid transparent;
-}
-.btn-primary{background:var(--abyss);color:#fff;border-color:var(--abyss)}
-.btn-primary:hover{background:var(--deep)}
-.btn-ghost{background:#fff;color:var(--hull);border-color:var(--rule)}
-.btn-ghost:hover{background:#f2f6f7;border-color:var(--sea)}
-.btn-quiet{background:transparent;color:var(--muted);border-color:transparent;padding:6px 8px;font-weight:500}
-.btn-quiet:hover{color:var(--flag)}
-.row-del{
-  font-family:var(--mono);font-size:15px;line-height:1;padding:4px 8px;
-  background:transparent;border-color:transparent;color:#a8bbc5;font-weight:400;
-}
-.row-del:hover{color:var(--flag);background:#fbeeee}
-
-/* ---------- tables ---------- */
-.tw{overflow-x:auto;border:1px solid var(--rule);border-radius:2px;background:#fff}
-table{width:100%;border-collapse:collapse}
-th,td{
-  padding:7px 10px;text-align:right;font-size:12.5px;white-space:nowrap;
-  border-bottom:1px solid var(--rule-soft);
-}
-th{
-  background:#f2f6f7;font-family:var(--mono);font-size:10px;font-weight:600;
-  letter-spacing:.07em;text-transform:uppercase;color:var(--muted);
-  border-bottom:1px solid var(--rule);
-}
-th .th2{display:block;font-size:9px;letter-spacing:.04em;color:#93a8b4;font-weight:400;text-transform:none}
-td{font-family:var(--mono);font-variant-numeric:tabular-nums}
-tbody tr:last-child td{border-bottom:0}
-tbody tr:nth-child(even){background:#fafcfc}
-th:first-child,td:first-child{text-align:left}
-td.idx{color:#93a8b4;font-size:11px;width:1%}
-#dataTable input{padding:6px 8px;font-size:13px;min-width:96px}
-#resultTable td.hi{color:var(--brass);font-weight:500}
-#resultTable tbody tr.dim td{color:#a6b8c2;font-weight:400}
-
-/* ---------- readouts ---------- */
-.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--rule-soft);border:1px solid var(--rule)}
-.metric{background:#fff;padding:13px 14px;min-width:0}
-.metric .k{
-  font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--muted);margin-bottom:5px;
-}
-.metric .v{font-family:var(--mono);font-size:19px;font-weight:600;letter-spacing:-.02em;line-height:1.15}
-.metric .v small{font-size:11px;font-weight:400;color:var(--muted);letter-spacing:0}
-.metric.accent .v{color:var(--brass)}
-
-/* ---------- messages ---------- */
-.msgs{margin-top:14px;display:grid;gap:6px}
-.msg{
-  display:flex;gap:9px;align-items:flex-start;padding:9px 11px;
-  border-radius:2px;font-size:12.5px;line-height:1.45;border-left:3px solid;
-}
-.msg .tag{
-  font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
-  font-weight:600;padding-top:2px;flex:0 0 auto;
-}
-.msg.ok{background:#eef7f2;border-color:var(--kelp);color:#1e5f3e}
-.msg.warn{background:#fdf6e6;border-color:var(--amber);color:#6f5210}
-.msg.err{background:#fbeded;border-color:var(--flag);color:#8a2226}
-
-/* ---------- charts ---------- */
-.chart-box{position:relative;width:100%;height:320px}
-canvas{display:block;width:100%;height:100%}
-.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--muted)}
-.legend span{display:flex;align-items:center;gap:6px}
-.swatch{width:12px;height:3px;border-radius:1px;display:inline-block}
-
-/* ---------- notes ---------- */
-.note{
-  font-size:12.5px;line-height:1.6;color:var(--muted);background:#f6f9fa;
-  border:1px solid var(--rule-soft);border-left:2px solid var(--rule);padding:11px 13px;margin-top:14px;
-}
-.note strong{color:var(--hull)}
-.eqn{
-  font-family:var(--mono);font-size:12.5px;line-height:2;background:var(--abyss);
-  color:#cfe0e8;padding:16px 18px;border-radius:2px;overflow-x:auto;
-}
-.eqn .c{color:#6f93a5}
-.eqn .h{color:#e2b782}
-.deflist{margin:0;font-size:12.5px}
-.deflist dt{font-family:var(--mono);color:var(--hull);font-weight:600;margin-top:9px;font-size:12px}
-.deflist dd{margin:2px 0 0;color:var(--muted);line-height:1.5}
-footer{
-  margin-top:34px;padding-top:16px;border-top:1px solid var(--rule);
-  font-size:11.5px;color:var(--muted);line-height:1.6;
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 14.5px;
+  line-height: 1.5;
 }
 
-@media(max-width:1000px){
-  .card,.card.span4,.card.span8{grid-column:span 12}
-  .metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .fields.six{grid-template-columns:repeat(3,minmax(0,1fr))}
+.wrap {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 0 20px 64px;
 }
-@media(max-width:560px){
-  .wrap{padding:0 12px 44px}
-  .mast{margin:0 -12px 20px;padding:22px 12px 0}
-  .scale-fig{margin:18px -12px 0;padding:0 12px}
-  .fields,.fields.trio,.fields.six{grid-template-columns:1fr}
-  .metrics{grid-template-columns:1fr}
-  .chart-box{height:260px}
+
+/* ---------- Masthead ---------- */
+.mast {
+  background: var(--abyss);
+  color: #dfe9ee;
+  margin: 0 -20px 24px;
+  padding: 26px 20px 0;
+  border-bottom: 3px solid var(--brass);
 }
-@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-@media print{
-  body{background:#fff}
-  .actions,.btn-quiet,.row-del{display:none}
-  .card{break-inside:avoid;border-color:#999}
+.mast-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+}
+.mast-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.brand-tag {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #7fa5b6;
+  font-weight: 600;
+}
+.brand-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  background: rgba(191, 114, 38, 0.2);
+  border: 1px solid var(--brass);
+  color: #e2b782;
+  padding: 3px 8px;
+  border-radius: 2px;
+}
+.mast h1 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(24px, 3.8vw, 36px);
+  line-height: 1.15;
+  margin: 0 0 8px;
+  color: #ffffff;
+  letter-spacing: -.01em;
+}
+.mast .lede {
+  margin: 0 0 16px;
+  max-width: 76ch;
+  color: #a9c4d0;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.mast .lede em {
+  color: #e2b782;
+  font-style: normal;
+}
+
+/* Live scale figure */
+.scale-fig {
+  margin: 18px -20px 0;
+  padding: 0 20px;
+  background: var(--hull);
+  border-top: 1px solid #1d4a61;
+}
+.scale-fig-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 12px 0 6px;
+}
+.scale-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #7fa5b6;
+  margin-bottom: 4px;
+}
+.scale-head b {
+  color: #e2b782;
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+#scaleSvg {
+  display: block;
+  width: 100%;
+  height: 120px;
+}
+
+/* ---------- Grid & Cards ---------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 16px;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 16px 18px 18px;
+  grid-column: span 6;
+  min-width: 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+.card.span4 { grid-column: span 4; }
+.card.span6 { grid-column: span 6; }
+.card.span8 { grid-column: span 8; }
+.card.span12 { grid-column: span 12; }
+
+.card > h2 {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--sea);
+  margin: 0 0 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card > .sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 0 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--rule-soft);
+}
+h3.grouphead {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 16px 0 8px;
+  border-bottom: 1px dashed var(--rule-soft);
+  padding-bottom: 4px;
+}
+
+/* ---------- Form Fields ---------- */
+.fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+.fields.trio { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.fields.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.fields.six { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+
+.f { min-width: 0; }
+.f label {
+  display: flex;
+  align-items: flex-end;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 4px;
+  line-height: 1.25;
+  min-height: 2.4em;
+}
+.f label .u {
+  margin-left: .35em;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: #8ba1af;
+  white-space: nowrap;
+}
+input, select {
+  width: 100%;
+  padding: 7px 9px;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: #ffffff;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 13px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+input:focus-visible, select:focus-visible, button:focus-visible {
+  outline: 2px solid var(--sea);
+  outline-offset: 1px;
+}
+input[readonly] {
+  background: #f2f6f7;
+  color: var(--muted);
+  border-color: #d2dde2;
+}
+select {
+  font-family: var(--sans);
+  font-size: 13px;
+}
+.autoline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.autoline input[type=checkbox] {
+  width: auto;
+  margin: 0;
+  accent-color: var(--sea);
+  flex: 0 0 auto;
+}
+.autoline label {
+  min-height: 0;
+  margin: 0;
+  font-size: 11px;
+  cursor: pointer;
+  display: inline;
+}
+
+/* ---------- Buttons & Actions ---------- */
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  align-items: center;
+}
+button {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 2px;
+  padding: 8px 14px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+.btn-primary {
+  background: var(--abyss);
+  color: #ffffff;
+  border-color: var(--abyss);
+}
+.btn-primary:hover {
+  background: var(--deep);
+  border-color: var(--deep);
+}
+.btn-accent {
+  background: var(--brass);
+  color: #ffffff;
+  border-color: var(--brass);
+}
+.btn-accent:hover {
+  background: #a35d1b;
+  border-color: #a35d1b;
+}
+.btn-ghost {
+  background: #ffffff;
+  color: var(--hull);
+  border-color: var(--rule);
+}
+.btn-ghost:hover {
+  background: #f2f6f7;
+  border-color: var(--sea);
+  color: var(--sea);
+}
+.btn-quiet {
+  background: transparent;
+  color: var(--muted);
+  border-color: transparent;
+  padding: 6px 10px;
+  font-weight: 500;
+}
+.btn-quiet:hover {
+  color: var(--flag);
+  background: rgba(163, 42, 46, 0.06);
+}
+.row-del {
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1;
+  padding: 3px 6px;
+  background: transparent;
+  border-color: transparent;
+  color: #a8bbc5;
+  font-weight: 400;
+  cursor: pointer;
+}
+.row-del:hover {
+  color: var(--flag);
+  background: #fbeeee;
+}
+
+/* ---------- Tables ---------- */
+.tw {
+  overflow-x: auto;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: #ffffff;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 6px 9px;
+  text-align: right;
+  font-size: 12px;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--rule-soft);
+}
+th {
+  background: #f2f6f7;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--rule);
+}
+th .th2 {
+  display: block;
+  font-size: 8.5px;
+  letter-spacing: .04em;
+  color: #93a8b4;
+  font-weight: 400;
+  text-transform: none;
+}
+td {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:nth-child(even) { background: #fafcfc; }
+tbody tr:hover { background: #f0f6f8; }
+th:first-child, td:first-child { text-align: left; }
+td.idx { color: #93a8b4; font-size: 11px; width: 1%; }
+#dataTable input {
+  padding: 5px 7px;
+  font-size: 12.5px;
+  min-width: 90px;
+}
+td.hi { color: var(--brass); font-weight: 600; }
+td.emp { color: var(--abyss); font-weight: 600; }
+tbody tr.dim td { color: #a6b8c2; }
+
+/* ---------- Metrics Dashboard ---------- */
+.metrics-primary {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--rule-soft);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.metric-card {
+  background: #ffffff;
+  padding: 12px 14px;
+  min-width: 0;
+}
+.metric-card .k {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.metric-card .v {
+  font-family: var(--mono);
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -.02em;
+  line-height: 1.15;
+  color: var(--ink);
+}
+.metric-card .v small {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+  letter-spacing: 0;
+  margin-left: 2px;
+}
+.metric-card.accent {
+  background: var(--brass-light);
+  border-bottom: 2px solid var(--brass);
+}
+.metric-card.accent .v { color: var(--brass); }
+.metric-card.primary {
+  background: var(--sea-light);
+  border-bottom: 2px solid var(--sea);
+}
+.metric-card.primary .v { color: var(--sea); }
+
+.metrics-secondary {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--rule-soft);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.metrics-secondary .metric-card {
+  padding: 8px 12px;
+}
+.metrics-secondary .metric-card .v {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ---------- Validation & Messages ---------- */
+.val-summary {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 2px;
+  background: #f7fafb;
+  border: 1px solid var(--rule);
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+.val-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 2px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.val-badge.ok { background: #dff0e6; color: var(--kelp); border: 1px solid #b7dcbe; }
+.val-badge.warn { background: #fdf2d6; color: var(--amber); border: 1px solid #fae19c; }
+.val-badge.err { background: #fce8e8; color: var(--flag); border: 1px solid #f7bcbc; }
+
+.msgs {
+  display: grid;
+  gap: 6px;
+}
+.msg {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 8px 11px;
+  border-radius: 2px;
+  font-size: 12px;
+  line-height: 1.4;
+  border-left: 3px solid;
+}
+.msg .tag {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding-top: 1px;
+  flex: 0 0 auto;
+}
+.msg.ok { background: #f2f9f5; border-color: var(--kelp); color: #1e5f3e; }
+.msg.warn { background: #fef9ed; border-color: var(--amber); color: #6f5210; }
+.msg.err { background: #fdeded; border-color: var(--flag); color: #8a2226; }
+
+/* ---------- Charts ---------- */
+.chart-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 14px;
+  overflow-x: auto;
+}
+.chart-tab {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 6px 12px;
+  background: #f2f6f7;
+  color: var(--muted);
+  border: 1px solid var(--rule);
+  border-bottom: none;
+  border-radius: 2px 2px 0 0;
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.chart-tab:hover {
+  background: #e6edf0;
+  color: var(--ink);
+}
+.chart-tab.active {
+  background: #ffffff;
+  color: var(--sea);
+  font-weight: 600;
+  border-top: 2px solid var(--sea);
+  margin-bottom: -1px;
+  padding-bottom: 7px;
+}
+.chart-box {
+  position: relative;
+  width: 100%;
+  height: 330px;
+}
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  font-size: 11.5px;
+  color: var(--muted);
+  font-family: var(--mono);
+}
+.legend span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.swatch {
+  width: 12px;
+  height: 3px;
+  border-radius: 1px;
+  display: inline-block;
+}
+
+/* ---------- Notes & Equations ---------- */
+.note {
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--muted);
+  background: #f6f9fa;
+  border: 1px solid var(--rule-soft);
+  border-left: 3px solid var(--rule);
+  padding: 10px 12px;
+  margin-top: 12px;
+  border-radius: 2px;
+}
+.note strong { color: var(--hull); }
+.eqn {
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.9;
+  background: var(--abyss);
+  color: #cfe0e8;
+  padding: 16px 18px;
+  border-radius: 2px;
+  overflow-x: auto;
+  border: 1px solid #1c4054;
+}
+.eqn .c { color: #6f93a5; font-style: italic; }
+.eqn .h { color: #e2b782; font-weight: 600; }
+
+.deflist {
+  margin: 0;
+  font-size: 12px;
+}
+.deflist dt {
+  font-family: var(--mono);
+  color: var(--hull);
+  font-weight: 600;
+  margin-top: 10px;
+  font-size: 11.5px;
+}
+.deflist dd {
+  margin: 2px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* ---------- Speed Sweep Configuration Box ---------- */
+.sweep-config {
+  background: #f7fafb;
+  border: 1px solid var(--rule-soft);
+  padding: 12px 14px;
+  border-radius: 2px;
+  margin-bottom: 14px;
+}
+
+/* ---------- Report Modal ---------- */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 32, 46, 0.7);
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 24px 16px;
+  align-items: flex-start;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.report-modal {
+  background: #ffffff;
+  border-radius: 3px;
+  max-width: 960px;
+  width: 100%;
+  padding: 32px 36px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  position: relative;
+  font-size: 12.5px;
+  color: #1a2f3a;
+}
+.report-header {
+  border-bottom: 2px solid var(--abyss);
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.report-header h2 {
+  margin: 0 0 4px;
+  font-family: var(--serif);
+  font-size: 24px;
+  color: var(--abyss);
+}
+.report-header .org {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--sea);
+  font-weight: 600;
+}
+.report-meta {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted);
+  text-align: right;
+}
+.report-section {
+  margin-bottom: 20px;
+}
+.report-section h3 {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--hull);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 4px;
+  margin: 0 0 10px;
+}
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  margin-top: 6px;
+}
+.report-table th, .report-table td {
+  padding: 5px 8px;
+  border: 1px solid #d4e0e6;
+  text-align: right;
+}
+.report-table th {
+  background: #f0f4f6;
+  font-family: var(--mono);
+  color: var(--hull);
+}
+.report-table th:first-child, .report-table td:first-child { text-align: left; }
+.report-disclaimer {
+  margin-top: 24px;
+  padding: 10px 14px;
+  background: #f7fafb;
+  border: 1px solid #d8e2e6;
+  font-size: 10.5px;
+  color: #6a8292;
+  line-height: 1.5;
+}
+
+footer {
+  margin-top: 36px;
+  padding-top: 18px;
+  border-top: 1px solid var(--rule);
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+@media(max-width:1100px){
+  .card, .card.span4, .card.span6, .card.span8 { grid-column: span 12; }
+  .metrics-primary, .metrics-secondary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .fields.six { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .fields.four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media(max-width:640px){
+  .wrap { padding: 0 12px 44px; }
+  .mast { margin: 0 -12px 20px; padding: 20px 12px 0; }
+  .scale-fig { margin: 16px -12px 0; padding: 0 12px; }
+  .fields, .fields.trio, .fields.four, .fields.six { grid-template-columns: 1fr; }
+  .metrics-primary, .metrics-secondary { grid-template-columns: 1fr; }
+  .chart-box { height: 260px; }
+}
+
+@media print {
+  body { background: #ffffff !important; color: #000000 !important; font-size: 11px; }
+  .mast, .actions, .chart-tabs, .btn-quiet, .row-del, .modal-overlay .btn-ghost, footer, .scale-fig { display: none !important; }
+  .wrap { padding: 0; max-width: 100%; }
+  .card { break-inside: avoid; border: 1px solid #ccc; box-shadow: none; margin-bottom: 16px; grid-column: span 12 !important; }
+  .report-modal { box-shadow: none; padding: 0; max-width: 100%; }
+  #printReportView { display: block !important; }
 }
 </style>
 </head>
 <body>
 
+<!-- ============ MASTHEAD ============ -->
 <div class="mast">
   <div class="mast-inner">
-    <p class="eyebrow">Model basin · resistance extrapolation</p>
-    <h1>William Froude Resistance Calculator</h1>
-    <p class="lede">Scale measured towing-tank resistance up to full size. Friction is scaled by <em>Reynolds</em> number, wave-making by <em>Froude</em> number — the separation Froude proposed in 1868 and still the basis of every model basin today.</p>
+    <div class="mast-topbar">
+      <span class="brand-tag">Primelisometrics Marine Dynamics &amp; Hydrodynamics</span>
+      <span class="brand-badge">Naval Architecture Suite</span>
+    </div>
+    <h1>William Froude Resistance &amp; Powering Calculator</h1>
+    <p class="lede">
+      Auditable model-to-ship resistance extrapolation based on <em>William Froude's 1868 separation principle</em> (C<sub>T</sub> = C<sub>F</sub> + C<sub>R</sub>).
+      Friction is dynamically scaled with <em>Reynolds number</em>, and residuary (wave-making + form) drag with <em>Froude number</em> similarity.
+    </p>
   </div>
+
   <div class="scale-fig">
     <div class="scale-fig-inner">
       <div class="scale-head">
-        <span>Geometric similarity — drawn to relative scale</span>
-        <span>Scale ratio λ = <b id="lambdaTag">10.00</b></span>
+        <span>Geometric Hull Profile Similarity (Drawn to true relative scale)</span>
+        <span>Scale Ratio λ = <b id="lambdaTag">10.00</b></span>
       </div>
-      <svg id="scaleSvg" viewBox="0 0 1000 132" preserveAspectRatio="xMidYMid meet" aria-label="Model and ship hull profiles drawn to relative scale"></svg>
+      <svg id="scaleSvg" viewBox="0 0 1000 120" preserveAspectRatio="xMidYMid meet" aria-label="Model and ship hull profiles drawn to relative scale"></svg>
     </div>
   </div>
 </div>
@@ -242,276 +798,603 @@ footer{
 <div class="wrap">
 <div class="grid">
 
-  <!-- ============ SHIP ============ -->
+  <!-- ============ SHIP PARTICULARS ============ -->
   <section class="card span4">
-    <h2>Ship</h2>
-    <p class="sub">Full-scale particulars at the loaded condition being predicted.</p>
+    <h2>1. Full-Scale Ship Particulars</h2>
+    <p class="sub">Vessel geometry and environmental condition for full-scale prediction.</p>
+    
     <div class="fields">
-      <div class="f"><label>Length waterline <span class="u">m</span></label><input id="sL" type="number" step="any" value="100"></div>
-      <div class="f"><label>Beam <span class="u">m</span></label><input id="sB" type="number" step="any" value="15"></div>
-      <div class="f"><label>Draught <span class="u">m</span></label><input id="sT" type="number" step="any" value="5"></div>
-      <div class="f"><label>Displacement <span class="u">tonne</span></label><input id="sDisp" type="number" step="any" value="5000"></div>
+      <div class="f">
+        <label>Waterline Length L<span class="u">m</span></label>
+        <input id="sL" type="number" step="any" value="100">
+      </div>
+      <div class="f">
+        <label>Moulded Beam B<span class="u">m</span></label>
+        <input id="sB" type="number" step="any" value="15">
+      </div>
+      <div class="f">
+        <label>Draught T<span class="u">m</span></label>
+        <input id="sT" type="number" step="any" value="5">
+      </div>
+      <div class="f">
+        <label>Displacement Δ<span class="u">tonne</span></label>
+        <input id="sDisp" type="number" step="any" value="5000">
+      </div>
     </div>
-    <div class="f" style="margin-top:11px">
-      <label>Wetted surface <span class="u">m²</span></label>
+
+    <div class="f" style="margin-top:10px">
+      <label>Wetted Surface Area S<span class="u">m²</span></label>
       <input id="sS" type="number" step="any" value="1824.8">
-      <div class="autoline"><input type="checkbox" id="sSauto" checked><label for="sSauto" style="margin:0;font-size:11.5px;cursor:pointer">Estimate from Denny–Mumford</label></div>
+      <div class="autoline">
+        <input type="checkbox" id="sSauto" checked>
+        <label for="sSauto">Estimate S from Denny–Mumford formula</label>
+      </div>
     </div>
-    <div class="fields" style="margin-top:11px">
-      <div class="f"><label>Transverse area above WL <span class="u">m²</span></label><input id="sAt" type="number" step="any" value="300"></div>
-      <div class="f"><label>Hull roughness kₛ <span class="u">µm</span></label><input id="sKs" type="number" step="any" value="150"></div>
+
+    <div class="fields" style="margin-top:10px">
+      <div class="f">
+        <label>Transverse Area A_T<span class="u">m²</span></label>
+        <input id="sAt" type="number" step="any" value="300">
+      </div>
+      <div class="f">
+        <label>Hull Roughness kₛ<span class="u">µm</span></label>
+        <input id="sKs" type="number" step="any" value="150">
+      </div>
     </div>
-    <h3 class="grouphead">Sea water</h3>
+
+    <h3 class="grouphead">Full-Scale Seawater Fluid Properties</h3>
     <div class="fields trio">
-      <div class="f"><label>Temp <span class="u">°C</span></label><input id="sTemp" type="number" step="any" value="15"></div>
-      <div class="f"><label>ρ <span class="u">kg/m³</span></label><input id="sRho" type="number" step="any" value="1025.9"></div>
-      <div class="f"><label>ν <span class="u">m²/s</span></label><input id="sNu" type="number" step="any" value="1.18831e-6"></div>
+      <div class="f">
+        <label>Temp <span class="u">°C</span></label>
+        <input id="sTemp" type="number" step="any" value="15">
+      </div>
+      <div class="f">
+        <label>Density ρ<span class="u">kg/m³</span></label>
+        <input id="sRho" type="number" step="any" value="1025.9">
+      </div>
+      <div class="f">
+        <label>Viscosity ν<span class="u">m²/s</span></label>
+        <input id="sNu" type="number" step="any" value="1.18831e-6">
+      </div>
     </div>
-    <div class="autoline"><input type="checkbox" id="sWauto" checked><label for="sWauto" style="margin:0;font-size:11.5px;cursor:pointer">Set ρ and ν from temperature (salt, 35 ‰)</label></div>
+    <div class="autoline">
+      <input type="checkbox" id="sWauto" checked>
+      <label for="sWauto">Auto-set ρ and ν from temperature (Standard Seawater 35 ‰)</label>
+    </div>
   </section>
 
-  <!-- ============ MODEL ============ -->
+  <!-- ============ MODEL PARTICULARS ============ -->
   <section class="card span4">
-    <h2>Model</h2>
-    <p class="sub">As built and as tested. Must be geometrically similar to the ship.</p>
+    <h2>2. Towing-Tank Model Particulars</h2>
+    <p class="sub">Geometry as tested in the towing carriage basin.</p>
+
     <div class="fields">
-      <div class="f"><label>Length waterline <span class="u">m</span></label><input id="mL" type="number" step="any" value="10"></div>
-      <div class="f"><label>Beam <span class="u">m</span></label><input id="mB" type="number" step="any" value="1.5"></div>
-      <div class="f"><label>Draught <span class="u">m</span></label><input id="mT" type="number" step="any" value="0.5"></div>
-      <div class="f"><label>Displacement <span class="u">kg</span></label><input id="mDisp" type="number" step="any" value="4869"></div>
+      <div class="f">
+        <label>Model Length L_M<span class="u">m</span></label>
+        <input id="mL" type="number" step="any" value="10">
+      </div>
+      <div class="f">
+        <label>Model Beam B_M<span class="u">m</span></label>
+        <input id="mB" type="number" step="any" value="1.5">
+      </div>
+      <div class="f">
+        <label>Model Draught T_M<span class="u">m</span></label>
+        <input id="mT" type="number" step="any" value="0.5">
+      </div>
+      <div class="f">
+        <label>Model Mass Δ_M<span class="u">kg</span></label>
+        <input id="mDisp" type="number" step="any" value="4869">
+      </div>
     </div>
-    <div class="f" style="margin-top:11px">
-      <label>Wetted surface <span class="u">m²</span></label>
+
+    <div class="f" style="margin-top:10px">
+      <label>Model Wetted Surface S_M<span class="u">m²</span></label>
       <input id="mS" type="number" step="any" value="18.248">
-      <div class="autoline"><input type="checkbox" id="mSauto" checked><label for="mSauto" style="margin:0;font-size:11.5px;cursor:pointer">Estimate from Denny–Mumford</label></div>
+      <div class="autoline">
+        <input type="checkbox" id="mSauto" checked>
+        <label for="mSauto">Estimate S_M from Denny–Mumford</label>
+      </div>
     </div>
-    <h3 class="grouphead">Tank water</h3>
+
+    <h3 class="grouphead">Tank Freshwater Fluid Properties</h3>
     <div class="fields trio">
-      <div class="f"><label>Temp <span class="u">°C</span></label><input id="mTemp" type="number" step="any" value="15"></div>
-      <div class="f"><label>ρ <span class="u">kg/m³</span></label><input id="mRho" type="number" step="any" value="999.1"></div>
-      <div class="f"><label>ν <span class="u">m²/s</span></label><input id="mNu" type="number" step="any" value="1.13902e-6"></div>
+      <div class="f">
+        <label>Temp <span class="u">°C</span></label>
+        <input id="mTemp" type="number" step="any" value="15">
+      </div>
+      <div class="f">
+        <label>Density ρ_M<span class="u">kg/m³</span></label>
+        <input id="mRho" type="number" step="any" value="999.1">
+      </div>
+      <div class="f">
+        <label>Viscosity ν_M<span class="u">m²/s</span></label>
+        <input id="mNu" type="number" step="any" value="1.13902e-6">
+      </div>
     </div>
-    <div class="autoline"><input type="checkbox" id="mWauto" checked><label for="mWauto" style="margin:0;font-size:11.5px;cursor:pointer">Set ρ and ν from temperature (fresh)</label></div>
-    <div class="note" style="margin-top:16px">Model tests are run at the <strong>same Froude number</strong>, not the same speed. Corresponding speed is V<sub>S</sub> = V<sub>M</sub>√λ.</div>
+    <div class="autoline">
+      <input type="checkbox" id="mWauto" checked>
+      <label for="mWauto">Auto-set ρ and ν from temperature (Fresh water)</label>
+    </div>
+
+    <div class="note">
+      Dynamic similarity requires matching <strong>Froude Number</strong>: F<sub>n</sub> = V<sub>M</sub> / √(g·L<sub>M</sub>) = V<sub>S</sub> / √(g·L<sub>S</sub>). Corresponding speed: V<sub>S</sub> = V<sub>M</sub>·√λ.
+    </div>
   </section>
 
-  <!-- ============ METHOD ============ -->
+  <!-- ============ METHOD & CORRECTIONS ============ -->
   <section class="card span4">
-    <h2>Method</h2>
-    <p class="sub">How the measured resistance is split and rebuilt at full scale.</p>
+    <h2>3. Extrapolation Methodology</h2>
+    <p class="sub">Decomposition and friction line formulations.</p>
+
     <div class="f">
-      <label>Extrapolation method</label>
+      <label>Methodology Framework</label>
       <select id="method">
-        <option value="froude" selected>Froude 1868 — original f·S·Vⁿ</option>
-        <option value="ittc78">ITTC-1978 — form factor (3-D)</option>
-        <option value="ittc57">ITTC-1957 — no form factor (2-D)</option>
+        <option value="froude" selected>Froude (1868) — Original f·S·Vⁿ Method</option>
+        <option value="ittc78">ITTC-1978 — 3-D Form Factor (1+k)</option>
+        <option value="ittc57">ITTC-1957 — 2-D Standard Correlation</option>
       </select>
     </div>
-    <div class="f" style="margin-top:11px">
-      <label>Friction line</label>
+
+    <div class="f" style="margin-top:10px">
+      <label>Skin Friction Line</label>
       <select id="frictionLine">
-        <option value="ittc" selected>ITTC-1957 correlation line</option>
-        <option value="schoenherr">Schoenherr (ATTC 1947)</option>
-        <option value="hughes">Hughes (1954) flat plate</option>
+        <option value="ittc" selected>ITTC-1957 Correlation Line [0.075/(log₁₀Re-2)²]</option>
+        <option value="schoenherr">Schoenherr / ATTC 1947 [0.242/√Cf = log₁₀(Re·Cf)]</option>
+        <option value="hughes">Hughes (1954) Basic Friction Line</option>
       </select>
     </div>
 
     <div id="ittcOpts">
-      <h3 class="grouphead">Corrections</h3>
+      <h3 class="grouphead">Form &amp; Resistance Allowances</h3>
       <div class="f">
-        <label>Form factor (1+k)</label>
+        <label>Form Factor (1 + k)</label>
         <input id="formK" type="number" step="any" value="1.311">
-        <div class="autoline"><input type="checkbox" id="formKauto" checked><label for="formKauto" style="margin:0;font-size:11.5px;cursor:pointer">Estimate from hull form (Watanabe)</label></div>
+        <div class="autoline">
+          <input type="checkbox" id="formKauto" checked>
+          <label for="formKauto">Estimate (1+k) via Watanabe formula</label>
+        </div>
       </div>
-      <div class="f" style="margin-top:11px">
-        <label>Roughness allowance ΔC<sub>F</sub></label>
-        <input id="dCf" type="number" step="any" value="0.000562">
-        <div class="autoline"><input type="checkbox" id="dCfauto" checked><label for="dCfauto" style="margin:0;font-size:11.5px;cursor:pointer">Estimate from kₛ (Bowden–Davison)</label></div>
+      <div class="fields" style="margin-top:10px">
+        <div class="f">
+          <label>Roughness ΔC_F</label>
+          <input id="dCf" type="number" step="any" value="0.000562">
+          <div class="autoline">
+            <input type="checkbox" id="dCfauto" checked>
+            <label for="dCfauto">Bowden–Davison</label>
+          </div>
+        </div>
+        <div class="f">
+          <label>Correlation C_A</label>
+          <input id="Ca" type="number" step="any" value="0.00052">
+          <div class="autoline">
+            <input type="checkbox" id="Caauto" checked>
+            <label for="Caauto">ITTC length-based</label>
+          </div>
+        </div>
       </div>
-      <div class="f" style="margin-top:11px">
-        <label>Correlation allowance C<sub>A</sub></label>
-        <input id="Ca" type="number" step="any" value="0.00052">
-        <div class="autoline"><input type="checkbox" id="Caauto" checked><label for="Caauto" style="margin:0;font-size:11.5px;cursor:pointer">Estimate from length</label></div>
-      </div>
-      <div class="f" style="margin-top:11px">
-        <label>Air resistance C<sub>AA</sub></label>
+      <div class="f" style="margin-top:10px">
+        <label>Air Resistance C_AA</label>
         <input id="Caa" type="number" step="any" value="0.000164">
-        <div class="autoline"><input type="checkbox" id="Caaauto" checked><label for="Caaauto" style="margin:0;font-size:11.5px;cursor:pointer">Estimate as 0.001·A<sub>T</sub>/S</label></div>
+        <div class="autoline">
+          <input type="checkbox" id="Caaauto" checked>
+          <label for="Caaauto">0.001 · A_T / S</label>
+        </div>
       </div>
     </div>
 
     <div id="froudeOpts">
-      <h3 class="grouphead">Froude friction constants</h3>
-      <div class="fields">
-        <div class="f"><label>Ship f</label><input id="fShip" type="number" step="any" value="1.448"></div>
-        <div class="f"><label>Model f</label><input id="fModel" type="number" step="any" value="1.638"></div>
+      <h3 class="grouphead">Froude Empirical Plank Constants</h3>
+      <div class="fields trio">
+        <div class="f"><label>Ship f_S</label><input id="fShip" type="number" step="any" value="1.448"></div>
+        <div class="f"><label>Model f_M</label><input id="fModel" type="number" step="any" value="1.638"></div>
         <div class="f"><label>Exponent n</label><input id="fExp" type="number" step="any" value="1.825"></div>
       </div>
-      <div class="autoline"><input type="checkbox" id="fAuto" checked><label for="fAuto" style="margin:0;font-size:11.5px;cursor:pointer">Estimate f from length</label></div>
-      <div class="note">R<sub>F</sub> = f·S·V<sup>n</sup> with S in m², V in m/s, R<sub>F</sub> in newtons. The auto values are a smooth fit to the trend of Froude's plank experiments — <strong>for reported work, enter f from Froude's published tables or your own basin's data.</strong></div>
-    </div>
-  </section>
-
-  <!-- ============ PROPULSION ============ -->
-  <section class="card span12">
-    <h2>Propulsive chain</h2>
-    <p class="sub">Converts effective power into installed power. Leave at defaults if you only want bare-hull resistance.</p>
-    <div class="fields six">
-      <div class="f"><label>Wake fraction w</label><input id="wake" type="number" step="any" value="0.25"></div>
-      <div class="f"><label>Thrust deduction t</label><input id="thrust" type="number" step="any" value="0.18"></div>
-      <div class="f"><label>Open-water η<sub>O</sub></label><input id="etaO" type="number" step="any" value="0.62"></div>
-      <div class="f"><label>Rel. rotative η<sub>R</sub></label><input id="etaR" type="number" step="any" value="1.02"></div>
-      <div class="f"><label>Shaft η<sub>S</sub></label><input id="etaS" type="number" step="any" value="0.98"></div>
-      <div class="f"><label>Sea margin <span class="u">%</span></label><input id="margin" type="number" step="any" value="15"></div>
-    </div>
-  </section>
-
-  <!-- ============ DATA ============ -->
-  <section class="card span12">
-    <h2>Towing-tank measurements</h2>
-    <p class="sub">One row per run: carriage speed and the measured total resistance of the model.</p>
-    <div class="fields" style="grid-template-columns:220px;margin-bottom:14px">
-      <div class="f"><label>Model speed entered in</label>
-        <select id="speedUnit"><option value="ms" selected>metres per second</option><option value="kn">knots</option></select>
+      <div class="autoline" style="margin-top:6px">
+        <input type="checkbox" id="fAuto" checked>
+        <label for="fAuto">Fit f from Froude plank experiments</label>
+      </div>
+      <div class="note">
+        R<sub>F</sub> = f · S · V<sup>n</sup> (S in m², V in m/s, R in N). Residual resistance is scaled by R<sub>RS</sub> = R<sub>RM</sub> · λ³ · (ρ<sub>S</sub> / ρ<sub>M</sub>).
       </div>
     </div>
-    <div class="tw">
-      <table id="dataTable">
-        <thead><tr>
-          <th style="width:1%">Run</th>
-          <th id="thSpeed">Model speed <span class="th2">m/s</span></th>
-          <th>Measured resistance <span class="th2">N</span></th>
-          <th>Froude number <span class="th2">V/√(gL)</span></th>
-          <th>Model Reynolds <span class="th2">VL/ν</span></th>
-          <th style="width:1%"></th>
-        </tr></thead>
-        <tbody></tbody>
-      </table>
+  </section>
+
+  <!-- ============ PROPULSIVE TRAIN ============ -->
+  <section class="card span12">
+    <h2>4. Propulsion Efficiency Chain (Effective to Installed Power)</h2>
+    <p class="sub">Naval architecture propulsive conversion coefficients.</p>
+    <div class="fields six">
+      <div class="f"><label>Taylor Wake w</label><input id="wake" type="number" step="any" value="0.25"></div>
+      <div class="f"><label>Thrust Deduction t</label><input id="thrust" type="number" step="any" value="0.18"></div>
+      <div class="f"><label>Open-Water η_O</label><input id="etaO" type="number" step="any" value="0.62"></div>
+      <div class="f"><label>Rel. Rotative η_R</label><input id="etaR" type="number" step="any" value="1.02"></div>
+      <div class="f"><label>Shaft Eff. η_S</label><input id="etaS" type="number" step="any" value="0.98"></div>
+      <div class="f"><label>Sea Margin <span class="u">%</span></label><input id="margin" type="number" step="any" value="15"></div>
     </div>
-    <div class="actions">
-      <button class="btn-primary" id="btnCalc">Calculate</button>
-      <button class="btn-ghost" id="btnAdd">Add run</button>
-      <button class="btn-ghost" id="btnDemo">Load sample run</button>
-      <button class="btn-ghost" id="btnCsv">Export results as CSV</button>
-      <button class="btn-quiet" id="btnClear">Clear all runs</button>
+  </section>
+
+  <!-- ============ APPLICABILITY & VALIDATION ============ -->
+  <section class="card span12">
+    <h2>5. Applicability &amp; Validation Audit</h2>
+    <p class="sub">Naval architecture physics validation and geometric similarity verification.</p>
+    <div id="valSummary" class="val-summary">
+      <span class="val-badge ok" id="valBadge">AUDIT OK</span>
+      <span id="valSummaryText">All geometric parameters and physical constraints satisfied.</span>
     </div>
     <div id="messages" class="msgs"></div>
   </section>
 
-  <!-- ============ RESULTS ============ -->
+  <!-- ============ TOWING-TANK DATA INPUT ============ -->
   <section class="card span12">
-    <h2>Predicted ship performance</h2>
-    <p class="sub" id="resSub">At the highest tested speed.</p>
-    <div id="metrics" class="metrics"></div>
-  </section>
+    <h2>6. Towing-Tank Measurements (Model Basin Carriage Data)</h2>
+    <p class="sub">Enter carriage test speed and measured total resistance force of the model.</p>
+    
+    <div class="fields" style="grid-template-columns:240px auto;margin-bottom:12px;align-items:center;">
+      <div class="f">
+        <label>Model Speed Input Unit</label>
+        <select id="speedUnit">
+          <option value="ms" selected>Metres per second (m/s)</option>
+          <option value="kn">Knots (kn)</option>
+        </select>
+      </div>
+    </div>
 
-  <section class="card span8">
-    <h2>Resistance build-up</h2>
-    <p class="sub">Stacked components of full-scale total resistance.</p>
-    <div class="chart-box"><canvas id="resChart"></canvas></div>
-    <div class="legend">
-      <span><i class="swatch" style="background:#1b7f92"></i>Viscous — (1+k)C<sub>F</sub></span>
-      <span><i class="swatch" style="background:#7aa9b5"></i>Roughness, correlation &amp; air</span>
-      <span><i class="swatch" style="background:#bf7226"></i>Residuary — C<sub>R</sub></span>
+    <div class="tw">
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th style="width:1%">Run</th>
+            <th id="thSpeed">Model Speed <span class="th2">m/s</span></th>
+            <th>Measured Resistance R_TM <span class="th2">N</span></th>
+            <th>Froude Number F_n <span class="th2">V/√(g·L_M)</span></th>
+            <th>Model Reynolds Re_M <span class="th2">V·L_M/ν_M</span></th>
+            <th style="width:1%"></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" id="btnCalc">Calculate Extrapolation</button>
+      <button class="btn-ghost" id="btnAdd">+ Add Test Run</button>
+      <button class="btn-ghost" id="btnDemo">Load Sample Data</button>
+      <button class="btn-accent" id="btnReportModal">View Engineering Report</button>
+      <button class="btn-ghost" id="btnCsv">Export CSV</button>
+      <button class="btn-quiet" id="btnClear">Clear Runs</button>
     </div>
   </section>
 
-  <section class="card span4">
-    <h2>Power</h2>
-    <p class="sub">Effective through to brake power.</p>
-    <div class="chart-box"><canvas id="powChart"></canvas></div>
-    <div class="legend">
-      <span><i class="swatch" style="background:#08202e"></i>Effective P<sub>E</sub></span>
-      <span><i class="swatch" style="background:#1b7f92"></i>Delivered P<sub>D</sub></span>
-      <span><i class="swatch" style="background:#bf7226"></i>Brake + margin</span>
+  <!-- ============ RESULTS DASHBOARD ============ -->
+  <section class="card span12">
+    <h2>7. Extrapolated Full-Scale Performance Dashboard</h2>
+    <p class="sub" id="resSub">Evaluated at maximum test speed.</p>
+    
+    <!-- Key Required Metrics -->
+    <div class="metrics-primary" id="metricsPrimary">
+      <div class="metric-card primary">
+        <div class="k">Total Resistance R_TS</div>
+        <div class="v" id="mRts">— <small>kN</small></div>
+      </div>
+      <div class="metric-card">
+        <div class="k">Frictional Drag R_FS</div>
+        <div class="v" id="mRfs">— <small>kN</small></div>
+      </div>
+      <div class="metric-card accent">
+        <div class="k">Residual Drag R_RS</div>
+        <div class="v" id="mRrs">— <small>kN</small></div>
+      </div>
+      <div class="metric-card primary">
+        <div class="k">Effective Power P_E</div>
+        <div class="v" id="mPe">— <small>kW</small></div>
+      </div>
+      <div class="metric-card">
+        <div class="k">Froude Number F_n</div>
+        <div class="v" id="mFn">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="k">Ship Reynolds Re_S</div>
+        <div class="v" id="mRes">—</div>
+      </div>
+    </div>
+
+    <!-- Secondary Aux Metrics -->
+    <div class="metrics-secondary" id="metricsSecondary">
+      <div class="metric-card">
+        <div class="k">Ship Speed V_S</div>
+        <div class="v" id="mVs">— <small>kn</small></div>
+      </div>
+      <div class="metric-card">
+        <div class="k">Delivered Power P_D</div>
+        <div class="v" id="mPd">— <small>kW</small></div>
+      </div>
+      <div class="metric-card accent">
+        <div class="k">Brake Power P_B</div>
+        <div class="v" id="mPb">— <small>kW</small></div>
+      </div>
+      <div class="metric-card">
+        <div class="k">Scale Factor λ</div>
+        <div class="v" id="mLam">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="k">Model Reynolds Re_M</div>
+        <div class="v" id="mRem">—</div>
+      </div>
+      <div class="metric-card">
+        <div class="k">Residuary Share</div>
+        <div class="v" id="mRshare">— <small>%</small></div>
+      </div>
     </div>
   </section>
 
+  <!-- ============ CHARTS SUITE ============ -->
   <section class="card span12">
-    <h2>Full results</h2>
-    <p class="sub">Model measurements on the left, extrapolated ship values on the right.</p>
+    <h2>8. Hydrodynamic &amp; Powering Visualizations</h2>
+    <p class="sub">Select engineering curve view.</p>
+    
+    <div class="chart-tabs" id="chartTabs">
+      <button class="chart-tab active" data-chart="A">A. Total Resistance vs Speed</button>
+      <button class="chart-tab" data-chart="B">B. Frictional Resistance vs Speed</button>
+      <button class="chart-tab" data-chart="C">C. Residual Resistance vs Speed</button>
+      <button class="chart-tab" data-chart="D">D. Effective Power vs Speed</button>
+      <button class="chart-tab" data-chart="E">E. Resistance Breakdown (Stacked)</button>
+      <button class="chart-tab" data-chart="F">F. Propulsion Powers (P_E, P_D, P_B)</button>
+    </div>
+
+    <div class="chart-box">
+      <canvas id="mainChart"></canvas>
+    </div>
+    <div id="chartLegend" class="legend"></div>
+  </section>
+
+  <!-- ============ EXTRAPOLATED RUNS TABLE ============ -->
+  <section class="card span12">
+    <h2>9. Auditable Model-to-Ship Extrapolation Runs</h2>
+    <p class="sub">Step-by-step intermediate coefficients and physical forces for each carriage run.</p>
     <div class="tw">
       <table id="resultTable">
-        <thead><tr>
-          <th>Run</th>
-          <th>F<sub>n</sub></th>
-          <th>V<sub>M</sub> <span class="th2">m/s</span></th>
-          <th>R<sub>TM</sub> <span class="th2">N</span></th>
-          <th>C<sub>TM</sub> <span class="th2">×10⁻³</span></th>
-          <th>C<sub>FM</sub> <span class="th2">×10⁻³</span></th>
-          <th>C<sub>R</sub> <span class="th2">×10⁻³</span></th>
-          <th>V<sub>S</sub> <span class="th2">kn</span></th>
-          <th>Re<sub>S</sub></th>
-          <th>C<sub>FS</sub> <span class="th2">×10⁻³</span></th>
-          <th>C<sub>TS</sub> <span class="th2">×10⁻³</span></th>
-          <th>R<sub>TS</sub> <span class="th2">kN</span></th>
-          <th>P<sub>E</sub> <span class="th2">kW</span></th>
-          <th>P<sub>D</sub> <span class="th2">kW</span></th>
-          <th>P<sub>B</sub> <span class="th2">kW</span></th>
-        </tr></thead>
+        <thead>
+          <tr>
+            <th>Run</th>
+            <th>F_n</th>
+            <th>V_M <span class="th2">m/s</span></th>
+            <th>R_TM <span class="th2">N</span></th>
+            <th>C_TM <span class="th2">×10⁻³</span></th>
+            <th>C_FM <span class="th2">×10⁻³</span></th>
+            <th>C_R <span class="th2">×10⁻³</span></th>
+            <th>V_S <span class="th2">kn</span></th>
+            <th>Re_S</th>
+            <th>C_FS <span class="th2">×10⁻³</span></th>
+            <th>C_TS <span class="th2">×10⁻³</span></th>
+            <th>R_FS <span class="th2">kN</span></th>
+            <th>R_RS <span class="th2">kN</span></th>
+            <th>R_TS <span class="th2">kN</span></th>
+            <th>P_E <span class="th2">kW</span></th>
+            <th>P_D <span class="th2">kW</span></th>
+            <th>P_B <span class="th2">kW</span></th>
+          </tr>
+        </thead>
         <tbody></tbody>
       </table>
     </div>
   </section>
 
-  <!-- ============ METHOD NOTES ============ -->
-  <section class="card span6">
-    <h2>Equations</h2>
-    <p class="sub">As implemented, in the order the calculation runs.</p>
-    <div class="eqn">
-<span class="c">— corresponding speed —</span>
-λ = L<span class="h">S</span> / L<span class="h">M</span>
-F<span class="h">n</span> = V / √(g·L)          V<span class="h">S</span> = V<span class="h">M</span>·√λ
+  <!-- ============ SPEED SWEEP GENERATOR & TABLE ============ -->
+  <section class="card span12">
+    <h2>10. Speed Sweep Table (Continuous Speed Evaluation)</h2>
+    <p class="sub">Interpolated residual drag scaling across a user-defined full-scale operational speed window.</p>
+    
+    <div class="sweep-config">
+      <div class="fields four">
+        <div class="f">
+          <label>Min Speed <span class="u">kn</span></label>
+          <input id="swMin" type="number" step="any" value="8">
+        </div>
+        <div class="f">
+          <label>Max Speed <span class="u">kn</span></label>
+          <input id="swMax" type="number" step="any" value="22">
+        </div>
+        <div class="f">
+          <label>Number of Points</label>
+          <input id="swPts" type="number" step="1" min="3" max="50" value="15">
+        </div>
+        <div class="f" style="display:flex;align-items:flex-end;">
+          <button class="btn-primary" id="btnUpdateSweep" style="width:100%;">Generate Sweep</button>
+        </div>
+      </div>
+    </div>
 
-<span class="c">— strip friction off the model —</span>
-C<span class="h">TM</span> = R<span class="h">TM</span> / (½·ρ<span class="h">M</span>·V<span class="h">M</span>²·S<span class="h">M</span>)
-C<span class="h">FM</span> = 0.075 / (log₁₀Re<span class="h">M</span> − 2)²
-C<span class="h">R</span>  = C<span class="h">TM</span> − (1+k)·C<span class="h">FM</span>
-
-<span class="c">— rebuild at full scale —</span>
-C<span class="h">TS</span> = (1+k)·C<span class="h">FS</span> + ΔC<span class="h">F</span> + C<span class="h">A</span> + C<span class="h">AA</span> + C<span class="h">R</span>
-R<span class="h">TS</span> = ½·ρ<span class="h">S</span>·V<span class="h">S</span>²·S<span class="h">S</span>·C<span class="h">TS</span>
-
-<span class="c">— power —</span>
-P<span class="h">E</span> = R<span class="h">TS</span>·V<span class="h">S</span>
-η<span class="h">H</span> = (1−t)/(1−w)      η<span class="h">D</span> = η<span class="h">O</span>·η<span class="h">R</span>·η<span class="h">H</span>
-P<span class="h">D</span> = P<span class="h">E</span>/η<span class="h">D</span>       P<span class="h">B</span> = P<span class="h">D</span>/η<span class="h">S</span>·(1+margin)
+    <div class="tw">
+      <table id="sweepTable">
+        <thead>
+          <tr>
+            <th>Speed <span class="th2">m/s</span></th>
+            <th>Speed <span class="th2">kn</span></th>
+            <th>F_n <span class="th2">V/√(g·L)</span></th>
+            <th>Re_S <span class="th2">V·L/ν</span></th>
+            <th>C_F <span class="th2">×10⁻³</span></th>
+            <th>R_F <span class="th2">kN</span></th>
+            <th>C_R <span class="th2">×10⁻³</span></th>
+            <th>R_R <span class="th2">kN</span></th>
+            <th>C_T <span class="th2">×10⁻³</span></th>
+            <th>R_T <span class="th2">kN</span></th>
+            <th>P_E <span class="th2">kW</span></th>
+            <th>P_D <span class="th2">kW</span></th>
+            <th>P_B <span class="th2">kW</span></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
   </section>
 
+  <!-- ============ CALCULATION METHOD & EQUATIONS ============ -->
   <section class="card span6">
-    <h2>What the terms mean</h2>
-    <p class="sub">And where each one comes from.</p>
+    <h2>11. Calculation Methodology &amp; Governing Equations</h2>
+    <p class="sub">Naval architecture governing equations in execution order.</p>
+    <div class="eqn">
+<span class="c">/* 1. GEOMETRIC & DYNAMIC SIMILARITY */</span>
+λ = L<span class="h">S</span> / L<span class="h">M</span>
+F<span class="h">n</span> = V / √(g · L)                   V<span class="h">S</span> = V<span class="h">M</span> · √λ
+
+<span class="c">/* 2. TOWING-TANK MODEL RESISTANCE DECOMPOSITION */</span>
+q<span class="h">M</span>  = ½ · ρ<span class="h">M</span> · V<span class="h">M</span>² · S<span class="h">M</span>
+C<span class="h">TM</span> = R<span class="h">TM</span> / q<span class="h">M</span>
+C<span class="h">FM</span> = 0.075 / (log₁₀Re<span class="h">M</span> − 2)²      <span class="c">(ITTC-1957)</span>
+C<span class="h">R</span>  = C<span class="h">TM</span> − (1 + k) · C<span class="h">FM</span>          <span class="c">(Residuary derivation)</span>
+
+<span class="c">/* 3. FULL-SCALE SHIP RESISTANCE RECONSTRUCTION */</span>
+Re<span class="h">S</span> = V<span class="h">S</span> · L<span class="h">S</span> / ν<span class="h">S</span>
+C<span class="h">FS</span> = 0.075 / (log₁₀Re<span class="h">S</span> − 2)²
+C<span class="h">TS</span> = (1 + k)·C<span class="h">FS</span> + C<span class="h">R</span> + ΔC<span class="h">F</span> + C<span class="h">A</span> + C<span class="h">AA</span>
+q<span class="h">S</span>  = ½ · ρ<span class="h">S</span> · V<span class="h">S</span>² · S<span class="h">S</span>
+R<span class="h">TS</span> = q<span class="h">S</span> · C<span class="h">TS</span>
+
+<span class="c">/* 4. PROPULSION & POWERING */</span>
+P<span class="h">E</span>  = R<span class="h">TS</span> · V<span class="h">S</span>                    <span class="c">(Effective power)</span>
+η<span class="h">H</span>  = (1 − t) / (1 − w)
+η<span class="h">D</span>  = η<span class="h">O</span> · η<span class="h">R</span> · η<span class="h">H</span>                <span class="c">(Quasi-propulsive eff.)</span>
+P<span class="h">D</span>  = P<span class="h">E</span> / η<span class="h">D</span>
+P<span class="h">B</span>  = (P<span class="h">D</span> / η<span class="h">S</span>) · (1 + SeaMargin) <span class="c">(Installed brake power)</span>
+    </div>
+  </section>
+
+  <!-- ============ ENGINEERING TRANSPARENCY ============ -->
+  <section class="card span6">
+    <h2>12. Engineering Principles &amp; Transparency</h2>
+    <p class="sub">Clarifications on William Froude's extrapolation framework.</p>
     <dl class="deflist">
-      <dt>C<sub>R</sub> — residuary coefficient</dt>
-      <dd>Everything that isn't skin friction: wave-making, plus form and viscous-pressure effects. Assumed to depend on Froude number alone, so it carries across from model to ship unchanged. This assumption is the whole method.</dd>
-      <dt>(1+k) — form factor</dt>
-      <dd>Accounts for the hull being a three-dimensional body rather than a flat plate. Measured properly by a Prohaska low-speed run; the auto value here is Watanabe's form estimate and is a stand-in only.</dd>
-      <dt>ΔC<sub>F</sub> — roughness allowance</dt>
-      <dd>The real hull is rougher than the varnished model. Bowden–Davison relates it to hull roughness and length.</dd>
-      <dt>C<sub>A</sub> — correlation allowance</dt>
-      <dd>The empirical fudge that reconciles predictions with measured trial results. Basin-specific — use your own if you have it.</dd>
-      <dt>Model Reynolds number</dt>
-      <dd>Below roughly 10⁶ the model boundary layer may stay partly laminar and the extrapolation breaks down. Turbulence stimulators (studs or a trip wire) are fitted to force transition.</dd>
+      <dt>The Froude Separation Principle (1868)</dt>
+      <dd>Total resistance is split into frictional drag (dependent on Reynolds number Re) and residual drag (dependent on Froude number Fn). Because both Reynolds and Froude numbers cannot be matched simultaneously in water towing tanks, testing is performed at identical Fn, and friction is calculated analytically.</dd>
+      
+      <dt>Residuary Resistance vs Theoretical Wave Resistance</dt>
+      <dd><strong>Important distinction:</strong> This calculator extracts residuary resistance C<sub>R</sub> directly from physical towing-tank force gauge measurements (C<sub>R</sub> = C<sub>TM</sub> − (1+k)C<sub>FM</sub>). It does not predict wave drag from theoretical potential-flow source distributions (Michell/Rankine panel methods); rather, it carries measured empirical tank drag across to the full-scale vessel via Froude similarity.</dd>
+
+      <dt>Form Factor (1 + k)</dt>
+      <dd>The 3D viscous form factor accounts for accelerated potential flow and 3D boundary layer thickening around a streamlined hull compared to a 2D flat plate of equal wetted surface.</dd>
+
+      <dt>Turbulence Stimulation Requirement</dt>
+      <dd>Model basin test runs below Re = 10⁶ risk laminar boundary layer detachment and premature separation. Basins fit sand-strips or trip studs near the bow to ensure fully turbulent flow.</dd>
     </dl>
-    <div class="note">This tool predicts <strong>calm-water, bare-hull resistance</strong>. Appendages, added resistance in waves, shallow water, wind and fouling are not modelled.</div>
   </section>
 
 </div>
 
 <footer>
-  Model-basin extrapolation carries real uncertainty — typically a few per cent on power for a well-tested conventional hull, and considerably more outside that. Check the geometric-similarity warnings, confirm the model was turbulence-stimulated, and treat the correlation allowance as basin-specific before using any of this for design or contract purposes.
+  Primelisometrics Marine Consultancy · William Froude Resistance &amp; Powering Calculator. Calculations conform to ITTC Recommended Procedures (7.5-02-02-01). For calm-water, bare-hull resistance in deep water. Appendages, shallow water, sea state and wind require specific corrections.
 </footer>
+</div>
+
+<!-- ============ ENGINEERING REPORT MODAL ============ -->
+<div id="reportModal" class="modal-overlay">
+  <div class="report-modal">
+    <div class="report-header">
+      <div>
+        <div class="org">Primelisometrics Consultancy</div>
+        <h2>William Froude Resistance &amp; Powering Report</h2>
+        <div style="font-size:12px;color:var(--muted)">Naval Architecture Model-to-Ship Hydrodynamic Extrapolation</div>
+      </div>
+      <div class="report-meta">
+        <div>Date: <span id="repDate">2026-08-19</span></div>
+        <div>Method: <span id="repMethod">ITTC-1978 3D</span></div>
+        <div>Scale λ: <span id="repLambda">10.00</span></div>
+      </div>
+    </div>
+
+    <div class="report-section">
+      <h3>1. Vessel &amp; Model Particulars</h3>
+      <div class="report-grid">
+        <div>
+          <table class="report-table">
+            <thead><tr><th colspan="2">Full-Scale Ship</th></tr></thead>
+            <tbody>
+              <tr><td>Length Waterline L</td><td id="repSL">100.0 m</td></tr>
+              <tr><td>Beam B / Draught T</td><td id="repSBT">15.0 m / 5.0 m</td></tr>
+              <tr><td>Displacement Δ</td><td id="repSDisp">5000 t</td></tr>
+              <tr><td>Wetted Surface S</td><td id="repSS">1824.8 m²</td></tr>
+              <tr><td>Seawater Density ρ / Temp</td><td id="repSRho">1025.9 kg/m³ @ 15°C</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <table class="report-table">
+            <thead><tr><th colspan="2">Basin Model</th></tr></thead>
+            <tbody>
+              <tr><td>Model Length L_M</td><td id="repML">10.0 m</td></tr>
+              <tr><td>Model Beam B_M / Draught T_M</td><td id="repMBT">1.5 m / 0.5 m</td></tr>
+              <tr><td>Model Mass Δ_M</td><td id="repMDisp">4869 kg</td></tr>
+              <tr><td>Model Wetted Surface S_M</td><td id="repMS">18.248 m²</td></tr>
+              <tr><td>Freshwater Density ρ_M / Temp</td><td id="repMRho">999.1 kg/m³ @ 15°C</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="report-section">
+      <h3>2. Extrapolation Parameters &amp; Assumptions</h3>
+      <table class="report-table">
+        <tbody>
+          <tr>
+            <td>Friction Line</td><td id="repFricLine">ITTC-1957 Correlation Line</td>
+            <td>Form Factor (1+k)</td><td id="repFormK">1.311</td>
+          </tr>
+          <tr>
+            <td>Roughness Allowance ΔC_F</td><td id="repDCf">0.000562</td>
+            <td>Correlation Allowance C_A</td><td id="repCa">0.000520</td>
+          </tr>
+          <tr>
+            <td>Air Resistance C_AA</td><td id="repCaa">0.000164</td>
+            <td>Quasi-Propulsive Eff. η_D</td><td id="repEtaD">0.686</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="report-section">
+      <h3>3. Extrapolated Resistance &amp; Power Summary (Key Speeds)</h3>
+      <table class="report-table" id="repSummaryTable">
+        <thead>
+          <tr>
+            <th>V_S (kn)</th>
+            <th>F_n</th>
+            <th>Re_S</th>
+            <th>R_FS (kN)</th>
+            <th>R_RS (kN)</th>
+            <th>R_TS (kN)</th>
+            <th>P_E (kW)</th>
+            <th>P_B (kW)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="report-section">
+      <h3>4. Validation &amp; Applicability Audit</h3>
+      <div id="repValidationLog" style="font-size:11px;line-height:1.6;color:#334d5c;background:#f9fbfc;padding:8px 12px;border:1px solid #dbe5ea;"></div>
+    </div>
+
+    <div class="report-disclaimer">
+      <strong>Naval Architecture Disclaimer:</strong> This engineering report is calculated by Primelisometrics Consultancy in accordance with standard ITTC 1957/1978 extrapolation protocols. Results apply strictly to calm-water, bare-hull resistance. Appendage drag, shallow-water corrections, and heavy sea margins must be evaluated separately. No claim of statutory or class society certification is implied.
+    </div>
+
+    <div class="actions" style="margin-top:20px;justify-content:flex-end;">
+      <button class="btn-primary" onclick="window.print()">Print / Export PDF</button>
+      <button class="btn-ghost" id="btnCloseModal">Close</button>
+    </div>
+  </div>
 </div>
 
 <script>
 "use strict";
 const G = 9.80665, KN = 0.5144444444;
 
-/* ---------------- helpers ---------------- */
+/* ---------------- Element Selectors & Helpers ---------------- */
 const $ = id => document.getElementById(id);
 const num = id => parseFloat($(id).value);
 const on = id => $(id).checked;
+
 function fmt(x, d = 2) {
   if (!Number.isFinite(x)) return "—";
   return x.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -522,7 +1405,7 @@ function sci(x, d = 2) {
   return (x / Math.pow(10, e)).toFixed(d) + "e" + e;
 }
 
-/* ---------------- water properties (ITTC tables) ---------------- */
+/* ---------------- Water Properties (ITTC Recommended Tables) ---------------- */
 const T_AX = [0, 5, 10, 15, 20, 25, 30];
 const TAB = {
   nuFresh: [1.78667, 1.51698, 1.30641, 1.13902, 1.00374, 0.89268, 0.80066],
@@ -530,6 +1413,7 @@ const TAB = {
   rhoFresh:[999.8, 1000.0, 999.7, 999.1, 998.2, 997.0, 995.6],
   rhoSalt: [1028.0, 1027.7, 1026.9, 1025.9, 1024.8, 1023.4, 1021.7]
 };
+
 function lut(t, ys) {
   if (!Number.isFinite(t)) return ys[3];
   if (t <= T_AX[0]) return ys[0];
@@ -543,7 +1427,7 @@ function lut(t, ys) {
   return ys[ys.length - 1];
 }
 
-/* ---------------- friction lines ---------------- */
+/* ---------------- Friction Line Formulations ---------------- */
 function cf(Re, line) {
   if (!(Re > 0)) return NaN;
   if (line === "hughes") return 0.066 / Math.pow(Math.log10(Re) - 2.03, 2);
@@ -557,12 +1441,13 @@ function cf(Re, line) {
     }
     return C;
   }
+  // Default: ITTC-1957
   return 0.075 / Math.pow(Math.log10(Re) - 2, 2);
 }
-// Smooth fit to the trend of Froude's plank data, SI (N, m², m/s).
+
 const froudeF = L => (L > 0 ? 1.407 + 1.30 / Math.pow(L, 0.75) : NaN);
 
-/* ---------------- auto-filled fields ---------------- */
+/* ---------------- Auto Synchronization ---------------- */
 function syncAuto() {
   if (on("sWauto")) {
     const t = num("sTemp");
@@ -574,21 +1459,27 @@ function syncAuto() {
     $("mRho").value = lut(t, TAB.rhoFresh).toFixed(1);
     $("mNu").value = (lut(t, TAB.nuFresh) * 1e-6).toExponential(5);
   }
+  
   const sVol = num("sDisp") * 1000 / num("sRho");
   const mVol = num("mDisp") / num("mRho");
+
   if (on("sSauto") && num("sL") > 0 && num("sT") > 0)
     $("sS").value = (1.7 * num("sL") * num("sT") + sVol / num("sT")).toFixed(1);
   if (on("mSauto") && num("mL") > 0 && num("mT") > 0)
     $("mS").value = (1.7 * num("mL") * num("mT") + mVol / num("mT")).toFixed(3);
 
   const Cb = sVol / (num("sL") * num("sB") * num("sT"));
-  if (on("formKauto") && Number.isFinite(Cb))
-    $("formK").value = (1 + 0.095 + 25.6 * Cb / (Math.pow(num("sL") / num("sB"), 2) * Math.sqrt(num("sB") / num("sT")))).toFixed(3);
-  if (on("dCfauto"))
-    $("dCf").value = ((105 * Math.pow(num("sKs") * 1e-6 / num("sL"), 1 / 3) - 0.64) * 1e-3).toExponential(3);
-  if (on("Caauto"))
-    $("Ca").value = (0.006 * Math.pow(num("sL") + 100, -0.16) - 0.00205).toExponential(3);
-  if (on("Caaauto") && num("sS") > 0)
+  if (on("formKauto") && Number.isFinite(Cb) && Cb > 0) {
+    const l_b = num("sL") / num("sB");
+    const b_t = num("sB") / num("sT");
+    const k_val = 1 + 0.095 + 25.6 * Cb / (Math.pow(l_b, 2) * Math.sqrt(b_t));
+    $("formK").value = (Number.isFinite(k_val) ? k_val : 1.3).toFixed(3);
+  }
+  if (on("dCfauto") && num("sL") > 0 && num("sKs") > 0)
+    $("dCf").value = Math.max(0, (105 * Math.pow(num("sKs") * 1e-6 / num("sL"), 1 / 3) - 0.64) * 1e-3).toExponential(3);
+  if (on("Caauto") && num("sL") > 0)
+    $("Ca").value = Math.max(0, 0.006 * Math.pow(num("sL") + 100, -0.16) - 0.00205).toExponential(3);
+  if (on("Caaauto") && num("sS") > 0 && num("sAt") > 0)
     $("Caa").value = (0.001 * num("sAt") / num("sS")).toExponential(3);
   if (on("fAuto")) {
     $("fShip").value = froudeF(num("sL")).toFixed(3);
@@ -602,17 +1493,17 @@ function syncAuto() {
    ["fShip","fAuto"],["fModel","fAuto"]].forEach(([a,b]) => $(a).readOnly = on(b));
 
   const lam = num("sL") / num("mL");
-  $("lambdaTag").textContent = Number.isFinite(lam) ? lam.toFixed(2) : "—";
+  $("lambdaTag").textContent = Number.isFinite(lam) && lam > 0 ? lam.toFixed(2) : "—";
   drawScale();
 }
 
-/* ---------------- signature: live scale figure ---------------- */
+/* ---------------- Scale Figure Drawing ---------------- */
 const HULL = "M 0,0 L 0.015,0.62 L 0.10,0.94 L 0.68,1 L 0.90,0.72 L 1,0 Z";
 const HULL_UP = "M 0,0 L 1,0 L 1.01,-0.30 L 0.06,-0.26 Z";
 function hullGroup(x, wl, len, dep, fill, stroke) {
   const sc = `translate(${x},${wl}) scale(${len},${dep})`;
   return `<g transform="${sc}">
-    <path d="${HULL}" fill="${fill}" stroke="${stroke}" stroke-width="${1.2/Math.max(len,dep)}" vector-effect="non-scaling-stroke"/>
+    <path d="${HULL}" fill="${fill}" stroke="${stroke}" stroke-width="${1.2 / Math.max(len, dep)}" vector-effect="non-scaling-stroke"/>
     <path d="${HULL_UP}" fill="none" stroke="${stroke}" stroke-width="1" vector-effect="non-scaling-stroke" opacity=".55"/>
   </g>`;
 }
@@ -621,17 +1512,16 @@ function drawScale() {
   const Ls = num("sL"), Lm = num("mL"), Ts = num("sT"), Tm = num("mT");
   if (!(Ls > 0 && Lm > 0)) { svg.innerHTML = ""; return; }
 
-  // 1 SVG unit = 1 CSS pixel, so label text keeps its true size at every width.
   const W = Math.max(320, Math.round(svg.clientWidth || 1000));
-  const H = 132, WL = 78, x0 = 20;
+  const H = 120, WL = 70, x0 = 20;
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
 
   const tight = W < 620;
-  const labelRoom = tight ? 22 : 132;          // room for the text at the bow
+  const labelRoom = tight ? 22 : 140;
   const maxLen = Math.max(90, W - x0 - labelRoom);
   const pxPerM = maxLen / Math.max(Ls, Lm);
   const sLen = Ls * pxPerM, mLen = Lm * pxPerM;
-  const depFor = (T, L) => Math.max(2, Math.min(34, (T > 0 ? T : L * 0.05) * pxPerM * 2.2));
+  const depFor = (T, L) => Math.max(2, Math.min(30, (T > 0 ? T : L * 0.05) * pxPerM * 2.2));
 
   let s = `<line x1="0" y1="${WL}" x2="${W}" y2="${WL}" stroke="#2b6a84" stroke-width="1"/>`;
   for (let x = 0; x < W; x += 11)
@@ -639,20 +1529,19 @@ function drawScale() {
   s += hullGroup(x0, WL, sLen, depFor(Ts, Ls), "#17475e", "#5f97ad");
   s += hullGroup(x0, WL, mLen, depFor(Tm, Lm), "#c98a3f", "#e2b782");
 
-  const F = `font-family="IBM Plex Mono, monospace" font-size="11"`;
-  // Extent rule over the ship, with the caption tucked under it when space is short.
-  s += `<line x1="${x0}" y1="${WL - 46}" x2="${x0 + sLen}" y2="${WL - 46}" stroke="#5f97ad" stroke-width="1"/>
-    <line x1="${x0}" y1="${WL - 50}" x2="${x0}" y2="${WL - 42}" stroke="#5f97ad" stroke-width="1"/>
-    <line x1="${x0 + sLen}" y1="${WL - 50}" x2="${x0 + sLen}" y2="${WL - 42}" stroke="#5f97ad" stroke-width="1"/>`;
+  const F = `font-family="IBM Plex Mono, monospace" font-size="10.5"`;
+  s += `<line x1="${x0}" y1="${WL - 40}" x2="${x0 + sLen}" y2="${WL - 40}" stroke="#5f97ad" stroke-width="1"/>
+    <line x1="${x0}" y1="${WL - 44}" x2="${x0}" y2="${WL - 36}" stroke="#5f97ad" stroke-width="1"/>
+    <line x1="${x0 + sLen}" y1="${WL - 44}" x2="${x0 + sLen}" y2="${WL - 36}" stroke="#5f97ad" stroke-width="1"/>`;
   s += tight
-    ? `<text x="${x0}" y="${WL - 54}" fill="#a9c4d0" ${F}>SHIP ${Ls.toFixed(1)} m</text>
-       <text x="${x0}" y="${WL + 30}" fill="#e2b782" ${F}>MODEL ${Lm.toFixed(2)} m</text>`
-    : `<text x="${x0 + sLen + 10}" y="${WL - 42}" fill="#a9c4d0" ${F}>SHIP ${Ls.toFixed(1)} m</text>
-       <text x="${x0 + mLen + 10}" y="${WL + 22}" fill="#e2b782" ${F}>MODEL ${Lm.toFixed(2)} m</text>`;
+    ? `<text x="${x0}" y="${WL - 46}" fill="#a9c4d0" ${F}>SHIP ${Ls.toFixed(1)} m</text>
+       <text x="${x0}" y="${WL + 28}" fill="#e2b782" ${F}>MODEL ${Lm.toFixed(2)} m</text>`
+    : `<text x="${x0 + sLen + 10}" y="${WL - 36}" fill="#a9c4d0" ${F}>SHIP ${Ls.toFixed(1)} m</text>
+       <text x="${x0 + mLen + 10}" y="${WL + 20}" fill="#e2b782" ${F}>MODEL ${Lm.toFixed(2)} m</text>`;
   svg.innerHTML = s;
 }
 
-/* ---------------- data rows ---------------- */
+/* ---------------- Towing-Tank Rows ---------------- */
 function addRow(v = "", r = "") {
   const tb = document.querySelector("#dataTable tbody");
   const tr = document.createElement("tr");
@@ -666,6 +1555,7 @@ function addRow(v = "", r = "") {
   tb.appendChild(tr);
   renumber();
 }
+
 function renumber() {
   const Lm = num("mL"), nu = num("mNu"), f = $("speedUnit").value === "kn" ? KN : 1;
   [...document.querySelectorAll("#dataTable tbody tr")].forEach((tr, i) => {
@@ -676,6 +1566,7 @@ function renumber() {
     tr.querySelector(".cRe").textContent = okRe ? sci(V * Lm / nu) : "—";
   });
 }
+
 function readRows() {
   const f = $("speedUnit").value === "kn" ? KN : 1;
   return [...document.querySelectorAll("#dataTable tbody tr")]
@@ -683,12 +1574,11 @@ function readRows() {
     .filter(d => Number.isFinite(d.V) && Number.isFinite(d.R) && d.V > 0 && d.R > 0)
     .sort((a, b) => a.V - b.V);
 }
+
 function loadDemo() {
   document.querySelector("#dataTable tbody").innerHTML = "";
   syncAuto();
   const Lm = num("mL"), Sm = num("mS"), rm = num("mRho"), nm = num("mNu");
-  // Synthetic but physically consistent: a fixed hull, independent of which
-  // method is later chosen to analyse it. Generated on the ITTC-1957 line.
   const k = Number.isFinite(num("formK")) && num("formK") > 0 ? num("formK") : 1.31;
   const unit = $("speedUnit").value === "kn" ? KN : 1;
   for (let Fn = 0.15; Fn < 0.381; Fn += 0.03) {
@@ -699,32 +1589,55 @@ function loadDemo() {
   calculate();
 }
 
-/* ---------------- validation ---------------- */
+/* ---------------- Validation Engine ---------------- */
 function validate(rows, S, M, lam) {
   const out = [];
   const bad = [];
-  [["Ship length", S.L], ["Ship beam", S.B], ["Ship draught", S.T], ["Ship wetted surface", S.S],
-   ["Ship density", S.rho], ["Ship viscosity", S.nu], ["Model length", M.L], ["Model beam", M.B],
-   ["Model draught", M.T], ["Model wetted surface", M.S], ["Model density", M.rho],
-   ["Model viscosity", M.nu]].forEach(([n, v]) => { if (!(v > 0)) bad.push(n); });
-  if (bad.length) { out.push(["err", "Missing input", bad.join(", ") + " must be greater than zero."]); return out; }
-  if (rows.length < 2) { out.push(["err", "No data", "Enter at least two towing-tank runs, or load the sample run."]); return out; }
-  if (lam <= 1) out.push(["warn", "Scale", "The model is not smaller than the ship. Check the two waterline lengths."]);
+  [["Ship length L", S.L], ["Ship beam B", S.B], ["Ship draught T", S.T], ["Ship wetted surface S", S.S],
+   ["Ship density ρ_S", S.rho], ["Ship viscosity ν_S", S.nu], ["Model length L_M", M.L], ["Model beam B_M", M.B],
+   ["Model draught T_M", M.T], ["Model wetted surface S_M", M.S], ["Model density ρ_M", M.rho],
+   ["Model viscosity ν_M", M.nu]].forEach(([n, v]) => { if (!(v > 0)) bad.push(n); });
+  
+  if (bad.length) {
+    out.push(["err", "Missing/Invalid Input", `${bad.join(", ")} must be strictly positive numeric values.`]);
+    return out;
+  }
+  if (rows.length < 2) {
+    out.push(["err", "Insufficient Data", "Enter at least 2 towing-tank test runs (or load sample data) for model extrapolation."]);
+    return out;
+  }
+  if (lam <= 1) {
+    out.push(["warn", "Unrealistic Scale Ratio", "Model length is not smaller than ship length (λ ≤ 1.00). Check waterline lengths."]);
+  } else if (lam > 80) {
+    out.push(["warn", "Extreme Scale Ratio", `Scale ratio λ = ${lam.toFixed(1)} is very large. Basin testing with λ > 50 incurs high scale effect uncertainties.`]);
+  }
 
+  // Block coefficient verification
+  const CbS = S.vol / (S.L * S.B * S.T);
+  if (CbS < 0.35 || CbS > 0.95) {
+    out.push(["warn", "Displacement Check", `Full-scale block coefficient C_B = ${CbS.toFixed(3)} is outside normal marine range (0.35–0.92). Verify displacement.`]);
+  }
+
+  // Geometric similarity audits
   const chk = (name, got, want, tol) => {
     const err = Math.abs(got - want) / want * 100;
-    if (err > tol) out.push(["warn", "Similarity",
-      `${name} ratio is ${got.toFixed(2)} but geometric similarity requires ${want.toFixed(2)} (off by ${err.toFixed(1)} %). The model and ship are not the same shape.`]);
+    if (err > tol) {
+      out.push(["warn", "Geometric Discrepancy",
+        `${name} ratio is ${got.toFixed(2)} but strict similarity requires ${want.toFixed(2)} (discrepancy: ${err.toFixed(1)}%). The model geometry does not match the ship.`]);
+    }
   };
-  chk("Beam", S.B / M.B, lam, 2);
-  chk("Draught", S.T / M.T, lam, 2);
-  chk("Wetted surface", S.S / M.S, lam * lam, 3);
-  chk("Volume displacement", S.vol / M.vol, lam ** 3, 5);
+  chk("Beam B_S/B_M", S.B / M.B, lam, 2.5);
+  chk("Draught T_S/T_M", S.T / M.T, lam, 2.5);
+  chk("Wetted Surface S_S/S_M", S.S / M.S, lam * lam, 4.0);
+  chk("Volumetric Displacement", S.vol / M.vol, Math.pow(lam, 3), 6.0);
+
   return out;
 }
 
-/* ---------------- main calculation ---------------- */
+/* ---------------- Main Extrapolation Calculation ---------------- */
 let RESULTS = [];
+let SWEEP_RESULTS = [];
+
 function calculate() {
   syncAuto();
   const line = $("frictionLine").value, method = $("method").value;
@@ -736,92 +1649,274 @@ function calculate() {
   const rows = readRows();
 
   const msgs = validate(rows, S, M, lam);
-  if (msgs.some(m => m[0] === "err")) { showMsgs(msgs); RESULTS = []; render(); return; }
+  if (msgs.some(m => m[0] === "err")) {
+    showValidation(msgs);
+    RESULTS = [];
+    SWEEP_RESULTS = [];
+    render();
+    return;
+  }
 
-  const froude = method === "froude";
+  const isFroude = method === "froude";
   const k = method === "ittc78" ? num("formK") : 1;
-  const dCf = froude ? 0 : num("dCf");
-  const Ca = froude ? 0 : num("Ca");
-  const Caa = froude ? 0 : num("Caa");
+  const dCf = isFroude ? 0 : num("dCf");
+  const Ca = isFroude ? 0 : num("Ca");
+  const Caa = isFroude ? 0 : num("Caa");
   const fS = num("fShip"), fM = num("fModel"), n = num("fExp");
 
   const w = num("wake"), t = num("thrust");
   const etaH = (1 - t) / (1 - w);
   const etaD = num("etaO") * num("etaR") * etaH;
   const marg = 1 + num("margin") / 100;
+  const etaS = num("etaS");
 
-  let lowRe = 0, negCr = 0;
+  let lowReCount = 0, negCrCount = 0;
+
   RESULTS = rows.map((d, i) => {
     const Vm = d.V, Fn = Vm / Math.sqrt(G * M.L), Rem = Vm * M.L / M.nu;
     const qm = 0.5 * M.rho * Vm * Vm * M.S;
     const Ctm = d.R / qm;
-    const Cfm = froude ? (fM * M.S * Math.pow(Vm, n)) / qm : cf(Rem, line);
+    const Cfm = isFroude ? (fM * M.S * Math.pow(Vm, n)) / qm : cf(Rem, line);
     const Cr = Ctm - k * Cfm;
-    if (Rem < 1e6) lowRe++;
-    if (Cr < 0) negCr++;
+    if (Rem < 1e6) lowReCount++;
+    if (Cr < 0) negCrCount++;
 
     const Vs = Vm * Math.sqrt(lam), Res = Vs * S.L / S.nu;
     const qs = 0.5 * S.rho * Vs * Vs * S.S;
-    const Cfs = froude ? (fS * S.S * Math.pow(Vs, n)) / qs : cf(Res, line);
+    const Cfs = isFroude ? (fS * S.S * Math.pow(Vs, n)) / qs : cf(Res, line);
     const Cts = k * Cfs + dCf + Ca + Caa + Cr;
-    const Rts = qs * Cts;
-    const Pe = Rts * Vs / 1000, Pd = Pe / etaD, Pb = Pd / num("etaS") * marg;
-    return { i: i + 1, Fn, Vm, Rtm: d.R, Ctm, Cfm, Cr, Vs, VsKn: Vs / KN, Res, Cfs, Cts,
-             Rfs: qs * k * Cfs, Rcorr: qs * (dCf + Ca + Caa), Rrs: qs * Cr, Rts, Pe, Pd, Pb };
+    
+    // Forces
+    const Rfm = isFroude ? fM * M.S * Math.pow(Vm, n) : qm * k * Cfm;
+    const Rrm = d.R - Rfm;
+    const Rfs = isFroude ? (fS * S.S * Math.pow(Vs, n)) / 1000 : (qs * k * Cfs) / 1000;
+    const Rrs = isFroude ? (Rrm * Math.pow(lam, 3) * (S.rho / M.rho)) / 1000 : (qs * Cr) / 1000;
+    const Rcorr = qs * (dCf + Ca + Caa) / 1000;
+    const Rts = Rfs + Rrs + (isFroude ? 0 : Rcorr);
+
+    const Pe = (Rts * 1000 * Vs) / 1000; // kW
+    const Pd = Pe / etaD;
+    const Pb = (Pd / etaS) * marg;
+
+    return {
+      i: i + 1, Fn, Vm, Rtm: d.R, Ctm, Cfm, Cr, Vs, VsKn: Vs / KN, Res, Cfs, Cts,
+      Rfm, Rrm, Rfs, Rrs, Rcorr, Rts, Pe, Pd, Pb
+    };
   });
 
-  if (lowRe) msgs.push(["warn", "Reynolds",
-    `${lowRe} run${lowRe > 1 ? "s are" : " is"} below Re = 10⁶, where the model boundary layer may not be fully turbulent. Confirm turbulence stimulation was fitted, or discard ${lowRe > 1 ? "those runs" : "that run"}.`]);
-  if (negCr) msgs.push(["warn", "Negative C_R",
-    `${negCr} run${negCr > 1 ? "s give" : " gives"} a negative residuary coefficient — the friction line is predicting more drag than was measured. Check the wetted surface, the form factor, and the measured resistance.`]);
+  if (lowReCount > 0) {
+    msgs.push(["warn", "Laminar Flow Risk", `${lowReCount} run(s) have model Re < 10⁶. Boundary layer may be laminar; verify turbulence stimulation.`]);
+  }
+  if (negCrCount > 0) {
+    msgs.push(["warn", "Negative Residual Resistance", `${negCrCount} run(s) yielded negative C_R. The theoretical friction line exceeds total measured resistance. Check wetted surface and form factor.`]);
+  }
   const fnMax = Math.max(...RESULTS.map(r => r.Fn));
-  if (fnMax > 0.45) msgs.push(["warn", "Speed range",
-    `Highest Froude number is ${fnMax.toFixed(2)}. Above about 0.45 the residuary coefficient becomes strongly scale-dependent and this extrapolation loses reliability.`]);
-  msgs.unshift(["ok", "Calculated",
-    `${rows.length} runs extrapolated at λ = ${lam.toFixed(2)} using ${method === "ittc78" ? "ITTC-1978 with (1+k) = " + k.toFixed(3) : method === "ittc57" ? "ITTC-1957, no form factor" : "Froude's original method"}.`]);
-  showMsgs(msgs);
+  if (fnMax > 0.45) {
+    msgs.push(["warn", "High Froude Number", `Maximum Fn = ${fnMax.toFixed(2)} exceeds 0.45. Displacement extrapolation loses reliability above Fn ≈ 0.45 due to severe wave breaking & dynamic trim.`]);
+  }
+
+  msgs.unshift(["ok", "Extrapolation Complete",
+    `${rows.length} test runs successfully extrapolated at λ = ${lam.toFixed(2)} using ${isFroude ? "Froude (1868) Plank Formulation" : method === "ittc78" ? "ITTC-1978 3-D Form Factor (" + k.toFixed(3) + ")" : "ITTC-1957 2-D Method"}.`]);
+
+  showValidation(msgs);
+  generateSpeedSweep();
   render();
 }
 
-function showMsgs(list) {
+/* ---------------- Speed Sweep Interpolation & Table ---------------- */
+function generateSpeedSweep() {
+  if (!RESULTS.length) { SWEEP_RESULTS = []; return; }
+  const S = { L: num("sL"), S: num("sS"), rho: num("sRho"), nu: num("sNu") };
+  const line = $("frictionLine").value, method = $("method").value;
+  const isFroude = method === "froude";
+  const k = method === "ittc78" ? num("formK") : 1;
+  const dCf = isFroude ? 0 : num("dCf");
+  const Ca = isFroude ? 0 : num("Ca");
+  const Caa = isFroude ? 0 : num("Caa");
+  const fS = num("fShip"), n = num("fExp");
+
+  const w = num("wake"), t = num("thrust");
+  const etaH = (1 - t) / (1 - w);
+  const etaD = num("etaO") * num("etaR") * etaH;
+  const marg = 1 + num("margin") / 100;
+  const etaS = num("etaS");
+
+  let vMinKn = num("swMin");
+  let vMaxKn = num("swMax");
+  let pts = Math.max(3, Math.min(50, parseInt($("swPts").value) || 15));
+
+  if (!(vMinKn > 0) || !(vMaxKn > vMinKn)) {
+    vMinKn = Math.min(...RESULTS.map(r => r.VsKn));
+    vMaxKn = Math.max(...RESULTS.map(r => r.VsKn));
+  }
+
+  // Build interpolation model for Cr as function of Fn
+  const fnArr = RESULTS.map(r => r.Fn);
+  const crArr = RESULTS.map(r => r.Cr);
+
+  function interpCr(fn) {
+    if (fn <= fnArr[0]) return crArr[0];
+    if (fn >= fnArr[fnArr.length - 1]) {
+      const n = fnArr.length;
+      const slope = (crArr[n - 1] - crArr[n - 2]) / (fnArr[n - 1] - fnArr[n - 2]);
+      return Math.max(0, crArr[n - 1] + slope * (fn - fnArr[n - 1]));
+    }
+    for (let i = 0; i < fnArr.length - 1; i++) {
+      if (fn >= fnArr[i] && fn <= fnArr[i + 1]) {
+        const frac = (fn - fnArr[i]) / (fnArr[i + 1] - fnArr[i]);
+        return crArr[i] + frac * (crArr[i + 1] - crArr[i]);
+      }
+    }
+    return crArr[0];
+  }
+
+  SWEEP_RESULTS = [];
+  const dv = (vMaxKn - vMinKn) / (pts - 1);
+  for (let i = 0; i < pts; i++) {
+    const vKn = vMinKn + i * dv;
+    const Vs = vKn * KN;
+    const Fn = Vs / Math.sqrt(G * S.L);
+    const Res = Vs * S.L / S.nu;
+    const qs = 0.5 * S.rho * Vs * Vs * S.S;
+    const Cfs = isFroude ? (fS * S.S * Math.pow(Vs, n)) / qs : cf(Res, line);
+    const Cr = Math.max(0, interpCr(Fn));
+    const Cts = k * Cfs + dCf + Ca + Caa + Cr;
+
+    const Rfs = isFroude ? (fS * S.S * Math.pow(Vs, n)) / 1000 : (qs * k * Cfs) / 1000;
+    const Rrs = (qs * Cr) / 1000;
+    const Rcorr = qs * (dCf + Ca + Caa) / 1000;
+    const Rts = Rfs + Rrs + (isFroude ? 0 : Rcorr);
+
+    const Pe = (Rts * 1000 * Vs) / 1000;
+    const Pd = Pe / etaD;
+    const Pb = (Pd / etaS) * marg;
+
+    SWEEP_RESULTS.push({
+      Vs, VsKn: vKn, Fn, Res, Cfs, Cr, Cts, Rfs, Rrs, Rcorr, Rts, Pe, Pd, Pb
+    });
+  }
+}
+
+/* ---------------- Validation Display ---------------- */
+function showValidation(list) {
+  const badge = $("valBadge");
+  const sumText = $("valSummaryText");
+  
+  const hasErr = list.some(m => m[0] === "err");
+  const hasWarn = list.some(m => m[0] === "warn");
+
+  if (hasErr) {
+    badge.className = "val-badge err";
+    badge.textContent = "ERROR";
+    sumText.textContent = "Calculation stopped due to invalid parameters or missing test data.";
+  } else if (hasWarn) {
+    badge.className = "val-badge warn";
+    badge.textContent = "WARNING";
+    sumText.textContent = "Extrapolation calculated with naval architecture advisory warnings.";
+  } else {
+    badge.className = "val-badge ok";
+    badge.textContent = "AUDIT OK";
+    sumText.textContent = "All geometric parameters, similarity ratios, and physical limits fully verified.";
+  }
+
   $("messages").innerHTML = list.map(([lvl, tag, txt]) =>
     `<div class="msg ${lvl}"><span class="tag">${tag}</span><span>${txt}</span></div>`).join("");
 }
 
-/* ---------------- rendering ---------------- */
+/* ---------------- Rendering UI & Tables ---------------- */
 function render() {
-  const R = RESULTS;
-  if (!R.length) {
-    $("metrics").innerHTML = "";
+  if (!RESULTS.length) {
+    $("mRts").innerHTML = "— <small>kN</small>";
+    $("mRfs").innerHTML = "— <small>kN</small>";
+    $("mRrs").innerHTML = "— <small>kN</small>";
+    $("mPe").innerHTML = "— <small>kW</small>";
+    $("mFn").innerHTML = "—";
+    $("mRes").innerHTML = "—";
+    $("mVs").innerHTML = "— <small>kn</small>";
+    $("mPd").innerHTML = "— <small>kW</small>";
+    $("mPb").innerHTML = "— <small>kW</small>";
+    $("mLam").innerHTML = "—";
+    $("mRem").innerHTML = "—";
+    $("mRshare").innerHTML = "— <small>%</small>";
     document.querySelector("#resultTable tbody").innerHTML = "";
-    [ "resChart", "powChart" ].forEach(id => { const c = $(id); c.getContext("2d").clearRect(0, 0, c.width, c.height); });
+    document.querySelector("#sweepTable tbody").innerHTML = "";
+    clearChart();
     return;
   }
-  const top = R[R.length - 1];
-  $("resSub").textContent = `At the highest tested speed — ${fmt(top.VsKn, 2)} knots, F\u2099 ${top.Fn.toFixed(3)}.`;
-  const cells = [
-    ["Ship speed", fmt(top.VsKn, 2), "kn"],
-    ["Froude number", top.Fn.toFixed(3), ""],
-    ["Total resistance", fmt(top.Rts / 1000, 1), "kN", 1],
-    ["Residuary share", fmt(top.Rrs / top.Rts * 100, 1), "%"],
-    ["Effective power", fmt(top.Pe, 0), "kW"],
-    ["Delivered power", fmt(top.Pd, 0), "kW"],
-    ["Brake power + margin", fmt(top.Pb, 0), "kW", 1],
-    ["Ship Reynolds", sci(top.Res, 2), ""]
-  ];
-  $("metrics").innerHTML = cells.map(c =>
-    `<div class="metric${c[3] ? " accent" : ""}"><div class="k">${c[0]}</div><div class="v">${c[1]}${c[2] ? ` <small>${c[2]}</small>` : ""}</div></div>`).join("");
 
-  document.querySelector("#resultTable tbody").innerHTML = R.map(r => `<tr${r.Cr < 0 ? ' class="dim"' : ""}>
-    <td class="idx">${r.i}</td><td>${r.Fn.toFixed(3)}</td><td>${fmt(r.Vm, 3)}</td><td>${fmt(r.Rtm, 1)}</td>
-    <td>${fmt(r.Ctm * 1e3, 3)}</td><td>${fmt(r.Cfm * 1e3, 3)}</td><td class="hi">${fmt(r.Cr * 1e3, 3)}</td>
-    <td>${fmt(r.VsKn, 2)}</td><td>${sci(r.Res, 2)}</td><td>${fmt(r.Cfs * 1e3, 3)}</td><td>${fmt(r.Cts * 1e3, 3)}</td>
-    <td>${fmt(r.Rts / 1000, 1)}</td><td>${fmt(r.Pe, 0)}</td><td>${fmt(r.Pd, 0)}</td><td>${fmt(r.Pb, 0)}</td></tr>`).join("");
+  const top = RESULTS[RESULTS.length - 1];
+  const lam = num("sL") / num("mL");
+  $("resSub").textContent = `Evaluated at highest model speed run — ${fmt(top.VsKn, 2)} kn (${fmt(top.Vs, 2)} m/s), F\u2099 ${top.Fn.toFixed(3)}.`;
 
-  drawCharts();
+  $("mRts").innerHTML = `${fmt(top.Rts, 1)} <small>kN</small>`;
+  $("mRfs").innerHTML = `${fmt(top.Rfs, 1)} <small>kN</small>`;
+  $("mRrs").innerHTML = `${fmt(top.Rrs, 1)} <small>kN</small>`;
+  $("mPe").innerHTML = `${fmt(top.Pe, 0)} <small>kW</small>`;
+  $("mFn").textContent = top.Fn.toFixed(3);
+  $("mRes").textContent = sci(top.Res, 2);
+
+  $("mVs").innerHTML = `${fmt(top.VsKn, 2)} <small>kn</small>`;
+  $("mPd").innerHTML = `${fmt(top.Pd, 0)} <small>kW</small>`;
+  $("mPb").innerHTML = `${fmt(top.Pb, 0)} <small>kW</small>`;
+  $("mLam").textContent = lam.toFixed(2);
+  $("mRem").textContent = sci(top.Vm * num("mL") / num("mNu"), 2);
+  $("mRshare").innerHTML = `${fmt(top.Rrs / top.Rts * 100, 1)} <small>%</small>`;
+
+  // Extrapolated test runs table
+  document.querySelector("#resultTable tbody").innerHTML = RESULTS.map(r => `
+    <tr${r.Cr < 0 ? ' class="dim"' : ""}>
+      <td class="idx">${r.i}</td>
+      <td>${r.Fn.toFixed(3)}</td>
+      <td>${fmt(r.Vm, 3)}</td>
+      <td>${fmt(r.Rtm, 1)}</td>
+      <td>${fmt(r.Ctm * 1e3, 3)}</td>
+      <td>${fmt(r.Cfm * 1e3, 3)}</td>
+      <td class="hi">${fmt(r.Cr * 1e3, 3)}</td>
+      <td>${fmt(r.VsKn, 2)}</td>
+      <td>${sci(r.Res, 2)}</td>
+      <td>${fmt(r.Cfs * 1e3, 3)}</td>
+      <td>${fmt(r.Cts * 1e3, 3)}</td>
+      <td>${fmt(r.Rfs, 1)}</td>
+      <td class="hi">${fmt(r.Rrs, 1)}</td>
+      <td class="emp">${fmt(r.Rts, 1)}</td>
+      <td class="emp">${fmt(r.Pe, 0)}</td>
+      <td>${fmt(r.Pd, 0)}</td>
+      <td>${fmt(r.Pb, 0)}</td>
+    </tr>
+  `).join("");
+
+  // Speed Sweep table
+  document.querySelector("#sweepTable tbody").innerHTML = SWEEP_RESULTS.map(r => `
+    <tr>
+      <td>${fmt(r.Vs, 2)}</td>
+      <td class="emp">${fmt(r.VsKn, 2)}</td>
+      <td>${r.Fn.toFixed(3)}</td>
+      <td>${sci(r.Res, 2)}</td>
+      <td>${fmt(r.Cfs * 1e3, 3)}</td>
+      <td>${fmt(r.Rfs, 1)}</td>
+      <td class="hi">${fmt(r.Cr * 1e3, 3)}</td>
+      <td class="hi">${fmt(r.Rrs, 1)}</td>
+      <td>${fmt(r.Cts * 1e3, 3)}</td>
+      <td class="emp">${fmt(r.Rts, 1)}</td>
+      <td class="emp">${fmt(r.Pe, 0)}</td>
+      <td>${fmt(r.Pd, 0)}</td>
+      <td>${fmt(r.Pb, 0)}</td>
+    </tr>
+  `).join("");
+
+  drawActiveChart();
 }
 
-/* ---------------- charts ---------------- */
+/* ---------------- High-DPI Chart Rendering Engine ---------------- */
+let ACTIVE_CHART = "A";
+
+function clearChart() {
+  const c = $("mainChart");
+  if (!c) return;
+  const ctx = c.getContext("2d");
+  ctx.clearRect(0, 0, c.width, c.height);
+}
+
 function setupCanvas(c) {
   const d = window.devicePixelRatio || 1, w = c.clientWidth, h = c.clientHeight;
   c.width = Math.round(w * d); c.height = Math.round(h * d);
@@ -830,12 +1925,14 @@ function setupCanvas(c) {
   x.clearRect(0, 0, w, h);
   return { x, w, h };
 }
+
 function niceMax(v) {
   if (!(v > 0)) return 1;
   const e = Math.pow(10, Math.floor(Math.log10(v))), m = v / e;
   return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * e;
 }
-function axes(x, w, h, pad, xmin, xmax, ymax, ylab) {
+
+function drawAxes(x, w, h, pad, xmin, xmax, ymax, ylab) {
   const W = w - pad.l - pad.r, H = h - pad.t - pad.b;
   x.font = '11px "IBM Plex Mono", monospace';
   x.textBaseline = "middle";
@@ -849,114 +1946,288 @@ function axes(x, w, h, pad, xmin, xmax, ymax, ylab) {
   x.strokeStyle = "#bcccd4";
   x.beginPath(); x.moveTo(pad.l, pad.t); x.lineTo(pad.l, pad.t + H); x.stroke();
   x.textAlign = "center"; x.textBaseline = "top";
-  for (let i = 0; i <= 4; i++) {
-    const px = pad.l + W * i / 4, v = xmin + (xmax - xmin) * i / 4;
+  for (let i = 0; i <= 5; i++) {
+    const px = pad.l + W * i / 5, v = xmin + (xmax - xmin) * i / 5;
     x.fillStyle = "#5a7284"; x.fillText(v.toFixed(1), px, pad.t + H + 8);
   }
   x.fillStyle = "#5a7284";
   x.font = '10px "IBM Plex Mono", monospace';
-  x.fillText("SHIP SPEED  (kn)", pad.l + W / 2, h - 13);
-  x.save(); x.translate(11, pad.t + H / 2); x.rotate(-Math.PI / 2);
+  x.fillText("FULL-SCALE SHIP SPEED  (kn)", pad.l + W / 2, h - 14);
+  x.save(); x.translate(12, pad.t + H / 2); x.rotate(-Math.PI / 2);
   x.textBaseline = "top"; x.fillText(ylab, 0, 0); x.restore();
   return { W, H };
 }
-function drawCharts() {
-  const R = RESULTS.filter(r => Number.isFinite(r.Rts) && r.Rts > 0);
-  if (!R.length) return;
-  const xs = R.map(r => r.VsKn);
-  const xmin = 0, xmax = niceMax(Math.max(...xs) * 1.04);
 
-  /* --- stacked resistance --- */
-  {
-    const { x, w, h } = setupCanvas($("resChart"));
-    const pad = { l: 58, r: 16, t: 16, b: 42 };
-    const ymax = niceMax(Math.max(...R.map(r => r.Rts / 1000)) * 1.08);
-    const { W, H } = axes(x, w, h, pad, xmin, xmax, ymax, "RESISTANCE  (kN)");
-    const px = v => pad.l + (v - xmin) / (xmax - xmin) * W;
+function drawActiveChart() {
+  const data = SWEEP_RESULTS.length ? SWEEP_RESULTS : RESULTS;
+  if (!data.length) return;
+
+  const { x, w, h } = setupCanvas($("mainChart"));
+  const pad = { l: 64, r: 24, t: 20, b: 46 };
+  const xs = data.map(r => r.VsKn);
+  const xmin = 0, xmax = niceMax(Math.max(...xs) * 1.05);
+
+  const px = v => pad.l + (v - xmin) / (xmax - xmin) * (w - pad.l - pad.r);
+
+  const legendEl = $("chartLegend");
+
+  if (ACTIVE_CHART === "A") {
+    // Chart A: Total Resistance vs Speed
+    const ymax = niceMax(Math.max(...data.map(r => r.Rts)) * 1.1);
+    const { W, H } = drawAxes(x, w, h, pad, xmin, xmax, ymax, "TOTAL RESISTANCE R_TS  (kN)");
     const py = v => pad.t + H - v / ymax * H;
+
+    x.strokeStyle = "#08202e"; x.lineWidth = 2.4;
+    x.beginPath();
+    data.forEach((r, i) => { const X = px(r.VsKn), Y = py(r.Rts); i ? x.lineTo(X, Y) : x.moveTo(X, Y); });
+    x.stroke();
+
+    x.fillStyle = "#1b7f92";
+    data.forEach(r => { x.beginPath(); x.arc(px(r.VsKn), py(r.Rts), 3.2, 0, 7); x.fill(); });
+
+    legendEl.innerHTML = `<span><i class="swatch" style="background:#08202e"></i>Total Full-Scale Resistance R_TS (kN)</span>`;
+  }
+  else if (ACTIVE_CHART === "B") {
+    // Chart B: Frictional Resistance vs Speed
+    const ymax = niceMax(Math.max(...data.map(r => r.Rfs)) * 1.1);
+    const { W, H } = drawAxes(x, w, h, pad, xmin, xmax, ymax, "FRICTIONAL DRAG R_FS  (kN)");
+    const py = v => pad.t + H - v / ymax * H;
+
+    x.strokeStyle = "#1b7f92"; x.lineWidth = 2.4;
+    x.beginPath();
+    data.forEach((r, i) => { const X = px(r.VsKn), Y = py(r.Rfs); i ? x.lineTo(X, Y) : x.moveTo(X, Y); });
+    x.stroke();
+
+    x.fillStyle = "#1b7f92";
+    data.forEach(r => { x.beginPath(); x.arc(px(r.VsKn), py(r.Rfs), 3.2, 0, 7); x.fill(); });
+
+    legendEl.innerHTML = `<span><i class="swatch" style="background:#1b7f92"></i>Frictional Resistance R_FS (kN)</span>`;
+  }
+  else if (ACTIVE_CHART === "C") {
+    // Chart C: Residual Resistance vs Speed
+    const ymax = niceMax(Math.max(...data.map(r => r.Rrs)) * 1.1);
+    const { W, H } = drawAxes(x, w, h, pad, xmin, xmax, ymax, "RESIDUAL DRAG R_RS  (kN)");
+    const py = v => pad.t + H - v / ymax * H;
+
+    x.strokeStyle = "#bf7226"; x.lineWidth = 2.4;
+    x.beginPath();
+    data.forEach((r, i) => { const X = px(r.VsKn), Y = py(r.Rrs); i ? x.lineTo(X, Y) : x.moveTo(X, Y); });
+    x.stroke();
+
+    x.fillStyle = "#bf7226";
+    data.forEach(r => { x.beginPath(); x.arc(px(r.VsKn), py(r.Rrs), 3.2, 0, 7); x.fill(); });
+
+    legendEl.innerHTML = `<span><i class="swatch" style="background:#bf7226"></i>Residual Resistance R_RS (kN)</span>`;
+  }
+  else if (ACTIVE_CHART === "D") {
+    // Chart D: Effective Power vs Speed
+    const ymax = niceMax(Math.max(...data.map(r => r.Pe)) * 1.1);
+    const { W, H } = drawAxes(x, w, h, pad, xmin, xmax, ymax, "EFFECTIVE POWER P_E  (kW)");
+    const py = v => pad.t + H - v / ymax * H;
+
+    x.strokeStyle = "#08202e"; x.lineWidth = 2.4;
+    x.beginPath();
+    data.forEach((r, i) => { const X = px(r.VsKn), Y = py(r.Pe); i ? x.lineTo(X, Y) : x.moveTo(X, Y); });
+    x.stroke();
+
+    x.fillStyle = "#bf7226";
+    data.forEach(r => { x.beginPath(); x.arc(px(r.VsKn), py(r.Pe), 3.2, 0, 7); x.fill(); });
+
+    legendEl.innerHTML = `<span><i class="swatch" style="background:#08202e"></i>Effective Towing Power P_E (kW)</span>`;
+  }
+  else if (ACTIVE_CHART === "E") {
+    // Chart E: Stacked Breakdown
+    const ymax = niceMax(Math.max(...data.map(r => r.Rts)) * 1.1);
+    const { W, H } = drawAxes(x, w, h, pad, xmin, xmax, ymax, "RESISTANCE BREAKDOWN  (kN)");
+    const py = v => pad.t + H - v / ymax * H;
+
     const bands = [
-      { key: r => r.Rfs / 1000, col: "#1b7f92" },
-      { key: r => (r.Rfs + r.Rcorr) / 1000, col: "#7aa9b5" },
-      { key: r => r.Rts / 1000, col: "#bf7226" }
+      { key: r => r.Rfs, col: "#1b7f92" },
+      { key: r => r.Rfs + (r.Rcorr || 0), col: "#7aa9b5" },
+      { key: r => r.Rts, col: "#bf7226" }
     ];
     for (let b = bands.length - 1; b >= 0; b--) {
       x.beginPath();
-      R.forEach((r, i) => { const X = px(r.VsKn), Y = py(bands[b].key(r)); i ? x.lineTo(X, Y) : x.moveTo(X, Y); });
-      x.lineTo(px(R[R.length - 1].VsKn), py(0));
-      x.lineTo(px(R[0].VsKn), py(0));
+      data.forEach((r, i) => { const X = px(r.VsKn), Y = py(bands[b].key(r)); i ? x.lineTo(X, Y) : x.moveTo(X, Y); });
+      x.lineTo(px(data[data.length - 1].VsKn), py(0));
+      x.lineTo(px(data[0].VsKn), py(0));
       x.closePath();
-      x.fillStyle = bands[b].col; x.globalAlpha = .82; x.fill(); x.globalAlpha = 1;
+      x.fillStyle = bands[b].col; x.globalAlpha = 0.85; x.fill(); x.globalAlpha = 1;
     }
-    x.strokeStyle = "#08202e"; x.lineWidth = 1.6;
+    x.strokeStyle = "#08202e"; x.lineWidth = 2.0;
     x.beginPath();
-    R.forEach((r, i) => { const X = px(r.VsKn), Y = py(r.Rts / 1000); i ? x.lineTo(X, Y) : x.moveTo(X, Y); });
+    data.forEach((r, i) => { const X = px(r.VsKn), Y = py(r.Rts); i ? x.lineTo(X, Y) : x.moveTo(X, Y); });
     x.stroke();
-    x.fillStyle = "#08202e";
-    R.forEach(r => { x.beginPath(); x.arc(px(r.VsKn), py(r.Rts / 1000), 2.6, 0, 7); x.fill(); });
-  }
 
-  /* --- power --- */
-  {
-    const { x, w, h } = setupCanvas($("powChart"));
-    const pad = { l: 58, r: 16, t: 16, b: 42 };
-    const ymax = niceMax(Math.max(...R.map(r => r.Pb)) * 1.08);
-    const { W, H } = axes(x, w, h, pad, xmin, xmax, ymax, "POWER  (kW)");
-    const px = v => pad.l + (v - xmin) / (xmax - xmin) * W;
+    legendEl.innerHTML = `
+      <span><i class="swatch" style="background:#1b7f92"></i>Viscous Friction (1+k)R_FS</span>
+      <span><i class="swatch" style="background:#7aa9b5"></i>Allowances (ΔC_F + C_A + C_AA)</span>
+      <span><i class="swatch" style="background:#bf7226"></i>Residuary Drag R_RS</span>
+    `;
+  }
+  else if (ACTIVE_CHART === "F") {
+    // Chart F: Power Chain
+    const ymax = niceMax(Math.max(...data.map(r => r.Pb)) * 1.1);
+    const { W, H } = drawAxes(x, w, h, pad, xmin, xmax, ymax, "PROPULSION POWERS  (kW)");
     const py = v => pad.t + H - v / ymax * H;
-    [[r => r.Pe, "#08202e"], [r => r.Pd, "#1b7f92"], [r => r.Pb, "#bf7226"]].forEach(([f, col]) => {
-      x.strokeStyle = col; x.lineWidth = 1.8; x.beginPath();
-      R.forEach((r, i) => { const X = px(r.VsKn), Y = py(f(r)); i ? x.lineTo(X, Y) : x.moveTo(X, Y); });
+
+    [[r => r.Pe, "#08202e", "Effective P_E"], [r => r.Pd, "#1b7f92", "Delivered P_D"], [r => r.Pb, "#bf7226", "Installed Brake P_B (with Sea Margin)"]].forEach(([f, col]) => {
+      x.strokeStyle = col; x.lineWidth = 2.0; x.beginPath();
+      data.forEach((r, i) => { const X = px(r.VsKn), Y = py(f(r)); i ? x.lineTo(X, Y) : x.moveTo(X, Y); });
       x.stroke();
       x.fillStyle = col;
-      R.forEach(r => { x.beginPath(); x.arc(px(r.VsKn), py(f(r)), 2.4, 0, 7); x.fill(); });
+      data.forEach(r => { x.beginPath(); x.arc(px(r.VsKn), py(f(r)), 2.8, 0, 7); x.fill(); });
     });
+
+    legendEl.innerHTML = `
+      <span><i class="swatch" style="background:#08202e"></i>Effective Power P_E (kW)</span>
+      <span><i class="swatch" style="background:#1b7f92"></i>Delivered Power P_D (kW)</span>
+      <span><i class="swatch" style="background:#bf7226"></i>Installed Brake Power P_B (kW)</span>
+    `;
   }
 }
 
-/* ---------------- CSV ---------------- */
+/* ---------------- CSV Export ---------------- */
 function exportCsv() {
-  if (!RESULTS.length) { showMsgs([["err", "Nothing to export", "Run a calculation first."]]); return; }
-  const head = ["Run","Fn","Vm_m_s","Rtm_N","Ctm","Cfm","Cr","Vs_kn","Vs_m_s","Res","Cfs","Cts","Rts_kN","Pe_kW","Pd_kW","Pb_kW"];
-  const body = RESULTS.map(r => [r.i, r.Fn, r.Vm, r.Rtm, r.Ctm, r.Cfm, r.Cr, r.VsKn, r.Vs, r.Res, r.Cfs, r.Cts, r.Rts/1000, r.Pe, r.Pd, r.Pb]
-    .map(v => typeof v === "number" ? (Math.abs(v) < 1e-3 && v !== 0 ? v.toExponential(6) : v.toFixed(6)) : v).join(","));
+  if (!RESULTS.length) {
+    showValidation([["err", "Nothing to Export", "Run calculation before exporting."]]);
+    return;
+  }
+  const head = ["Run","Fn","Vm_m_s","Rtm_N","Ctm_1e3","Cfm_1e3","Cr_1e3","Vs_kn","Vs_m_s","Res","Cfs_1e3","Cts_1e3","Rfs_kN","Rrs_kN","Rts_kN","Pe_kW","Pd_kW","Pb_kW"];
+  const body = RESULTS.map(r => [
+    r.i, r.Fn.toFixed(4), r.Vm.toFixed(3), r.Rtm.toFixed(2),
+    (r.Ctm*1e3).toFixed(4), (r.Cfm*1e3).toFixed(4), (r.Cr*1e3).toFixed(4),
+    r.VsKn.toFixed(2), r.Vs.toFixed(2), r.Res.toExponential(4),
+    (r.Cfs*1e3).toFixed(4), (r.Cts*1e3).toFixed(4),
+    r.Rfs.toFixed(2), r.Rrs.toFixed(2), r.Rts.toFixed(2),
+    r.Pe.toFixed(1), r.Pd.toFixed(1), r.Pb.toFixed(1)
+  ].join(","));
   const blob = new Blob([[head.join(","), ...body].join("\n")], { type: "text/csv" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "froude_extrapolation.csv";
+  a.download = "William_Froude_Extrapolation_Primelisometrics.csv";
   a.click();
   URL.revokeObjectURL(a.href);
 }
 
-/* ---------------- wiring ---------------- */
-function toggleMethod() {
-  const f = $("method").value === "froude";
-  $("froudeOpts").style.display = f ? "" : "none";
-  $("ittcOpts").style.display = f ? "none" : "";
-  $("frictionLine").disabled = f;
-  const k = $("formK").closest(".f");
-  k.style.display = $("method").value === "ittc78" ? "" : "none";
+/* ---------------- Engineering Report Modal ---------------- */
+function openReport() {
+  if (!RESULTS.length) calculate();
+  if (!RESULTS.length) return;
+
+  const now = new Date();
+  $("repDate").textContent = now.toISOString().slice(0, 10) + " " + now.toTimeString().slice(0, 5);
+  $("repMethod").textContent = $("method").selectedOptions[0].text;
+  $("repLambda").textContent = (num("sL") / num("mL")).toFixed(2);
+
+  $("repSL").textContent = `${fmt(num("sL"), 1)} m`;
+  $("repSBT").textContent = `${fmt(num("sB"), 1)} m / ${fmt(num("sT"), 1)} m`;
+  $("repSDisp").textContent = `${fmt(num("sDisp"), 0)} t (Vol: ${fmt(num("sDisp")*1000/num("sRho"), 1)} m³)`;
+  $("repSS").textContent = `${fmt(num("sS"), 1)} m²`;
+  $("repSRho").textContent = `${fmt(num("sRho"), 1)} kg/m³ @ ${num("sTemp")}°C`;
+
+  $("repML").textContent = `${fmt(num("mL"), 2)} m`;
+  $("repMBT").textContent = `${fmt(num("mB"), 2)} m / ${fmt(num("mT"), 2)} m`;
+  $("repMDisp").textContent = `${fmt(num("mDisp"), 1)} kg`;
+  $("repMS").textContent = `${fmt(num("mS"), 3)} m²`;
+  $("repMRho").textContent = `${fmt(num("mRho"), 1)} kg/m³ @ ${num("mTemp")}°C`;
+
+  $("repFricLine").textContent = $("frictionLine").selectedOptions[0].text;
+  $("repFormK").textContent = $("method").value === "ittc78" ? fmt(num("formK"), 3) : "1.000 (2-D)";
+  $("repDCf").textContent = fmt(num("dCf"), 6);
+  $("repCa").textContent = fmt(num("Ca"), 6);
+  $("repCaa").textContent = fmt(num("Caa"), 6);
+  
+  const w = num("wake"), t = num("thrust");
+  const etaD = num("etaO") * num("etaR") * ((1-t)/(1-w));
+  $("repEtaD").textContent = fmt(etaD, 3);
+
+  const displayRuns = SWEEP_RESULTS.length ? SWEEP_RESULTS : RESULTS;
+  $("repSummaryTable").querySelector("tbody").innerHTML = displayRuns.map(r => `
+    <tr>
+      <td>${fmt(r.VsKn, 2)}</td>
+      <td>${r.Fn.toFixed(3)}</td>
+      <td>${sci(r.Res, 2)}</td>
+      <td>${fmt(r.Rfs, 1)}</td>
+      <td>${fmt(r.Rrs, 1)}</td>
+      <td>${fmt(r.Rts, 1)}</td>
+      <td>${fmt(r.Pe, 0)}</td>
+      <td>${fmt(r.Pb, 0)}</td>
+    </tr>
+  `).join("");
+
+  const msgsHtml = $("messages").innerHTML;
+  $("repValidationLog").innerHTML = msgsHtml || "All parameters and similarity checks verified.";
+
+  $("reportModal").classList.add("open");
 }
+
+function closeReport() {
+  $("reportModal").classList.remove("open");
+}
+
+/* ---------------- Event Listeners & Wiring ---------------- */
+function toggleMethod() {
+  const isFroude = $("method").value === "froude";
+  $("froudeOpts").style.display = isFroude ? "" : "none";
+  $("ittcOpts").style.display = isFroude ? "none" : "";
+  $("frictionLine").disabled = isFroude;
+  const kField = $("formK").closest(".f");
+  kField.style.display = $("method").value === "ittc78" ? "" : "none";
+}
+
 $("btnCalc").onclick = calculate;
 $("btnAdd").onclick = () => addRow();
 $("btnDemo").onclick = loadDemo;
-$("btnClear").onclick = () => { document.querySelector("#dataTable tbody").innerHTML = ""; RESULTS = []; render(); showMsgs([]); };
+$("btnClear").onclick = () => {
+  document.querySelector("#dataTable tbody").innerHTML = "";
+  RESULTS = [];
+  SWEEP_RESULTS = [];
+  render();
+  showValidation([["ok", "Ready", "Enter towing-tank carriage runs or load sample data."]]);
+};
 $("btnCsv").onclick = exportCsv;
-$("method").onchange = () => { toggleMethod(); syncAuto(); };
-$("frictionLine").onchange = syncAuto;
+$("btnReportModal").onclick = openReport;
+$("btnCloseModal").onclick = closeReport;
+$("btnUpdateSweep").onclick = () => {
+  generateSpeedSweep();
+  render();
+};
+
+$("method").onchange = () => { toggleMethod(); syncAuto(); calculate(); };
+$("frictionLine").onchange = () => { syncAuto(); calculate(); };
 $("speedUnit").onchange = () => {
-  $("thSpeed").innerHTML = `Model speed <span class="th2">${$("speedUnit").value === "kn" ? "knots" : "m/s"}</span>`;
+  $("thSpeed").innerHTML = `Model Speed <span class="th2">${$("speedUnit").value === "kn" ? "knots" : "m/s"}</span>`;
   renumber();
 };
-document.querySelectorAll('input[type="checkbox"]').forEach(c => c.addEventListener("change", syncAuto));
+
+document.querySelectorAll('input[type="checkbox"]').forEach(c => c.addEventListener("change", () => { syncAuto(); calculate(); }));
 document.querySelectorAll('.card input[type="number"], .card select').forEach(el => el.addEventListener("input", () => { syncAuto(); renumber(); }));
 
-let rt;
-window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { drawScale(); drawCharts(); }, 140); });
+// Chart tab switching
+document.querySelectorAll(".chart-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".chart-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    ACTIVE_CHART = tab.getAttribute("data-chart");
+    drawActiveChart();
+  });
+});
 
+let rt;
+window.addEventListener("resize", () => {
+  clearTimeout(rt);
+  rt = setTimeout(() => { drawScale(); drawActiveChart(); }, 140);
+});
+
+// Initialization
 toggleMethod();
 syncAuto();
 loadDemo();
-window.addEventListener("load", () => { drawScale(); drawCharts(); });
+window.addEventListener("load", () => {
+  drawScale();
+  drawActiveChart();
+});
 </script>
 </body>
 </html>

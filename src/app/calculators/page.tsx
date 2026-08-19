@@ -22,15 +22,15 @@ export default function CalculatorsHubPage() {
   const calculators: CalculatorInfo[] = [
     {
       id: 'william-froude',
-      name: 'William Froude Method',
-      description: 'Foundation of resistance decomposition into frictional and residuary drag components for general hulls.',
+      name: 'William Froude Resistance & Powering Calculator',
+      description: 'Auditable model-to-ship resistance extrapolation and effective/installed power prediction based on Froude scaling and ITTC protocols.',
       status: 'active',
-      path: '/froude-calculator',
+      path: '/william-froude-calculator',
       category: 'General Displacement',
-      version: 'v1.0.0',
-      vesselType: 'Displacement Ships',
-      speedRange: 'All speeds',
-      accuracy: 'Theoretical Baseline'
+      version: 'v2.0.0',
+      vesselType: 'Displacement Ships & Models',
+      speedRange: 'All speeds (Fn < 0.45 recommended)',
+      accuracy: 'Empirical Extrapolation Baseline'
     },
     {
       id: 'holtrop-mennen',
