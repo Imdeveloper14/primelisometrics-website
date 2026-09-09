@@ -6,21 +6,18 @@
     "nodejs_compat"
   ],
   "pages_build_output_dir": "./out",
-  "build": {
-    "command": "npm run build"
-  },
-  "assets": {
-    "directory": "out"
-  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "primelisometrics_db",
+      "database_id": "49bc828e-5a87-4172-9b7a-f782ba705365"
+    }
+  ],
   "vars": {
     "RAZORPAY_KEY_ID": "rzp_test_T7lhA4A2UYgSfK",
     "RAZORPAY_KEY_SECRET": "ajO7UCD1vBinFpspB2EeWRJe",
     "RAZORPAY_WEBHOOK_SECRET": "M2LU2kGaZs_3d7a",
     "FORMSPREE_ENDPOINT": "https://formspree.io/f/mpqgjlqw",
     "APP_URL": "https://primelisometrics.site"
-  },
-  "routes": [
-    { "pattern": "primelisometrics.site", "custom_domain": true },
-    { "pattern": "www.primelisometrics.site", "custom_domain": true }
-  ]
+  }
 }
