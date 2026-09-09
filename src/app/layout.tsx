@@ -13,16 +13,16 @@ export const metadata: Metadata = {
   keywords: "Primelisometrics, engineering design, freelance CAD design, 3D modeling, piping design, marine systems, technical drafting, naval architecture, ship stability, AutoCAD Plant 3D, BWTS retrofits",
   robots: "index, follow",
   alternates: {
-    canonical: "https://primelisometrics.com/",
+    canonical: "https://primelisometrics.site/",
   },
   openGraph: {
     type: "website",
-    url: "https://primelisometrics.com/",
+    url: "https://primelisometrics.site/",
     title: "PRIMELISOMETRICS | Engineering Ideas into Reality",
     description: "Primelisometrics is a freelance engineering design consultancy providing professional CAD design, 3D modeling, piping design, marine systems, and technical drafting.",
     images: [
       {
-        url: "https://primelisometrics.com/images/logo.png",
+        url: "https://primelisometrics.site/images/logo.png",
         width: 1200,
         height: 630,
         alt: "Primelisometrics Logo",
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "PRIMELISOMETRICS | Engineering Ideas into Reality",
     description: "Primelisometrics is a freelance engineering design consultancy providing professional CAD design, 3D modeling, piping design, marine systems, and technical drafting.",
-    images: ["https://primelisometrics.com/images/logo.png"],
+    images: ["https://primelisometrics.site/images/logo.png"],
   },
   other: {
     "google-site-verification": "Yr5VEVKRsAjDRM440ZQ1d4N6Tn9FYjNyhZCAptDpbbE"
@@ -45,17 +45,17 @@ const jsonLd = {
   "@graph": [
     {
       "@type": "Organization",
-      "@id": "https://primelisometrics.com/#organization",
+      "@id": "https://primelisometrics.site/#organization",
       "name": "PRIMELISOMETRICS",
-      "url": "https://primelisometrics.com/",
+      "url": "https://primelisometrics.site/",
       "logo": {
         "@type": "ImageObject",
-        "@id": "https://primelisometrics.com/#logo",
-        "url": "https://primelisometrics.com/images/logo.png",
+        "@id": "https://primelisometrics.site/#logo",
+        "url": "https://primelisometrics.site/images/logo.png",
         "caption": "PRIMELISOMETRICS"
       },
       "image": {
-        "@id": "https://primelisometrics.com/#logo"
+        "@id": "https://primelisometrics.site/#logo"
       },
       "sameAs": [
         "https://www.linkedin.com/in/chandrasekar-kumar-03662214a/"
@@ -63,25 +63,25 @@ const jsonLd = {
     },
     {
       "@type": "WebSite",
-      "@id": "https://primelisometrics.com/#website",
-      "url": "https://primelisometrics.com/",
+      "@id": "https://primelisometrics.site/#website",
+      "url": "https://primelisometrics.site/",
       "name": "PRIMELISOMETRICS",
       "description": "PRIMELISOMETRICS is a freelance engineering design consultancy providing professional CAD design, 3D modeling, piping design, marine systems, and technical drafting.",
       "publisher": {
-        "@id": "https://primelisometrics.com/#organization"
+        "@id": "https://primelisometrics.site/#organization"
       },
       "inLanguage": "en-US"
     },
     {
       "@type": "WebPage",
-      "@id": "https://primelisometrics.com/#webpage",
-      "url": "https://primelisometrics.com/",
+      "@id": "https://primelisometrics.site/#webpage",
+      "url": "https://primelisometrics.site/",
       "name": "PRIMELISOMETRICS | Engineering Ideas into Reality",
       "isPartOf": {
-        "@id": "https://primelisometrics.com/#website"
+        "@id": "https://primelisometrics.site/#website"
       },
       "about": {
-        "@id": "https://primelisometrics.com/#organization"
+        "@id": "https://primelisometrics.site/#organization"
       },
       "description": "PRIMELISOMETRICS is a freelance engineering design consultancy providing professional CAD design, 3D modeling, piping design, marine systems, and technical drafting.",
       "inLanguage": "en-US"

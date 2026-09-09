@@ -6,7 +6,6 @@ import Hero from '@/components/Hero';
 import About from '@/components/About';
 import Services from '@/components/Services';
 import Skills from '@/components/Skills';
-import Portfolio from '@/components/Portfolio';
 import Workflow from '@/components/Workflow';
 import Testimonials from '@/components/Testimonials';
 import Contact from '@/components/Contact';
@@ -257,7 +256,7 @@ export default function Home() {
 
               {/* Logo Icon Only - Center placed on top of blueprint with intense bloom glow */}
               <img
-                src="images/logo_icon.png"
+                src="/images/logo_icon.png"
                 alt="CK Symbol"
                 className={`relative z-10 h-[190px] sm:h-[260px] md:h-[290px] w-auto object-contain mx-auto transition-all duration-500 filter drop-shadow-[0_0_40px_rgba(255,23,68,0.9)] ${
                   loaderPhase === 1 ? 'scale-90 opacity-0' : ''
@@ -296,9 +295,6 @@ export default function Home() {
           
           {/* Core Software stack list */}
           <Skills />
-          
-          {/* Projects gallery and before/after slider */}
-          <Portfolio />
           
           {/* Workflow timeline progress tracker */}
           <Workflow />

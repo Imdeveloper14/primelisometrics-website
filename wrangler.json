@@ -1,29 +1,17 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "royal-feather-b793",
-  "main": "src/worker.ts",
+  "name": "primelisometrics",
   "compatibility_date": "2026-06-22",
-  "observability": {
-    "enabled": true
-  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "pages_build_output_dir": "./out",
   "build": {
     "command": "npm run build"
   },
   "assets": {
-    "directory": "out",
-    "binding": "ASSETS",
-    "run_worker_first": true
+    "directory": "out"
   },
-  "compatibility_flags": [
-    "nodejs_compat"
-  ],
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "primelisometrics_db",
-      "database_id": "49bc828e-5a87-4172-9b7a-f782ba705365"
-    }
-  ],
   "vars": {
     "RAZORPAY_KEY_ID": "rzp_test_T7lhA4A2UYgSfK",
     "RAZORPAY_KEY_SECRET": "ajO7UCD1vBinFpspB2EeWRJe",

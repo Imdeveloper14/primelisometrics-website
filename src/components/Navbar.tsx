@@ -39,7 +39,7 @@ export default function Navbar({ isLoaded = true }: NavbarProps) {
       lastScrollTop = scrollTop;
 
       // Scroll Spy for active navigation link
-      const sections = ['home', 'about', 'services', 'portfolio', 'workflow', 'contact'];
+      const sections = ['home', 'about', 'services', 'workflow', 'contact'];
       let current = 'home';
       for (const sectionId of sections) {
         const element = document.getElementById(sectionId);
@@ -88,7 +88,6 @@ export default function Navbar({ isLoaded = true }: NavbarProps) {
     { href: '/#home', label: 'Home', id: 'home' },
     { href: '/#about', label: 'About', id: 'about' },
     { href: '/#services', label: 'Services', id: 'services' },
-    { href: '/#portfolio', label: 'Portfolio', id: 'portfolio' },
     { href: '/#workflow', label: 'Workflow', id: 'workflow' },
     { href: '/#contact', label: 'Contact', id: 'contact' },
     { href: '/calculators', label: 'Resistance Calculators', id: 'calculators' },

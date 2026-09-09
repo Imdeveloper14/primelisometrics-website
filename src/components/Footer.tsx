@@ -37,11 +37,6 @@ export default function Footer() {
               <h4 className="text-[10px] font-mono text-accent uppercase tracking-widest font-bold">Navigation</h4>
               <ul className="flex flex-col gap-2">
                 <li>
-                  <a href="/#portfolio" className="text-xs text-gray-400 hover:text-white transition-colors uppercase font-mono tracking-wider">
-                    Portfolio
-                  </a>
-                </li>
-                <li>
                   <a href="/#services" className="text-xs text-gray-400 hover:text-white transition-colors uppercase font-mono tracking-wider">
                     Services
                   </a>
